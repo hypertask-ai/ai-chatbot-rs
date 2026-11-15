@@ -112,6 +112,17 @@ Nothing is built, tested or deployed on our servers. GitHub Actions runs the gat
 
 The old Worker keeps serving help.hypertask.ai until HTPR-9178 switches the address. Deploying to the Hypertask Cloudflare account needs Valentin's approval first, every time, and the step that owns deploy (HTPR-9176) writes the procedure. `skills/ship/references/project.md` still describes the template's deploy driver, which this project does not carry, so read it for the approval rules and not for a command to run.
 
+The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `main` on every push, and by hand through workflow dispatch, to https://help.hypertask.ai/ratstack. It uses the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets of the `ratstack-publish` GitHub environment through Alchemy's CI credential path, so the runner holds no profile, and only `main` may use that environment, so a branch push can never read them. It names one Worker, `help-hypertask-ratstack`, and one route, `help.hypertask.ai/ratstack*`. It never names the old project and declares no database, bucket, key store or DNS record.
+
+## Publish rules
+
+| Rule | Enforced by |
+| --- | --- |
+| The preview answers under `${siteBasePath}` only, and every address the build emits stays inside it, from one value in `apps/web/src/site-base-path.ts`. | `apps/web/test/site-base-output.test.ts` walks every emitted HTML, CSS, JS and JSON file; `apps/web/test/site-base-path.test.ts` pins the value and the route pattern. |
+| Every response under the preview path says `X-Robots-Tag: noindex` and every page carries the robots meta tag, and both disappear when the base path becomes empty at the cutover. | `siteRobotsMeta` and `siteAssetHeaders` in `apps/web/src/site-base-path.ts`, tested in `apps/web/test/site-base-path.test.ts` and read by GET in the last step of `.github/workflows/publish-ratstack.yml`. |
+| A publish can only create or update the preview Worker, its one route and its own Alchemy state store. | `apps/infra/test/publish-scope.test.ts` compiles the published stack without a cloud call and requires exactly one resource, `Website`. |
+| The old site keeps answering exactly what it answered before the deploy. | The record and smoke steps of `.github/workflows/publish-ratstack.yml` compare https://help.hypertask.ai/ before and after the deploy. |
+
 ## Release a package
 
 The template published the `ratstack` command line package from `.github/workflows/ratstack-publish.yml`. That workflow and `apps/cli` are gone, so this project publishes no package. Publishing one would need its own ticket.
