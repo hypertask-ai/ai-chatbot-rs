@@ -19,12 +19,10 @@ const slugById = new Map<string, string>([
   ["a3", "three"],
 ]);
 
-const retrievalRow = Arbitrary.schema(
-  Schema.Struct({
-    acceptable: Schema.Array(Schema.Literals(["a1", "a2", "a3", "zz"])),
-    retrieved: Schema.Array(Schema.Literals(["a1", "a2", "a3"])),
-  })
-);
+const retrievalRow = Schema.Struct({
+  acceptable: Schema.Array(Schema.Literals(["a1", "a2", "a3", "zz"])),
+  retrieved: Schema.Array(Schema.Literals(["a1", "a2", "a3"])),
+});
 
 it.prop(
   "a case counts as a hit only when a retrieved article is one of its accepted slugs",
