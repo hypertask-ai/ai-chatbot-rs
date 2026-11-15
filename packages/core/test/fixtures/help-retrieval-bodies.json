@@ -1,0 +1,30 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai",
+  "rows": [
+    {
+      "path": "/api/chat/debug-rag",
+      "body": "{\"query\":\"how do i create a task\",\"count\":8,\"articles\":[{\"id\":\"10895348\",\"title\":\"How to Create Tasks in Hypertask\"},{\"id\":\"docs-mcp-agents\",\"title\":\"Creating Agents\"},{\"id\":\"10895766\",\"title\":\"Creating Tasks from Comments in Hypertask\"},{\"id\":\"10895347\",\"title\":\"How to Create a Kanban Board in Hypertask\"},{\"id\":\"docs-features-tasks\",\"title\":\"Tasks\"},{\"id\":\"10895739\",\"title\":\"Moving Tasks Between Boards in Hypertask\"},{\"id\":\"docs-cli-tasks-assign\",\"title\":\"CLI Task Assignment\"},{\"id\":\"10895744\",\"title\":\"How to Sort Tasks in Hypertask: Using Shift+S\"}]}"
+    },
+    {
+      "path": "/api/chat/debug-rag?q=board",
+      "body": "{\"query\":\"board\",\"count\":8,\"articles\":[{\"id\":\"docs-features-boards\",\"title\":\"Boards & Sections\"},{\"id\":\"docs-features-board-settings\",\"title\":\"Board Settings\"},{\"id\":\"docs-features-board-visibility\",\"title\":\"Board & Subtask Visibility\"},{\"id\":\"docs-features-chat-board-filter\",\"title\":\"AI Chat Board Filter\"},{\"id\":\"10895347\",\"title\":\"How to Create a Kanban Board in Hypertask\"},{\"id\":\"10895515\",\"title\":\"Quick Board Switching with the Hypertask Sidebar\"},{\"id\":\"article-ai-chat-1741567200\",\"title\":\"Using the AI Chat to Manage Your Board and Inbox\"},{\"id\":\"10895720\",\"title\":\"Using Board Search in Hypertask (Ctrl+F)\"}]}"
+    },
+    {
+      "path": "/api/chat/debug-rag?q=tiem%20trackng",
+      "body": "{\"query\":\"tiem trackng\",\"count\":8,\"articles\":[{\"id\":\"docs-features-time-tracking\",\"title\":\"Time Tracking\"},{\"id\":\"11106356\",\"title\":\"Sort Tasks by Last Updated Status\"},{\"id\":\"docs-features-board-settings\",\"title\":\"Board Settings\"},{\"id\":\"docs-features-tasks\",\"title\":\"Tasks\"},{\"id\":\"article-ai-chat-1741567200\",\"title\":\"Using the AI Chat to Manage Your Board and Inbox\"},{\"id\":\"docs-features-collaboration\",\"title\":\"Collaboration\"},{\"id\":\"docs-features-agents-dashboard\",\"title\":\"Agents Dashboard\"},{\"id\":\"docs-getting-started-settings-profile\",\"title\":\"Profile & Settings\"}]}"
+    },
+    {
+      "path": "/api/chat/debug-rag?q=zzzqx",
+      "body": "{\"query\":\"zzzqx\",\"count\":0,\"articles\":[]}"
+    },
+    {
+      "path": "/api/chat/debug-rag?q=codex",
+      "body": "{\"query\":\"codex\",\"count\":4,\"articles\":[{\"id\":\"docs-features-integrations\",\"title\":\"Integrations\"},{\"id\":\"docs-features-appearance\",\"title\":\"Appearance & AI Models\"},{\"id\":\"docs-features-byok\",\"title\":\"Bring Your Own Key (BYOK)\"},{\"id\":\"docs-mcp-overview\",\"title\":\"MCP Integration\"}]}"
+    },
+    {
+      "path": "/api/chat/debug-rag?q=",
+      "body": "{\"query\":\"how do i create a task\",\"count\":8,\"articles\":[{\"id\":\"10895348\",\"title\":\"How to Create Tasks in Hypertask\"},{\"id\":\"docs-mcp-agents\",\"title\":\"Creating Agents\"},{\"id\":\"10895766\",\"title\":\"Creating Tasks from Comments in Hypertask\"},{\"id\":\"10895347\",\"title\":\"How to Create a Kanban Board in Hypertask\"},{\"id\":\"docs-features-tasks\",\"title\":\"Tasks\"},{\"id\":\"10895739\",\"title\":\"Moving Tasks Between Boards in Hypertask\"},{\"id\":\"docs-cli-tasks-assign\",\"title\":\"CLI Task Assignment\"},{\"id\":\"10895744\",\"title\":\"How to Sort Tasks in Hypertask: Using Shift+S\"}]}"
+    }
+  ]
+}
