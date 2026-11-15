@@ -1,4 +1,10 @@
 import { Effect, Schema } from "effect";
+import {
+  FetchHttpClient,
+  HttpClient,
+  HttpClientRequest,
+  HttpClientResponse,
+} from "effect/http";
 import { Command } from "foldkit";
 
 import { Message } from "./message.js";
@@ -13,21 +19,27 @@ class HelpArticleUnavailable extends Schema.TaggedError<
   slug: Schema.String,
 }) {}
 
+const HelpArticleAnswer = Schema.Struct({
+  body: HelpArticlePage,
+  status: Schema.Number,
+});
+
+const readAnswer = HttpClientResponse.schemaJson(HelpArticleAnswer);
+
 const readHelpArticlePane = (slug: string) =>
-  Effect.tryPromise({
-    catch: () => new HelpArticleUnavailable({ slug }),
-    try: () => fetch(`${READER_PATH}${encodeURIComponent(slug)}`),
-  }).pipe(
-    Effect.flatMap((response) =>
-      response.ok
-        ? Effect.tryPromise({
-            catch: () => new HelpArticleUnavailable({ slug }),
-            try: () => response.json(),
-          })
-        : Effect.fail(new HelpArticleUnavailable({ slug }))
-    ),
-    Effect.flatMap(Schema.decodeUnknownEffect(HelpArticlePage))
-  );
+  Effect.gen(function* pane() {
+    const client = yield* HttpClient;
+
+    const response = yield* client.execute(
+      HttpClientRequest.get(`${READER_PATH}${encodeURIComponent(slug)}`)
+    );
+
+    const answer = yield* readAnswer(response);
+
+    return answer.status === 200
+      ? answer.body
+      : yield* new HelpArticleUnavailable({ slug });
+  });
 
 export const LoadHelpArticle = Command.define("LoadHelpArticle", {
   args: { slug: Schema.String },
@@ -35,7 +47,9 @@ export const LoadHelpArticle = Command.define("LoadHelpArticle", {
     Effect.sync(() => {
       document.querySelector("#reader")?.scrollTo({ top: 0 });
     }).pipe(
-      Effect.andThen(readHelpArticlePane(slug)),
+      Effect.andThen(
+        readHelpArticlePane(slug).pipe(Effect.provide(FetchHttpClient.layer))
+      ),
       Effect.match({
         onFailure: () => Message.ReaderFailed({ slug }),
         onSuccess: (article) => Message.ReaderLoaded({ article, slug }),
