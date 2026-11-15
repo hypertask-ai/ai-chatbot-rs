@@ -106,7 +106,7 @@ Nothing is built, tested or deployed on our servers. GitHub Actions runs the gat
 
 The old Worker keeps serving help.hypertask.ai until HTPR-9178 switches the address. Deploying to the Hypertask Cloudflare account needs Valentin's approval first, every time, and the step that owns deploy (HTPR-9176) writes the procedure. `skills/ship/references/project.md` still describes the template's deploy driver, which this project does not carry, so read it for the approval rules and not for a command to run.
 
-The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `main` on every push, and by hand through workflow dispatch, to https://help.hypertask.ai/ratstack. It uses the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` GitHub secrets through Alchemy's CI credential path, so the runner holds no profile. It names one Worker, `help-hypertask-ratstack`, and one route, `help.hypertask.ai/ratstack*`. It never names the old project and declares no database, bucket, key store or DNS record.
+The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `main` on every push, and by hand through workflow dispatch, to https://help.hypertask.ai/ratstack. It uses the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets of the `ratstack-publish` GitHub environment through Alchemy's CI credential path, so the runner holds no profile, and only `main` may use that environment, so a branch push can never read them. It names one Worker, `help-hypertask-ratstack`, and one route, `help.hypertask.ai/ratstack*`. It never names the old project and declares no database, bucket, key store or DNS record.
 
 ## Publish rules
 

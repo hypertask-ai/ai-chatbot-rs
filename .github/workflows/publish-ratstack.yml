@@ -16,6 +16,7 @@ jobs:
   publish:
     name: publish
     runs-on: ubuntu-latest
+    environment: ratstack-publish
     timeout-minutes: 45
     env:
       TURBO_CACHE: local:rw
@@ -36,10 +37,10 @@ jobs:
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then missing+=("CLOUDFLARE_API_TOKEN"); fi
           if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then missing+=("CLOUDFLARE_ACCOUNT_ID"); fi
           if [ "${#missing[@]}" -gt 0 ]; then
-            echo "::error::Missing GitHub secret ${missing[*]}. Add it under Settings, Secrets and variables, Actions. This job publishes nothing without it."
+            echo "::error::Missing GitHub secret ${missing[*]}. Add it under Settings, Environments, ratstack-publish, Environment secrets. This job publishes nothing without it."
             exit 1
           fi
-          echo "Both Cloudflare deploy secrets are present."
+          echo "Both Cloudflare deploy secrets are present in the ratstack-publish environment."
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
