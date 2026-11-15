@@ -331,20 +331,21 @@ const routedEndpoint = (
     Object.entries(fields).filter(([name]) => names.includes(name))
   );
 
-  const input =
-    names.length === 0
-      ? contract.input
-      : Schema.Struct(
-          Object.fromEntries(
-            Object.entries(fields).filter(([name]) => !names.includes(name))
-          )
-        );
+  const bodyFields = Object.fromEntries(
+    Object.entries(fields).filter(([name]) => !names.includes(name))
+  );
+
+  const input = names.length === 0 ? contract.input : Schema.Struct(bodyFields);
+
+  const bodyIsDeclared = Object.keys(bodyFields).length > 0;
 
   return route(http.method)(contract.name, http.path, {
     error,
     params: names.length === 0 ? undefined : Schema.Struct(params),
     success: contract.output,
-    ...(BODY_METHODS.has(http.method) ? { payload: input } : { query: input }),
+    ...(BODY_METHODS.has(http.method)
+      ? { payload: bodyIsDeclared ? input : Schema.UndefinedOr(input) }
+      : { query: input }),
   });
 };
 

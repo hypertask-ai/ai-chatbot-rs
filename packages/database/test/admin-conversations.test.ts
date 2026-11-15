@@ -759,8 +759,7 @@ const withSite = <A, E>(use: (client: AdminClient) => Effect.Effect<A, E>) =>
       post: (requestPath, headers) =>
         answer(
           new Request(`${SITE}${requestPath}`, {
-            body: "{}",
-            headers: { "content-type": "application/json", ...headers },
+            headers: headers ?? {},
             method: "POST",
           })
         ),
@@ -1098,6 +1097,50 @@ describe("admin conversations over a local D1 database", () => {
         ]);
       })
     )
+  );
+
+  it.effect(
+    "takes the old page's status posts with no body and no content type",
+    () =>
+      withSite((client) =>
+        Effect.gen(function* postWithoutBody() {
+          const paths = [
+            "/conversations/conv-handoff/accept",
+            "/conversations/conv-bot/takeover",
+            "/conversations/conv-bot/close",
+            "/conversations/conv-bot/archive",
+            "/conversations/conv-archived/unarchive",
+          ] as const;
+
+          const answers = yield* Effect.all(
+            paths.map((path) => client.post(`${ADMIN_PREFIX}${path}`, BEARER)),
+            { concurrency: 1 }
+          );
+
+          expect(
+            answers.map(({ body, status }) => [status, AnswerBody(body)])
+          ).toEqual([
+            [200, { status: "human" }],
+            [200, { status: "human" }],
+            [200, { status: "closed" }],
+            [200, { archived: true }],
+            [200, { archived: false }],
+          ]);
+
+          const result = Detail(
+            (yield* client.get(
+              `${ADMIN_PREFIX}/conversations/conv-bot`,
+              BEARER
+            )).body
+          );
+
+          expect([
+            result.conversation?.archived,
+            result.conversation?.status,
+            result.conversation?.updated_at,
+          ]).toEqual([1, "closed", NOW]);
+        })
+      )
   );
 
   it.effect("writes an admin reply and touches the conversation", () =>
