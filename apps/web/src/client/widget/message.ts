@@ -69,8 +69,8 @@ export const Message = defineMessageUnion({
   PickedSuggestion: { text: Schema.String },
   ReceivedHostMessage: {
     data: Schema.Unknown,
-    trustedParent: Schema.Boolean,
     sameOrigin: Schema.Boolean,
+    trustedParent: Schema.Boolean,
   },
   RejectedAttachment: {},
   RemovedAttachment: {},

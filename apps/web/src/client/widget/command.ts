@@ -3,9 +3,9 @@ import { uuidV4Unsafe } from "effect/crypto/SecureRandom";
 import { Command } from "foldkit";
 import { File, readAsDataUrl } from "foldkit/file";
 
-import { parentOrigin } from "../../widget/parent-origin.js";
 import { frameStorageKeys } from "../../widget/storage.js";
 import { Message } from "./message.js";
+import { parentOrigin } from "./parent-origin.js";
 
 const read = (key: string): string => {
   try {
@@ -27,7 +27,26 @@ const write = (key: string, value: string): void => {
   }
 };
 
-const postToParent = (body: Record<string, string>): void => {
+interface ParentCloseMessage {
+  readonly type: "chat-widget-close";
+}
+
+interface ParentSessionMessage {
+  readonly conversationId: string;
+  readonly type: "chat-widget-session";
+  readonly visitorId: string;
+  readonly visitorSecret?: string;
+}
+
+type ParentMessage = ParentCloseMessage | ParentSessionMessage;
+
+interface SessionInput {
+  readonly conversationId: string;
+  readonly visitorId: string;
+  readonly visitorSecret?: string;
+}
+
+const postToParent = (body: ParentMessage): void => {
   const target = parentOrigin();
 
   if (window.parent === window || target === undefined) {
@@ -37,23 +56,19 @@ const postToParent = (body: Record<string, string>): void => {
   window.parent.postMessage(body, target);
 };
 
-const sessionMessage = (input: {
-  conversationId: string;
-  visitorId: string;
-  visitorSecret?: string;
-}): Record<string, string> => {
-  const body: Record<string, string> = {
-    conversationId: input.conversationId,
-    type: "chat-widget-session",
-    visitorId: input.visitorId,
-  };
-
-  if (input.visitorSecret !== undefined && input.visitorSecret !== "") {
-    body.visitorSecret = input.visitorSecret;
-  }
-
-  return body;
-};
+const sessionMessage = (input: SessionInput): ParentSessionMessage =>
+  input.visitorSecret === undefined || input.visitorSecret === ""
+    ? {
+        conversationId: input.conversationId,
+        type: "chat-widget-session",
+        visitorId: input.visitorId,
+      }
+    : {
+        conversationId: input.conversationId,
+        type: "chat-widget-session",
+        visitorId: input.visitorId,
+        visitorSecret: input.visitorSecret,
+      };
 
 export const LoadSession = Command.define("LoadSession", {
   execute: Effect.sync(() => {

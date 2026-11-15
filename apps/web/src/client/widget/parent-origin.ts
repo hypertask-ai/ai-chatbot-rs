@@ -1,4 +1,4 @@
-import { widgetEmbedOrigins } from "./embed.js";
+import { widgetEmbedOrigins } from "../../widget/embed.js";
 
 const trustedParentOrigins = new Set<string>(widgetEmbedOrigins);
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "@effect/vitest";
 import {
   isTrustedParentOrigin,
   trustedParentOrigin,
-} from "../src/widget/parent-origin.js";
+} from "../src/client/widget/parent-origin.js";
 
 const widgetOrigin = "https://help.hypertask.ai";
 

@@ -11,15 +11,28 @@ const entities = [
   ["&#39;", "'"],
 ] as const;
 
+const entityAt = (
+  value: string,
+  index: number
+): readonly [string, string] | undefined => {
+  for (const entry of entities) {
+    if (value.startsWith(entry[0], index)) {
+      return entry;
+    }
+  }
+
+  return undefined;
+};
+
 const decodeOnce = (value: string): string => {
   const parts: string[] = [];
   let index = 0;
 
   while (index < value.length) {
-    const found = entities.find(([name]) => value.startsWith(name, index));
+    const found = entityAt(value, index);
 
     if (found === undefined) {
-      parts.push(value.charAt(index));
+      parts.push(value.at(index) ?? "");
       index += 1;
       continue;
     }
@@ -31,49 +44,46 @@ const decodeOnce = (value: string): string => {
   return parts.join("");
 };
 
-const fragments = [
+const tokens = [
   "&",
-  "amp",
-  "quot",
-  "#39",
-  ";",
-  "&amp;",
-  "&quot;",
-  "&#39;",
-  "lt",
+  "amp;",
+  "quot;",
+  "#39;",
+  "lt;",
   "<",
-  ">",
   '"',
-  "'",
-  "a",
-  "/help/",
-  "javascript:",
-  " ",
+  "java",
+  "script:",
 ];
 
-const nextRandom = (seed: number): (() => number) => {
-  let state = seed;
+const generated = (depth: number): readonly string[] => {
+  let values: readonly string[] = [""];
 
-  return () => {
-    state = (state * 1_664_525 + 1_013_904_223) % 4_294_967_296;
+  for (let level = 0; level < depth; level += 1) {
+    const next: string[] = [];
 
-    return state / 4_294_967_296;
-  };
-};
-
-const generated = (count: number): readonly string[] => {
-  const next = nextRandom(9_171);
-
-  return Array.from({ length: count }, () => {
-    const length = 1 + Math.floor(next() * 12);
-    let value = "";
-
-    for (let index = 0; index < length; index += 1) {
-      value += fragments[Math.floor(next() * fragments.length)] ?? "";
+    for (const value of values) {
+      for (const token of tokens) {
+        next.push(value + token);
+      }
     }
 
-    return value;
-  });
+    values = next;
+  }
+
+  return values;
+};
+
+const allowedHref = /^(?:https?:\/\/|mailto:|\/help\/)/iu;
+
+const hrefsOf = (html: string): readonly string[] => {
+  const hrefs: string[] = [];
+
+  for (const match of html.matchAll(/<a\b[^>]*href="(?<href>[^"]*)"/gu)) {
+    hrefs.push(match.groups?.href ?? "");
+  }
+
+  return hrefs;
 };
 
 describe("chat markdown href decoding", () => {
@@ -95,20 +105,16 @@ describe("chat markdown href decoding", () => {
   });
 
   it("matches a single left to right pass over every generated string", () => {
-    for (const value of generated(500)) {
+    for (const value of generated(4)) {
       expect(decodeHrefEntities(value)).toBe(decodeOnce(value));
     }
   });
 
-  it("never turns a generated string into an anchor that leaves the attribute", () => {
-    for (const value of generated(500)) {
-      const html = renderChatMarkdown(`[link](${value})`);
-
-      for (const match of html.matchAll(/<a\b[^>]*href="(?<href>[^"]*)"/gu)) {
-        const href = match.groups?.href ?? "";
-
+  it("never renders an anchor that leaves the attribute or the allowed schemes", () => {
+    for (const value of generated(4)) {
+      for (const href of hrefsOf(renderChatMarkdown(`[link](${value})`))) {
         expect(href.includes("<")).toBe(false);
-        expect(/^(?:javascript|data|vbscript):/iu.test(href)).toBe(false);
+        expect(allowedHref.test(href)).toBe(true);
       }
     }
   });
