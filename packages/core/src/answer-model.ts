@@ -1,4 +1,5 @@
-import { Context, Effect, Schedule, Schema } from "effect";
+import { Context, Data, Schedule, Schema } from "effect";
+import type { Effect } from "effect";
 
 export const HAIKU_MODEL = "claude-haiku-5-5";
 
@@ -95,23 +96,18 @@ export type AnswerImageBlock = typeof AnswerImageBlockSchema.Type;
 
 export type AnswerMessage = typeof AnswerMessageSchema.Type;
 
-export class RetryableAnswerFailure extends Schema.TaggedError<
-  RetryableAnswerFailure,
-  { readonly brand: unique symbol }
->()("RetryableAnswerFailure", {
-  detail: Schema.String,
-  status: Schema.Int,
-}) {}
+export type AnswerModelFailure = Data.TaggedEnum<{
+  AnswerRefused: {
+    readonly detail: string;
+    readonly status: number;
+  };
+  RetryableAnswerFailure: {
+    readonly detail: string;
+    readonly status: number;
+  };
+}>;
 
-export class AnswerRefused extends Schema.TaggedError<
-  AnswerRefused,
-  { readonly brand: unique symbol }
->()("AnswerRefused", {
-  detail: Schema.String,
-  status: Schema.Int,
-}) {}
-
-export type AnswerModelFailure = AnswerRefused | RetryableAnswerFailure;
+export const answerModelFailure = Data.taggedEnum<AnswerModelFailure>();
 
 export interface AnswerStreamRead {
   readonly stopReason: string | null;

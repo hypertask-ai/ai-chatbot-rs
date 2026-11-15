@@ -5,14 +5,12 @@ import {
   join,
   setupEffect,
 } from "@xstate/effect";
-import { Context, Data, Effect, Ref, Schema } from "effect";
+import { Context, Data, Effect, Predicate, Ref, Schema } from "effect";
 import { types } from "xstate";
 
 import {
   ANSWER_FAILURE_MESSAGE,
   AnswerModel,
-  type AnswerModelFailure,
-  type AnswerRequest,
   AnswerRequestSchema,
   addTokenUsage,
   emptyUsage,
@@ -20,9 +18,13 @@ import {
   HAIKU_BUSY_MESSAGE,
   HAIKU_MODEL,
   HAIKU_RETRY,
-  type SettledAnswer,
   settleAnswer,
-  type TokenUsage,
+} from "./answer-model.js";
+import type {
+  AnswerModelFailure,
+  AnswerRequest,
+  SettledAnswer,
+  TokenUsage,
 } from "./answer-model.js";
 
 type AnswerCallResult = Data.TaggedEnum<{
@@ -85,7 +87,7 @@ const callWithRetry = Effect.fn("callWithRetry")(function* callWithRetry(
   });
 
   const shouldRetry = (failure: AnswerModelFailure) =>
-    failure._tag === "RetryableAnswerFailure"
+    Predicate.isTagged(failure, "RetryableAnswerFailure")
       ? streamed.pipe(Effect.map((emitted) => emitted === ""))
       : Effect.succeed(false);
 
@@ -124,10 +126,9 @@ const applyResult = (
   context: AnswerContext,
   result: AnswerCallResult
 ): AnswerContext => {
-  const usage =
-    result._tag === "Read"
-      ? addTokenUsage(context.usage, result.usage)
-      : context.usage;
+  const usage = answerCallResult.$is("Read")(result)
+    ? addTokenUsage(context.usage, result.usage)
+    : context.usage;
 
   return { ...context, calls: context.calls + 1, result, usage };
 };
@@ -144,7 +145,7 @@ const outcomeOf = (context: AnswerContext): AnswerOutcome | undefined => {
     return undefined;
   }
 
-  if (result._tag === "Unavailable") {
+  if (answerCallResult.$is("Unavailable")(result)) {
     return answerOutcome.Busy({
       streamed: result.streamed,
       text: HAIKU_BUSY_MESSAGE,
@@ -195,7 +196,10 @@ export const answerMachine = setupEffect({
       always: ({ context }) => {
         const { result } = context;
 
-        if (result === undefined || result._tag === "Unavailable") {
+        if (
+          result === undefined ||
+          answerCallResult.$is("Unavailable")(result)
+        ) {
           return { target: "busy" };
         }
 
