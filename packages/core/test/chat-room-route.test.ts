@@ -159,15 +159,18 @@ describe("chat room connection route", () => {
       const namespace = yield* fakeNamespace(() => broadcastAnswerResponse(0));
 
       const room = yield* ChatRoom.pipe(
-        Effect.provide(chatRoomLayer(namespace.operations)),
-        Effect.provideService(ChatRoomClock, { now: Effect.succeed(1000) })
+        Effect.provide(chatRoomLayer(namespace.operations))
       );
 
-      yield* room.visitorMessage({
-        content: "Hi",
-        conversationId: "conversation-9",
-        messageId: "msg-1",
-      });
+      yield* room
+        .visitorMessage({
+          content: "Hi",
+          conversationId: "conversation-9",
+          messageId: "msg-1",
+        })
+        .pipe(
+          Effect.provideService(ChatRoomClock, { now: Effect.succeed(1000) })
+        );
 
       const calls = yield* namespace.calls;
 

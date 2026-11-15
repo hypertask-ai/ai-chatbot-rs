@@ -245,7 +245,7 @@ export const chatRoomMachine = setupEffect({
               sends: [],
               sessions,
             },
-            target: sessions.length === 0 ? ".empty" : ".live",
+            target: sessions.length === 0 ? "empty" : "live",
           };
         },
       },
