@@ -66,6 +66,8 @@ import { FirstAnswerCache } from "../src/first-answer-cache.js";
 import type { FirstAnswerCacheOperations } from "../src/first-answer-cache.js";
 import { CHAT_SECOND } from "./chat-http.js";
 
+export { CHAT_SECOND } from "./chat-http.js";
+
 export const ARTICLE_CONTEXT =
   "AVAILABLE ARTICLES (ONLY link to these - do NOT invent other URLs):\n---\nTitle: Pricing plans\nPro is $16 per user / month.";
 
