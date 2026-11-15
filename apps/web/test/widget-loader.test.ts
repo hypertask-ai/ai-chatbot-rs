@@ -192,7 +192,9 @@ describe("widget loader", () => {
       bubble.querySelector(".proactive-suggestion"),
       "click"
     )({
-      stopPropagation: () => stopped.push("suggestion"),
+      stopPropagation: () => {
+        stopped.push("suggestion");
+      },
     });
 
     expect(stopped).toEqual(["suggestion"]);

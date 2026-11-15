@@ -124,9 +124,13 @@ const makeElement = (tag: string, elements: Map<string, FakeElement>) => {
     attributes: new Map(),
     children: [],
     classList: {
-      add: (name) => element.classes.add(name),
+      add: (name) => {
+        element.classes.add(name);
+      },
       contains: (name) => element.classes.has(name),
-      remove: (name) => element.classes.delete(name),
+      remove: (name) => {
+        element.classes.delete(name);
+      },
       toggle: (name, force) => {
         const next = force ?? !element.classes.has(name);
 
@@ -339,7 +343,7 @@ export const displayOf = (element: FakeElement): string | undefined => {
     return undefined;
   }
 
-  return /display:(?<value>[^;]+);?/u.exec(cssText)?.groups?.["value"];
+  return /display:(?<value>[^;]+);?/u.exec(cssText)?.groups?.value;
 };
 
 export const handler = (

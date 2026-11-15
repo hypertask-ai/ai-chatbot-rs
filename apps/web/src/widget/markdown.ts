@@ -7,7 +7,7 @@ const escapeHtml = (value: string): string =>
     .replaceAll("'", "&#39;");
 
 const attr = (value: string): string =>
-  String(value)
+  value
     .replaceAll("&", "&amp;")
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
@@ -38,7 +38,7 @@ const helpSlugFromUrl = (href: string): string | null => {
       decoded
     );
 
-  const slug = match?.groups?.["slug"];
+  const slug = match?.groups?.slug;
 
   if (slug === undefined) {
     return null;
@@ -87,7 +87,7 @@ const linkifyBareUrls = (value: string): string => {
         let trail = "";
 
         while (url.length > 0) {
-          const entity = tailEntities.exec(url)?.groups?.["entity"];
+          const entity = tailEntities.exec(url)?.groups?.entity;
 
           if (entity !== undefined) {
             trail = entity + trail;
@@ -187,8 +187,8 @@ const renderFlow = (value: string): string => {
   };
 
   for (const line of lines) {
-    const bullet = bulletLine.exec(line)?.groups?.["item"];
-    const numbered = numberedLine.exec(line)?.groups?.["item"];
+    const bullet = bulletLine.exec(line)?.groups?.item;
+    const numbered = numberedLine.exec(line)?.groups?.item;
 
     if (bullet !== undefined || numbered !== undefined) {
       flushPara();
@@ -277,7 +277,7 @@ const splitFencedBlocks = (value: string): readonly FenceBlock[] => {
       continue;
     }
 
-    const open = openFence.exec(line)?.groups?.["info"];
+    const open = openFence.exec(line)?.groups?.info;
 
     if (open !== undefined) {
       flushText();
@@ -299,7 +299,7 @@ const splitFencedBlocks = (value: string): readonly FenceBlock[] => {
 };
 
 export const renderChatMarkdown = (text: string): string =>
-  splitFencedBlocks(String(text).replaceAll("\r\n", "\n"))
+  splitFencedBlocks(text.replaceAll("\r\n", "\n"))
     .map((block) =>
       block.type === "code" ? renderFencedCode(block) : renderFlow(block.text)
     )

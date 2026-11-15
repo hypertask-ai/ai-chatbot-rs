@@ -15,8 +15,8 @@ export type ScreenLine = Readonly<{
 }>;
 
 const line = (message: Partial<HistoryLine> | undefined): HistoryLine => ({
-  content: String(message?.content ?? ""),
-  role: String(message?.role ?? ""),
+  content: message?.content ?? "",
+  role: message?.role ?? "",
 });
 
 const same = (a: HistoryLine, b: HistoryLine): boolean =>

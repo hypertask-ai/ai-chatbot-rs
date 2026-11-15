@@ -37,8 +37,8 @@ describe("settled chat bubbles", () => {
     );
 
     expect(keyframes).not.toBeNull();
-    expect(keyframes?.groups?.["frames"] ?? "").toMatch(/translateY/u);
-    expect(keyframes?.groups?.["frames"] ?? "").not.toMatch(/opacity/u);
+    expect(keyframes?.groups?.frames ?? "").toMatch(/translateY/u);
+    expect(keyframes?.groups?.frames ?? "").not.toMatch(/opacity/u);
     expect(css).not.toMatch(/\.message\.streaming\s*\{[^}]*opacity/u);
   });
 
