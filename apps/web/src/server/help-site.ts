@@ -45,23 +45,18 @@ const answerRedirect = (request: Request): Response =>
 export const answerHelpSite = Effect.fn("helpSite.answer")(
   function* answerHelpSite(request: Request) {
     const { pathname } = new URL(request.url);
+    const answersPage = request.method === "GET" || request.method === "HEAD";
 
     if (request.method === "OPTIONS") {
       return answerPreflight(request);
     }
 
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      return undefined;
-    }
-
-    if (pathname === "/health") {
+    if (answersPage && pathname === "/health") {
       return yield* answerHealth(request);
     }
 
-    if (redirectsFrom(pathname)) {
+    if (answersPage && redirectsFrom(pathname)) {
       return answerRedirect(request);
     }
-
-    return undefined;
   }
 );
