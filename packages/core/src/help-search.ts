@@ -105,6 +105,11 @@ interface FuzzyCandidate {
   readonly word: string;
 }
 
+interface Inflection {
+  readonly inflected: boolean;
+  readonly stemmed: string;
+}
+
 interface Averages {
   readonly body: number;
   readonly title: number;
@@ -159,9 +164,7 @@ const withoutPlural = (word: string): string => {
   return word;
 };
 
-const withoutInflection = (
-  word: string
-): { readonly inflected: boolean; readonly stemmed: string } => {
+const withoutInflection = (word: string): Inflection => {
   for (const suffix of STEM_SUFFIXES) {
     if (hasSuffix(word, suffix, SHORTEST_WORD)) {
       return {
@@ -490,6 +493,7 @@ const searchTerms = (query: string, index: CorpusIndex): readonly string[] => {
   const tokens = helpArticleTokens(query);
   const terms: string[] = [];
   const seen = new Set<string>();
+
   const add = (term: string): void => {
     if (seen.has(term)) {
       return;
@@ -669,10 +673,12 @@ export const rankHelpArticles = (
 
   const stems = distinctStems(terms);
   const documents = index.docs.length;
+
   const averages = {
     body: averageLength(index.docs, (doc) => doc.bodyLength),
     title: averageLength(index.docs, (doc) => doc.titleLength),
   };
+
   const holding = documentsHolding(index.docs, stems);
   const scored: ScoredArticle[] = [];
 
@@ -701,6 +707,7 @@ export const scoreHelpSearchMatches = (
   limit = MATCH_LIMIT
 ): readonly HelpSearchArticleValue[] => {
   const candidates = new Map<string, ScoredArticle>();
+
   const add = (article: HelpSearchArticleValue, weight: number): void => {
     const existing = candidates.get(article.id);
 

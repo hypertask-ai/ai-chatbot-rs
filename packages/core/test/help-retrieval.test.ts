@@ -93,38 +93,54 @@ describe("help chat retrieval", () => {
   });
 
   it("joins the inflected forms of one word on one stem", () => {
-    shareOneStem([
-      "connect",
-      "connects",
-      "connected",
-      "connecting",
-      "connection",
-      "connections",
-    ]);
-    shareOneStem([
-      "integrate",
-      "integrates",
-      "integrated",
-      "integrating",
-      "integration",
-      "integrations",
-    ]);
-    shareOneStem([
-      "configure",
-      "configures",
-      "configured",
-      "configuring",
-      "configuration",
-      "configurations",
-    ]);
-    shareOneStem([
-      "install",
-      "installs",
-      "installed",
-      "installing",
-      "installation",
-      "installations",
-    ]);
+    const groups = [
+      [
+        "connect",
+        "connects",
+        "connected",
+        "connecting",
+        "connection",
+        "connections",
+      ],
+      [
+        "integrate",
+        "integrates",
+        "integrated",
+        "integrating",
+        "integration",
+        "integrations",
+      ],
+      [
+        "configure",
+        "configures",
+        "configured",
+        "configuring",
+        "configuration",
+        "configurations",
+      ],
+      [
+        "install",
+        "installs",
+        "installed",
+        "installing",
+        "installation",
+        "installations",
+      ],
+    ];
+
+    for (const words of groups) {
+      const stems = new Set<string>();
+
+      for (const word of words) {
+        stems.add(helpArticleStem(word));
+      }
+
+      expect(
+        stems.size,
+        `${words.join(" ")} gave ${[...stems].join(" ")}`
+      ).toBe(1);
+    }
+
     expect(helpArticleStem("limitations")).toBe("limit");
     expect(helpArticleStem("restrictions")).toBe("limit");
   });
