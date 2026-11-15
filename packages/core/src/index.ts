@@ -73,8 +73,12 @@ export {
 export {
   CustomerAlerts,
   HandoffAlertSchema,
+  NewConversationAlertSchema,
+  NewMessageAlertSchema,
   type CustomerAlertOperations,
   type HandoffAlert,
+  type NewConversationAlert,
+  type NewMessageAlert,
 } from "./customer-alerts.js";
 
 export {
@@ -169,7 +173,7 @@ export {
   type AnswerRequestInput,
   type AnswerUserContent,
   type ChatTurn,
-  type VisitorProfile,
+  type VisitorProfile as AnswerVisitorProfile,
 } from "./answer-request.js";
 
 export {
@@ -209,3 +213,81 @@ export {
   type SettledAnswer,
   type TokenUsage,
 } from "./answer-model.js";
+
+export {
+  clientKeyOf,
+  chatMessageBodySchema,
+  chatMessageRequiredFailure,
+  chatRateLimitedFailure,
+  ChatMessageAnswerSchema,
+  ChatMessageSentSchema,
+  ChatMessageStreamedSchema,
+  isVerifiedEvalRequest,
+  newConversationRateLimitedFailure,
+  sanitizePageContext,
+  sendChatMessage,
+  sendChatMessageContract,
+  chatTurnOf,
+  visitorSecretOf,
+  type ChatClientHeaders,
+  type ChatMessageAnswer,
+  type ChatMessageBody,
+  type ChatMessageSent,
+  type ChatMessageStreamed,
+  type ChatPageContext,
+  type ChatRequestTurn,
+} from "./chat-message.js";
+
+export {
+  CHAT_STREAM_CONTENT_TYPE,
+  CHAT_STREAM_HEADERS,
+  chunkEvent,
+  connectedEvent,
+  doneEvent,
+  encodeChatStream,
+  encodeChatStreamBytes,
+  encodeChatStreamEvent,
+  errorEvent,
+  type ChatStreamChunk,
+  type ChatStreamConnected,
+  type ChatStreamDone,
+  type ChatStreamError,
+  type ChatStreamEvent,
+  type ChatStreamFinish,
+  type ChatStreamFailure,
+  type ChatStreamSource,
+  type ChatStreamStart,
+} from "./chat-stream.js";
+
+export {
+  HISTORY_MESSAGE_LIMIT,
+  RESPONSE_CACHE_TTL_SECONDS,
+  chatAnswerFrames,
+  firstAnswerEligible,
+  normalizeQuestion,
+  profileIsKnown,
+  responseCacheKey,
+  type ChatAnswerInput,
+  type FirstAnswerEligibility,
+} from "./chat-answer.js";
+
+export {
+  ChatAnswerCleanup,
+  ChatArticleContext,
+  ChatCitations,
+  ChatConfig,
+  ChatRateLimits,
+  ChatRequestFacts,
+  ChatRoom,
+  FirstAnswerCache,
+  type ChatAnswerCleanupOperations,
+  type ChatArticleContextOperations,
+  type ChatCitation,
+  type ChatCitationsOperations,
+  type ChatRateLimitAnswer,
+  type ChatRateLimitOperations,
+  type ChatRequestFactsValue,
+  type ChatRoomMessage,
+  type ChatRoomOperations,
+  type FirstAnswerCacheOperations,
+} from "./chat-message-ports.js";

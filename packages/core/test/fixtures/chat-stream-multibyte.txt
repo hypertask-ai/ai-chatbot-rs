@@ -1,0 +1,10 @@
+data: {"type":"connected","conversationId":"conv-2","messageId":"msg-2","visitorSecret":"secret-2"}
+
+data: {"type":"chunk","content":"Prix : 16 € ","conversationId":"conv-2"}
+
+data: {"type":"chunk","content":"café ","conversationId":"conv-2"}
+
+data: {"type":"chunk","content":"— fin, naïve.","conversationId":"conv-2"}
+
+data: {"type":"done","conversationId":"conv-2","messageId":"msg-2","fullContent":"Prix : 16 € café — fin, naïve.","sources":[]}
+

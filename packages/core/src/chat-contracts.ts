@@ -45,7 +45,7 @@ export const handoffProfileIncompleteFailure = (
     requiresProfile: true,
   }) as const;
 
-const ConversationNotFound = Schema.Struct({
+export const ConversationNotFound = Schema.Struct({
   error: Schema.Literal("Conversation not found"),
 }).annotate({ httpApiStatus: 404 });
 

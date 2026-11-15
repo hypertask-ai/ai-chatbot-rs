@@ -1,0 +1,6 @@
+data: {"type":"connected","conversationId":"conv-4","messageId":"msg-4"}
+
+data: {"type":"chunk","content":"Partial ","conversationId":"conv-4"}
+
+data: {"type":"error","error":"Sorry, I'm having trouble responding right now. Please try again in a moment.","conversationId":"conv-4","partial":true}
+

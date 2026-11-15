@@ -19,6 +19,7 @@ export const ChatConversationSchema = Schema.Struct({
   profileCompleted: Schema.Boolean,
   status: ConversationStatusSchema,
   updatedAt: Schema.Natural,
+  visitorId: Schema.optionalKey(Schema.String),
 });
 
 export type ChatConversation = typeof ChatConversationSchema.Type;
@@ -69,9 +70,20 @@ export interface ChatHandoffChange {
   readonly id: string;
 }
 
+export interface ChatConversationTouch {
+  readonly at: number;
+  readonly id: string;
+}
+
+export interface VisitorSecretQuery {
+  readonly secretHash: string;
+  readonly visitorId: string;
+}
+
 export type ChatHandoffEmailOutcome = "not_found" | "saved" | "too_soon";
 
 export interface ChatConversationOperations {
+  readonly create: (seed: ChatConversationSeed) => Effect.Effect<void>;
   readonly findReturningCustomer: (
     query: ReturningCustomerQuery
   ) => Effect.Effect<ReturningCustomer | undefined>;
@@ -86,6 +98,10 @@ export interface ChatConversationOperations {
   readonly setHandoffRequested: (
     change: ChatHandoffChange
   ) => Effect.Effect<void>;
+  readonly touch: (change: ChatConversationTouch) => Effect.Effect<void>;
+  readonly visitorOwnsSecret: (
+    query: VisitorSecretQuery
+  ) => Effect.Effect<boolean>;
 }
 
 export class ChatConversationStore extends Context.Service<
@@ -121,6 +137,7 @@ const seedConversation = (seed: ChatConversationSeed): ChatConversation => ({
   profileCompleted: seed.profileCompleted,
   status: seed.status,
   updatedAt: seed.updatedAt,
+  visitorId: seed.visitorId,
 });
 
 const newestReturningCustomer = (
@@ -167,6 +184,13 @@ export const memoryChatConversations = (
     );
 
     const operations: ChatConversationOperations = {
+      create: (seed) =>
+        Ref.update(rows, (held) =>
+          new Map(held).set(seed.id, {
+            conversation: seedConversation(seed),
+            visitorSecretHash: seed.visitorSecretHash,
+          })
+        ),
       findReturningCustomer: (query) =>
         Ref.get(rows).pipe(
           Effect.map((held) => newestReturningCustomer(held, query))
@@ -266,6 +290,34 @@ export const memoryChatConversations = (
             visitorSecretHash: entry.visitorSecretHash,
           });
         }),
+      touch: (change) =>
+        Ref.update(rows, (held) => {
+          const entry = held.get(change.id);
+
+          if (entry === undefined) {
+            return held;
+          }
+
+          return new Map(held).set(change.id, {
+            conversation: { ...entry.conversation, updatedAt: change.at },
+            visitorSecretHash: entry.visitorSecretHash,
+          });
+        }),
+      visitorOwnsSecret: (query) =>
+        Ref.get(rows).pipe(
+          Effect.map((held) => {
+            for (const entry of held.values()) {
+              if (
+                entry.conversation.visitorId === query.visitorId &&
+                entry.visitorSecretHash === query.secretHash
+              ) {
+                return true;
+              }
+            }
+
+            return false;
+          })
+        ),
     };
 
     return {

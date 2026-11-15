@@ -31,6 +31,8 @@ import { CustomerAlerts } from "../src/customer-alerts.js";
 import type {
   CustomerAlertOperations,
   HandoffAlert,
+  NewConversationAlert,
+  NewMessageAlert,
 } from "../src/customer-alerts.js";
 import { HandoffEmail } from "../src/handoff-email.js";
 import type {
@@ -187,12 +189,24 @@ export const chatMessageSeed = (seed: ChatMessageSeed): ChatMessage => {
 export const recordingChatAlerts = () =>
   Effect.gen(function* recordChatAlerts() {
     const seen = yield* Ref.make<readonly HandoffAlert[]>([]);
+    const conversations = yield* Ref.make<readonly NewConversationAlert[]>([]);
+    const messages = yield* Ref.make<readonly NewMessageAlert[]>([]);
 
     return {
       alerts: Ref.get(seen),
+      conversations: Ref.get(conversations),
+      messages: Ref.get(messages),
       operations: {
         handoffRequested: (alert: HandoffAlert) =>
           Ref.update(seen, (held) => [...held, alert]).pipe(Effect.as(true)),
+        newConversation: (alert: NewConversationAlert) =>
+          Ref.update(conversations, (held) => [...held, alert]).pipe(
+            Effect.as(alert.isEval ? false : true)
+          ),
+        newMessage: (alert: NewMessageAlert) =>
+          Ref.update(messages, (held) => [...held, alert]).pipe(
+            Effect.as(alert.isEval ? false : true)
+          ),
       } satisfies CustomerAlertOperations,
     };
   });

@@ -1,0 +1,6 @@
+data: {"type":"connected","conversationId":"conv-5","messageId":"msg-5"}
+
+data: {"type":"chunk","content":"Half an ","conversationId":"conv-5"}
+
+data: {"type":"error","error":"Sorry, something went wrong. Please try again.","conversationId":"conv-5","partial":true}
+
