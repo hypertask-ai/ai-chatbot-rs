@@ -250,6 +250,7 @@ export const stepConversation = (
     },
     value: state.status,
   });
+
   const [next] = transition(conversationMachine, snapshot, event);
   const { refusal } = next.context;
   const nextState = conversationState(next);

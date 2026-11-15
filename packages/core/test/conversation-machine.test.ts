@@ -276,7 +276,7 @@ const cases: TransitionCase[] = [
     name: "saving an email alone leaves the name empty",
   },
   {
-    event: { at: 100, account: "paid", type: "PROFILE_SAVED" },
+    event: { account: "paid", at: 100, type: "PROFILE_SAVED" },
     expected: state("bot", { ...emptyProfile, account: "paid" }, 100),
     from: state("bot", emptyProfile, 0),
     name: "saving an account alone changes only the account",

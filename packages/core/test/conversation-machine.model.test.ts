@@ -247,6 +247,7 @@ describe("conversation status model", () => {
           actual,
           eventFor(command, clock, scenario)
         );
+
         const next = modelStep(expected, command, clock, scenario);
 
         expect(Schema.is(ConversationStateSchema)(step.state)).toBe(true);
