@@ -9,6 +9,7 @@ import { inspectFileContract } from "./contracts.js";
 import { flagCapabilities } from "./flag-capabilities.js";
 import { health } from "./health.js";
 import { helpArticleCapabilities } from "./help-articles.js";
+import { helpRetrievalCapabilities } from "./help-retrieval.js";
 import { runInspectMachine } from "./inspect-machine.js";
 import { joinInterest } from "./join-interest.js";
 import { getPrompt, listPrompts } from "./prompts.js";
@@ -28,4 +29,5 @@ export const capabilities = [
   listCafeProjects,
   ...peopleCapabilities,
   ...helpArticleCapabilities,
+  ...helpRetrievalCapabilities,
 ] as const;
