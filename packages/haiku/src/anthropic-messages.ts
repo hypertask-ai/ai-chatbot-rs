@@ -66,9 +66,11 @@ export const answerModelLayer = Layer.effect(
           `[Chat] Anthropic error ${response.status} ${body.slice(0, 300)}`
         );
 
-        return yield* isRetryableAnthropicFailure(response.status, body)
+        const failure = isRetryableAnthropicFailure(response.status, body)
           ? retryableFailure(detail, response.status)
           : refusedFailure(detail, response.status);
+
+        return yield* Effect.fail(failure);
       }
 
       const read: AnswerStreamRead = yield* readAnthropicStream(
