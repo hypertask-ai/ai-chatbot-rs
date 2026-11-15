@@ -59,3 +59,42 @@ export {
   summarizeText,
   type FileStats,
 } from "./stats.js";
+
+export {
+  answerMachine,
+  answerOutcome,
+  runAnswer,
+  type AnswerOutcome,
+} from "./answer-machine.js";
+
+export {
+  addTokenUsage,
+  ANSWER_FAILURE_MESSAGE,
+  AnswerContentSchema,
+  AnswerImageBlockSchema,
+  AnswerMessageSchema,
+  AnswerModel,
+  AnswerRefused,
+  AnswerRequestSchema,
+  AnswerTextBlockSchema,
+  EMPTY_ANSWER_MESSAGE,
+  emptyUsage,
+  fallbackAnswer,
+  HAIKU_BUSY_MESSAGE,
+  HAIKU_MODEL,
+  HAIKU_RETRY,
+  HAIKU_RETRY_LIMIT,
+  HAIKU_RETRY_WAIT,
+  RetryableAnswerFailure,
+  settleAnswer,
+  TokenUsageSchema,
+  TRUNCATED_ANSWER_CLOSE,
+  type AnswerImageBlock,
+  type AnswerMessage,
+  type AnswerModelFailure,
+  type AnswerRequest,
+  type AnswerStreamRead,
+  type AnswerTextBlock,
+  type SettledAnswer,
+  type TokenUsage,
+} from "./answer-model.js";
