@@ -37,13 +37,16 @@ This is the template's package inventory. The workspace keeps the `@rat-stack/` 
   - Role: Shared contracts, handlers, and lifecycle machines kept for the help site
 - **`@rat-stack/database`**:
   - Path: `packages/database`
-  - Role: Database cartridge: the `RunLog` service and the `DatabaseVendor` choice (D1 or Hyperdrive Postgres), with each vendor's schema, migrations, and resources. Kept for the help site's chat and article data. Not wired into the Stack yet
+  - Role: Database cartridge: the `RunLog` service, the `HelpArticleStore` adapter, and the `DatabaseVendor` choice (D1 or Hyperdrive Postgres), with each vendor's schema, migrations, and resources. D1 holds the help site's `articles`, `conversations`, `messages`, and `chat_response_cache` tables. Kept for the help site's chat and article data. Not wired into the Stack yet
 - **`@rat-stack/flags`**:
   - Path: `packages/flags`
   - Role: Typed flags cartridge with the template's default Durable Object ledger (`src/cloudflare-ledger.ts`). Kept as the Durable Object example the live chat room follows. Not wired into the Stack yet
 - **`@rat-stack/haiku`**:
   - Path: `packages/haiku`
   - Role: Anthropic Messages adapter behind the `AnswerModel` port: one Haiku call over the Cloudflare AI Gateway and the stream reader for its answer. Takes `ANTHROPIC_API_KEY` through `AnthropicConfig`. Not wired into the Stack yet
+- **`@rat-stack/telegram`**:
+  - Path: `packages/telegram`
+  - Role: Help Desk bot adapter behind the `CustomerAlerts` port. Sends the new conversation, handoff request and new customer message alerts with the old text and the admin chat link, skips eval traffic before any request, and reads `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` through `TelegramConfig`. Not wired into the Stack yet
 - **`@rat-stack/web`**:
   - Path: `apps/web`
   - Role: Foldkit site on Vite, deployed through Alchemy's `Cloudflare.Website.Foldkit` as `Website` (`apps/web/src/website.ts`). One home shell until the help pages move. Include it with `const website = yield* Website;`

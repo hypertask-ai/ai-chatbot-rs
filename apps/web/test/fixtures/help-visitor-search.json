@@ -1,0 +1,970 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai/help inline article array, GET only, 2026-11-15",
+  "rule": "src/index.ts:794-828 performSearch",
+  "cards": [
+    {
+      "title": "AI Chat Board Filter",
+      "slug": "docs-features-chat-board-filter",
+      "excerpt": "Choose a ticket or board scope for docked AI Chat, and filter chat history by board.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "AI Features",
+      "slug": "docs-features-ai-features",
+      "excerpt": "AI-powered task creation, voice dictation, text enhancement, and an intelligent co-worker built into your workflow.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "AI Feedback from a Bot Account",
+      "slug": "docs-features-ai-feedback-from-bot",
+      "excerpt": "Read reports and notifications from an AI Feedback bot account for events like failedlogin logins.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Smart Labels",
+      "slug": "docs-features-smart-labels",
+      "excerpt": "Labels with an AI prompt that automatically stay assigned to matching tasks — soft, prompt-defined views.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "AI Agents",
+      "slug": "docs-features-agents",
+      "excerpt": "Create, configure, and manage autonomous agents in Hypertask with MCP, webhooks, and scheduled vs ad-hoc workflows.",
+      "category": "Agents"
+    },
+    {
+      "title": "Agent Chat",
+      "slug": "docs-features-agent-chat",
+      "excerpt": "Talk to agents on your phone or work with your board's agents in a shared room.",
+      "category": "Agents"
+    },
+    {
+      "title": "Agent SDK",
+      "slug": "docs-mcp-agent-sdk",
+      "excerpt": "Build custom agents with the Hypertask Agent SDK, inspired by Linear and Plane's patterns.",
+      "category": "Agents"
+    },
+    {
+      "title": "Agent Workflows",
+      "slug": "docs-mcp-workflows",
+      "excerpt": "Patterns for AI agents working with Hypertask tasks.",
+      "category": "Agents"
+    },
+    {
+      "title": "Agent webhooks",
+      "slug": "docs-mcp-agent-webhooks",
+      "excerpt": "Understand what wakes an agent, what Hypertask sends, how to verify it, and how to work without a public URL.",
+      "category": "Agents"
+    },
+    {
+      "title": "Agents Dashboard",
+      "slug": "docs-features-agents-dashboard",
+      "excerpt": "View all your agents from a central dashboard, with detail pages for each agent, board-scoped view, and status toggles at a glance.",
+      "category": "Agents"
+    },
+    {
+      "title": "CLI Commands",
+      "slug": "docs-cli-commands",
+      "excerpt": "Every command exposed by the released Hypertask CLI, generated from its help.",
+      "category": "Agents"
+    },
+    {
+      "title": "CLI Reference",
+      "slug": "docs-cli-reference",
+      "excerpt": "Complete reference for the Hypertask CLI to manage tasks, projects, comments, and notifications from your terminal.",
+      "category": "Agents"
+    },
+    {
+      "title": "CLI Task Assignment",
+      "slug": "docs-cli-tasks-assign",
+      "excerpt": "Use hypertask tasks assign to assign tasks to agents or users.",
+      "category": "Agents"
+    },
+    {
+      "title": "Connect a new agent",
+      "slug": "docs-connect-an-agent",
+      "excerpt": "Create a Hypertask agent, copy its token, give it board access and connect it with the CLI or MCP.",
+      "category": "Agents"
+    },
+    {
+      "title": "Creating Agents",
+      "slug": "docs-mcp-agents",
+      "excerpt": "Create and manage autonomous AI agents in Hypertask, connect them via MCP, and assign them tasks on your board.",
+      "category": "Agents"
+    },
+    {
+      "title": "MCP Integration",
+      "slug": "docs-mcp-overview",
+      "excerpt": "Connect AI agents to Hypertask via the Model Context Protocol.",
+      "category": "Agents"
+    },
+    {
+      "title": "MCP Tools Reference",
+      "slug": "docs-api-tools-reference",
+      "excerpt": "Every tool the Hypertask MCP server exposes, with its parameters.",
+      "category": "Agents"
+    },
+    {
+      "title": "MCP troubleshooting",
+      "slug": "docs-mcp-troubleshooting",
+      "excerpt": "Fix an expired API key, an expired MCP token, or a connection that stops on Approve and connect.",
+      "category": "Agents"
+    },
+    {
+      "title": "REST API",
+      "slug": "docs-api-rest-api",
+      "excerpt": "Complete reference for Hypertask's public REST API endpoints.",
+      "category": "Agents"
+    },
+    {
+      "title": "Scheduling Agents",
+      "slug": "docs-mcp-scheduling",
+      "excerpt": "Run Hypertask agents on a schedule using any external scheduler â\\x80\\x94 GitHub Actions, crontab, Cloudflare Workers, or Vercel cron.",
+      "category": "Agents"
+    },
+    {
+      "title": "Board & Subtask Visibility",
+      "slug": "docs-features-board-visibility",
+      "excerpt": "Configure which tasks and subtasks are visible to users across boards, saved views, tables, and AI Chat.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Board Settings",
+      "slug": "docs-features-board-settings",
+      "excerpt": "Manage planning, notifications, auto-archive, staleness detection, time tracking, and per-column auto-assign rules.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Boards & Sections",
+      "slug": "docs-features-boards",
+      "excerpt": "Organize work with Kanban-style boards, customizable sections, and multiple views.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Calendar",
+      "slug": "docs-features-calendar",
+      "excerpt": "Day, week, and month views, keyboard navigation, and shareable calendar links.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Custom Fields",
+      "slug": "docs-features-custom-fields",
+      "excerpt": "Add per-board fields like Number, Text, Select, Date, and Checkbox to tasks, sort by them in table view, and manage them from agents via the API.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Favorites",
+      "slug": "docs-features-favorites",
+      "excerpt": "Pin important boards to your favorites bar and drag to reorder them.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Images and Attachments",
+      "slug": "docs-features-images",
+      "excerpt": "Send HEIC/HEIF photos, view them everywhere (thumbnails, inline, galleries, lightboxes), force or exempt from preview, and resize images on pages.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Inbox & Notifications",
+      "slug": "docs-features-inbox",
+      "excerpt": "Manage your incoming notifications, Snooze, and Important section.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Pages",
+      "slug": "docs-features-pages",
+      "excerpt": "Create board documents, link tickets, and find pages.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Reports",
+      "slug": "docs-features-reports",
+      "excerpt": "Review board velocity and manage saved reports created by AI, CLI, or MCP.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Scheduling",
+      "slug": "docs-features-scheduling",
+      "excerpt": "Start dates, repeating tasks, task templates, and the My tasks planning view.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Search",
+      "slug": "docs-features-search",
+      "excerpt": "Search across tasks with operator autocomplete, filter suggestions, and a rich tips panel.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Search Screen",
+      "slug": "docs-features-search-screen",
+      "excerpt": "Superhuman-style aligned search result list with tips, grey value completions, and keyboard shortcuts. Owner+QA preview.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Table View",
+      "slug": "docs-features-table-view",
+      "excerpt": "Work with tasks in a responsive, adaptive Kanban-style table layout that matches Notion and Linear.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Tasks",
+      "slug": "docs-features-tasks",
+      "excerpt": "Create, assign, and manage tasks with rich fields, priorities, relations, and subtasks.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Time Tracking",
+      "slug": "docs-features-time-tracking",
+      "excerpt": "Track time on tasks with W, log time manually from the command palette, review reports, and export CSV.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Changelog",
+      "slug": "docs-changelog-index",
+      "excerpt": "Shipped improvements to Hypertask.",
+      "category": "Changelog"
+    },
+    {
+      "title": "Billing & Seat Management",
+      "slug": "docs-features-billing",
+      "excerpt": "Add and manage seat licenses, view cost forecasts, and test billing flows safely.",
+      "category": "Collaboration & billing"
+    },
+    {
+      "title": "Bring Your Own Key (BYOK)",
+      "slug": "docs-features-byok",
+      "excerpt": "Add and manage your own API keys and providers directly in Hypertask.",
+      "category": "Collaboration & billing"
+    },
+    {
+      "title": "Collaboration",
+      "slug": "docs-features-collaboration",
+      "excerpt": "Share a board with Admins and Members. There is no Viewer role. Invite a client to one board, and see who manages billing.",
+      "category": "Collaboration & billing"
+    },
+    {
+      "title": "Integrations",
+      "slug": "docs-features-integrations",
+      "excerpt": "What Hypertask connects to today, including Cursor and Codex, and what is not available yet.",
+      "category": "Collaboration & billing"
+    },
+    {
+      "title": "Slack",
+      "slug": "docs-features-slack",
+      "excerpt": "The Slack app is not available yet.",
+      "category": "Collaboration & billing"
+    },
+    {
+      "title": "Skills",
+      "slug": "docs-features-skills",
+      "excerpt": "Create, manage, and import skills to organize your team's expertise and filter by them in queries and saved views.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Superhuman-Style Snippets",
+      "slug": "docs-features-superhuman-snippets",
+      "excerpt": "Use keyboard shortcuts to insert predefined text and create new content instantly.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "What AI chat can do",
+      "slug": "docs-features-ai-chat-capabilities",
+      "excerpt": "Compare built-in chat, connected agents, and the CLI, including permissions and limits.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Core Concepts",
+      "slug": "docs-getting-started-concepts",
+      "excerpt": "Reference for all key concepts in Hypertask.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Get help",
+      "slug": "docs-getting-started-contact-support",
+      "excerpt": "How to contact support. Start with the AI help chat, which can hand off to the team in the same chat.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Mobile and desktop apps",
+      "slug": "docs-getting-started-apps",
+      "excerpt": "How to use Hypertask on Android and iPhone, and what to use on Windows and Mac.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Profile & Settings",
+      "slug": "docs-getting-started-settings-profile",
+      "excerpt": "Manage your identity, appearance, and preferences in Hypertask.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Quick Start",
+      "slug": "docs-getting-started-quickstart",
+      "excerpt": "Get up and running with Hypertask in under 5 minutes.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Security and privacy",
+      "slug": "docs-getting-started-security-and-privacy",
+      "excerpt": "Sign-in methods, session length, account deletion, and where to read the privacy policy.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Switching from Trello, Jira, or Asana",
+      "slug": "docs-getting-started-switching",
+      "excerpt": "Switching from Trello, Jira, Asana, or Linear. Hypertask has no task import. Create tasks with an agent over MCP or the CLI.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Troubleshooting Login",
+      "slug": "docs-getting-started-troubleshooting-login",
+      "excerpt": "Common issues and solutions for signing in, resetting passwords, and resolving authentication errors in Hypertask.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "What is Hypertask?",
+      "slug": "docs-getting-started-introduction",
+      "excerpt": "AI-native project management for teams and AI agents — manage tasks, collaborate in real-time, and connect AI agents with MCP, CLI, and REST APIs.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Keyboard Shortcuts",
+      "slug": "docs-features-keyboard-shortcuts",
+      "excerpt": "Complete keyboard shortcut reference for Windows, Linux, and Mac.",
+      "category": "Keyboard Shortcuts"
+    },
+    {
+      "title": "Appearance & AI Models",
+      "slug": "docs-features-appearance",
+      "excerpt": "Customize themes, icons, fonts, and select AI models for Hypertask.",
+      "category": "Settings & Preferences"
+    },
+    {
+      "title": "How to Create Tasks in Hypertask",
+      "slug": "how-to-create-tasks-in-hypertasks",
+      "excerpt": "Creating tasks is fundamental to managing your projects in Hypertask. This guide will walk you through various methods of adding new tasks to your Kanban board efficiently.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "How to Create a Kanban Board in Hypertask",
+      "slug": "how-to-create-a-kanban-board-in-hypertasks",
+      "excerpt": "Creating a new Kanban board in Hypertask is quick and easy. Follow these simple steps to set up your board and start managing your tasks efficiently.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "How to Receive Notifications from Hypertask",
+      "slug": "how-to-receive-notifications-from-hypertasks",
+      "excerpt": "Hypertask offers two types of notifications to keep you updated on your projects: email notifications and browser-based push notifications. Here's how to set them up.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Hypertask pricing, free trial and Free plan limits",
+      "slug": "pricing-plans",
+      "excerpt": "Free is $0 forever, with unlimited members, unlimited open tickets and up to 3 owned boards. Paid plans per user per month: BYOK $10 monthly or $8 billed yearly, Pro $20 monthly or $16 billed yearly. Paid plans come with a 14-day trial. Upgrade in Settings > Plans.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Troubleshooting Email Login (Magic Link)",
+      "slug": "troubleshooting-email-login-magic-link",
+      "excerpt": "Having trouble logging in with email? Learn how Hypertask magic link login works and troubleshoot common issues like missing emails and corporate filters.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Using the Hypertask Command Center (HTC)",
+      "slug": "using-the-hypertasks-command-center-htc",
+      "excerpt": "The Hypertask Command Center (HTC) is a powerful tool that allows you to quickly access features and perform actions within Hypertask using natural language commands.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Video Tutorial: A Guide to Keyboard-Driven Productivity",
+      "slug": "video-tutorial-a-guide-to-keyboard-driven-productivity",
+      "excerpt": "Hypertask speeds up project management with its lightning-fast, keyboard-optimized interface. This guide will walk you through the essential shortcuts that will supercharge your productivity and help you achieve a state of flow in your task management.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience",
+      "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+      "excerpt": "Hypertasks recommends installing and using our app as a Progressive Web App (PWA) instead of accessing it through a regular website. This guide explains the benefits of the PWA approach and walks you through the installation process.",
+      "category": "Getting Started"
+    },
+    {
+      "title": "Managing and Creating Columns in Hypertask",
+      "slug": "managing-and-creating-columns-in-hypertasks",
+      "excerpt": "Effectively managing columns in your Kanban board is crucial for maintaining an organized workflow. This guide will show you how to add, rename, reorder, and delete columns in Hypertask.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Quick Board Switching with the Hypertask Sidebar",
+      "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+      "excerpt": "The Board Sidebar in Hypertask allows for rapid switching between your boards. This guide explains how to use this feature effectively.",
+      "category": "Boards & tickets"
+    },
+    {
+      "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask",
+      "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+      "excerpt": "Learn how to use Hypertask Inbox bulk actions for handling many notification items at once. This allows you to mass archive and mass defer.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)",
+      "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+      "excerpt": "The comment collapse setting in the sidebar controls the default visibility of comment threads in tasks.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Creating Tasks from Comments in Hypertask",
+      "slug": "creating-tasks-from-comments-in-hypertasks",
+      "excerpt": "Convert any comment into a new task quickly using Hypertask's comment-to-task feature. This helps you capture action items and follow-ups directly from discussions.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Drag & Drop File Attachments",
+      "slug": "drag-drop-file-attachments",
+      "excerpt": "Quick overview of the drag-and-drop functionality—what it does, why it's useful, and how to use it.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Filter Tasks by Star Status",
+      "slug": "filter-tasks-by-star-status",
+      "excerpt": "Learn how to filter and view your starred tasks in Hypertask using keyboard shortcuts or mouse clicks.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "How to Duplicate Tasks in Hypertask",
+      "slug": "how-to-duplicate-tasks-in-hypertasks",
+      "excerpt": "Quickly duplicate tasks in Hypertask using the Hypertask Command Center (HTC).",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "How to Edit Comments in Hypertask",
+      "slug": "how-to-edit-comments-in-hypertasks",
+      "excerpt": "Hypertask allows you to easily edit your comments using both keyboard shortcuts and mouse clicks. This guide will walk you through both methods.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "How to Filter Tasks in Hypertask: Mastering Shift+F",
+      "slug": "how-to-filter-tasks-in-hypertasks-mastering-shiftf",
+      "excerpt": "Hypertask offers a powerful filtering system to help you manage your tasks more effectively.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "How to Sort Tasks in Hypertask: Using Shift+S",
+      "slug": "how-to-sort-tasks-in-hypertasks-using-shifts",
+      "excerpt": "This guide will walk you through the process of sorting your tasks in Hypertask using the Shift+S shortcut to access the Hypertask Command Center (HTC).",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "How to Star Tasks and Comments in Hypertask",
+      "slug": "how-to-star-tasks-and-comments-in-hypertasks",
+      "excerpt": "Learn how to star tasks and comments, and quickly access them using keyboard shortcuts or mouse options.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "How to Use Text Block Dragging in Hypertask",
+      "slug": "how-to-use-text-block-dragging-in-hypertasks",
+      "excerpt": "Hypertask now lets you easily reorganize your content with text block dragging. This feature allows you to quickly reorder paragraphs, lists, and other content blocks within task descriptions and comments.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Moving Tasks Between Boards in Hypertask",
+      "slug": "moving-tasks-between-boards-in-hypertasks",
+      "excerpt": "Hypertask offers multiple ways to move tasks between boards. This guide covers all available methods and their best use cases.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Navigation and Editing Mode in Hypertask Task Detail Page",
+      "slug": "navigation-and-editing-mode-in-hypertasks-task-detail-page",
+      "excerpt": "When working with tasks in Hypertask, understanding the difference between navigation mode and editing mode on the task detail page is crucial for efficient task management. This guide will explain both modes and how to use them effectively.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Public and Private Task Sharing in Hypertask",
+      "slug": "public-and-private-task-sharing-in-hypertasks",
+      "excerpt": "Hypertask offers multiple ways to share tasks with team members and external collaborators. This guide explains all available sharing options and shortcuts.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Quick Like: Add Reactions Faster with 'L'",
+      "slug": "quick-like-add-reactions-faster-with-l",
+      "excerpt": "Add thumbs-up reactions instantly to the last comment in a task by pressing L in the task detail view.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Replying to and Quoting Comments in Hypertask",
+      "slug": "replying-to-and-quoting-comments-in-hypertasks",
+      "excerpt": "Hypertask offers efficient ways to reply to comments and quote specific parts of messages, enhancing communication within your tasks. This guide covers how to use these features effectively.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Sort Tasks by Last Updated Status",
+      "slug": "sort-tasks-by-last-updated-status",
+      "excerpt": "Quick overview of sorting tasks by last updated status—what it does, why it's useful, and how to use it.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Using Board Search in Hypertask (Ctrl+F)",
+      "slug": "using-board-search-in-hypertasks-ctrlf",
+      "excerpt": "Board Search allows you to quickly find tasks within your current Kanban board view using familiar keyboard shortcuts.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Using Project Board Views in Hypertask",
+      "slug": "using-project-board-views-in-hypertasks",
+      "excerpt": "Project Board Views allow you to save and quickly switch between different board layouts, filters, and settings. This feature helps you maintain multiple perspectives of your project without needing to manually adjust filters each time.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "Using the Forward Slash Menu in Task Descriptions and Comments",
+      "slug": "using-the-forward-slash-menu-in-task-descriptions-and-comments",
+      "excerpt": "The forward slash menu in Hypertask provides quick access to formatting options and AI-powered assistance while editing task descriptions or comments on the task detail page.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "View All Tasks (G then A) in Hypertask",
+      "slug": "view-all-tasks-g-then-a-in-hypertasks",
+      "excerpt": "We've released a first version of the 'View All Tasks' view, which provides instant access to your recently modified tasks, making it easy to return to work in progress or recently completed items.",
+      "category": "Features & How-To"
+    },
+    {
+      "title": "AI Improve Readability: Turn Any Text into Scannable Web Content",
+      "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+      "excerpt": "Your writing becomes concise, scannable, and objective - increasing comprehension by up to 124%.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Embedding Figma Files in Hypertask",
+      "slug": "embedding-figma-files-in-hypertasks",
+      "excerpt": "Hypertask now supports seamless embedding of Figma files in task descriptions and comments, enhancing visual collaboration within your projects.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "How to Reach Inbox Zero with Hypertask",
+      "slug": "how-to-reach-inbox-zero-with-hypertasks",
+      "excerpt": "Reach Inbox Zero in Hypertask with keyboard shortcuts: jump to your inbox with G then I, move with J and K, and clear items fast.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)",
+      "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+      "excerpt": "Hypertask's AI-powered auto summary feature provides quick, intelligent overviews of tasks and discussions. This guide will explain how to use and benefit from this productivity-enhancing tool.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Using Auto-Splits in Hypertask",
+      "slug": "using-auto-splits-in-hypertasks",
+      "excerpt": "Auto-Splits is a feature in Hypertask that automatically organizes your inbox messages into different categories. This guide will explain what Auto-Splits are, how they work, and how to use them effectively.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Using the AI Chat to Manage Your Board and Inbox",
+      "slug": "using-the-ai-chat-to-manage-your-board-and-inbox",
+      "excerpt": "Open the AI Chat with Ctrl+Shift+? to manage tasks, triage your inbox, add comments, and get board summaries — all through natural language.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Using the AI Task Writer in Hypertask (Ctrl+J / Cmd+J)",
+      "slug": "using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj",
+      "excerpt": "The AI Task Writer is a powerful feature in Hypertask that enhances productivity by assisting with AI-powered task creation and organization within your Kanban boar",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Voice Dictation Meets AI: Speak Your Way to Perfect Comments",
+      "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+      "excerpt": "Learn how to use Hypertask's voice dictation features to create perfect comments using speech-to-text and AI optimization.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Voice Transcription: Dictate Comments and Descriptions with Whisper v2",
+      "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+      "excerpt": "Learn how to use Hypertask's voice transcription feature powered by Whisper v2 for dictating comments and descriptions.",
+      "category": "AI & Productivity"
+    },
+    {
+      "title": "Web Search: Now Available in Task Writer & Write with AI",
+      "slug": "web-search-now-available-in-task-writer-write-with-ai",
+      "excerpt": "We've enhanced Hypertask with powerful web search capabilities!",
+      "category": "AI & Productivity"
+    }
+  ],
+  "queries": [
+    {
+      "query": "board",
+      "shown": "results",
+      "slugs": [
+        "docs-features-chat-board-filter",
+        "docs-features-agent-chat",
+        "docs-features-agents-dashboard",
+        "docs-connect-an-agent",
+        "docs-mcp-agents",
+        "docs-features-board-visibility",
+        "docs-features-board-settings",
+        "docs-features-boards",
+        "docs-features-calendar",
+        "docs-features-custom-fields",
+        "docs-features-favorites",
+        "docs-features-pages",
+        "docs-features-reports",
+        "docs-features-search-screen",
+        "docs-features-collaboration",
+        "docs-features-superhuman-snippets",
+        "docs-features-keyboard-shortcuts",
+        "how-to-create-tasks-in-hypertasks",
+        "how-to-create-a-kanban-board-in-hypertasks",
+        "pricing-plans",
+        "video-tutorial-a-guide-to-keyboard-driven-productivity",
+        "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+        "managing-and-creating-columns-in-hypertasks",
+        "quick-board-switching-with-the-hypertasks-sidebar",
+        "filter-tasks-by-star-status",
+        "how-to-edit-comments-in-hypertasks",
+        "how-to-star-tasks-and-comments-in-hypertasks",
+        "moving-tasks-between-boards-in-hypertasks",
+        "using-board-search-in-hypertasks-ctrlf",
+        "using-project-board-views-in-hypertasks",
+        "how-to-reach-inbox-zero-with-hypertasks",
+        "using-the-ai-chat-to-manage-your-board-and-inbox"
+      ]
+    },
+    {
+      "query": "BOARD",
+      "shown": "results",
+      "slugs": [
+        "docs-features-chat-board-filter",
+        "docs-features-agent-chat",
+        "docs-features-agents-dashboard",
+        "docs-connect-an-agent",
+        "docs-mcp-agents",
+        "docs-features-board-visibility",
+        "docs-features-board-settings",
+        "docs-features-boards",
+        "docs-features-calendar",
+        "docs-features-custom-fields",
+        "docs-features-favorites",
+        "docs-features-pages",
+        "docs-features-reports",
+        "docs-features-search-screen",
+        "docs-features-collaboration",
+        "docs-features-superhuman-snippets",
+        "docs-features-keyboard-shortcuts",
+        "how-to-create-tasks-in-hypertasks",
+        "how-to-create-a-kanban-board-in-hypertasks",
+        "pricing-plans",
+        "video-tutorial-a-guide-to-keyboard-driven-productivity",
+        "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+        "managing-and-creating-columns-in-hypertasks",
+        "quick-board-switching-with-the-hypertasks-sidebar",
+        "filter-tasks-by-star-status",
+        "how-to-edit-comments-in-hypertasks",
+        "how-to-star-tasks-and-comments-in-hypertasks",
+        "moving-tasks-between-boards-in-hypertasks",
+        "using-board-search-in-hypertasks-ctrlf",
+        "using-project-board-views-in-hypertasks",
+        "how-to-reach-inbox-zero-with-hypertasks",
+        "using-the-ai-chat-to-manage-your-board-and-inbox"
+      ]
+    },
+    {
+      "query": "Board",
+      "shown": "results",
+      "slugs": [
+        "docs-features-chat-board-filter",
+        "docs-features-agent-chat",
+        "docs-features-agents-dashboard",
+        "docs-connect-an-agent",
+        "docs-mcp-agents",
+        "docs-features-board-visibility",
+        "docs-features-board-settings",
+        "docs-features-boards",
+        "docs-features-calendar",
+        "docs-features-custom-fields",
+        "docs-features-favorites",
+        "docs-features-pages",
+        "docs-features-reports",
+        "docs-features-search-screen",
+        "docs-features-collaboration",
+        "docs-features-superhuman-snippets",
+        "docs-features-keyboard-shortcuts",
+        "how-to-create-tasks-in-hypertasks",
+        "how-to-create-a-kanban-board-in-hypertasks",
+        "pricing-plans",
+        "video-tutorial-a-guide-to-keyboard-driven-productivity",
+        "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+        "managing-and-creating-columns-in-hypertasks",
+        "quick-board-switching-with-the-hypertasks-sidebar",
+        "filter-tasks-by-star-status",
+        "how-to-edit-comments-in-hypertasks",
+        "how-to-star-tasks-and-comments-in-hypertasks",
+        "moving-tasks-between-boards-in-hypertasks",
+        "using-board-search-in-hypertasks-ctrlf",
+        "using-project-board-views-in-hypertasks",
+        "how-to-reach-inbox-zero-with-hypertasks",
+        "using-the-ai-chat-to-manage-your-board-and-inbox"
+      ]
+    },
+    {
+      "query": "Time Tracking",
+      "shown": "results",
+      "slugs": ["docs-features-board-settings", "docs-features-time-tracking"]
+    },
+    {
+      "query": "time tracking",
+      "shown": "results",
+      "slugs": ["docs-features-board-settings", "docs-features-time-tracking"]
+    },
+    {
+      "query": "track",
+      "shown": "results",
+      "slugs": ["docs-features-board-settings", "docs-features-time-tracking"]
+    },
+    {
+      "query": "tracking time",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "pricng",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "freeplan",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "tiem trackng",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "slak",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "café",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "cafe",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "pricing-plans?",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "what's a board?",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "a",
+      "shown": "results",
+      "slugs": [
+        "docs-features-chat-board-filter",
+        "docs-features-ai-features",
+        "docs-features-ai-feedback-from-bot",
+        "docs-features-smart-labels",
+        "docs-features-agents",
+        "docs-features-agent-chat",
+        "docs-mcp-agent-sdk",
+        "docs-mcp-workflows",
+        "docs-mcp-agent-webhooks",
+        "docs-features-agents-dashboard",
+        "docs-cli-commands",
+        "docs-cli-reference",
+        "docs-cli-tasks-assign",
+        "docs-connect-an-agent",
+        "docs-mcp-agents",
+        "docs-mcp-overview",
+        "docs-api-tools-reference",
+        "docs-mcp-troubleshooting",
+        "docs-api-rest-api",
+        "docs-mcp-scheduling",
+        "docs-features-board-visibility",
+        "docs-features-board-settings",
+        "docs-features-boards",
+        "docs-features-calendar",
+        "docs-features-custom-fields",
+        "docs-features-favorites",
+        "docs-features-images",
+        "docs-features-inbox",
+        "docs-features-pages",
+        "docs-features-reports",
+        "docs-features-scheduling",
+        "docs-features-search",
+        "docs-features-search-screen",
+        "docs-features-table-view",
+        "docs-features-tasks",
+        "docs-features-time-tracking",
+        "docs-changelog-index",
+        "docs-features-billing",
+        "docs-features-byok",
+        "docs-features-collaboration",
+        "docs-features-integrations",
+        "docs-features-slack",
+        "docs-features-skills",
+        "docs-features-superhuman-snippets",
+        "docs-features-ai-chat-capabilities",
+        "docs-getting-started-concepts",
+        "docs-getting-started-contact-support",
+        "docs-getting-started-apps",
+        "docs-getting-started-settings-profile",
+        "docs-getting-started-quickstart",
+        "docs-getting-started-security-and-privacy",
+        "docs-getting-started-switching",
+        "docs-getting-started-troubleshooting-login",
+        "docs-getting-started-introduction",
+        "docs-features-keyboard-shortcuts",
+        "docs-features-appearance",
+        "how-to-create-tasks-in-hypertasks",
+        "how-to-create-a-kanban-board-in-hypertasks",
+        "how-to-receive-notifications-from-hypertasks",
+        "pricing-plans",
+        "troubleshooting-email-login-magic-link",
+        "using-the-hypertasks-command-center-htc",
+        "video-tutorial-a-guide-to-keyboard-driven-productivity",
+        "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+        "managing-and-creating-columns-in-hypertasks",
+        "quick-board-switching-with-the-hypertasks-sidebar",
+        "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+        "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+        "creating-tasks-from-comments-in-hypertasks",
+        "drag-drop-file-attachments",
+        "filter-tasks-by-star-status",
+        "how-to-duplicate-tasks-in-hypertasks",
+        "how-to-edit-comments-in-hypertasks",
+        "how-to-filter-tasks-in-hypertasks-mastering-shiftf",
+        "how-to-sort-tasks-in-hypertasks-using-shifts",
+        "how-to-star-tasks-and-comments-in-hypertasks",
+        "how-to-use-text-block-dragging-in-hypertasks",
+        "moving-tasks-between-boards-in-hypertasks",
+        "navigation-and-editing-mode-in-hypertasks-task-detail-page",
+        "public-and-private-task-sharing-in-hypertasks",
+        "quick-like-add-reactions-faster-with-l",
+        "replying-to-and-quoting-comments-in-hypertasks",
+        "sort-tasks-by-last-updated-status",
+        "using-board-search-in-hypertasks-ctrlf",
+        "using-project-board-views-in-hypertasks",
+        "using-the-forward-slash-menu-in-task-descriptions-and-comments",
+        "view-all-tasks-g-then-a-in-hypertasks",
+        "ai-improve-readability-turn-any-text-into-scannable-web-content",
+        "embedding-figma-files-in-hypertasks",
+        "how-to-reach-inbox-zero-with-hypertasks",
+        "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+        "using-auto-splits-in-hypertasks",
+        "using-the-ai-chat-to-manage-your-board-and-inbox",
+        "using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj",
+        "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+        "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+        "web-search-now-available-in-task-writer-write-with-ai"
+      ]
+    },
+    {
+      "query": "zzzqx",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "connect claude",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "invite a teammate",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "change my plan",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "Custom Fields",
+      "shown": "results",
+      "slugs": ["docs-features-custom-fields"]
+    },
+    {
+      "query": "custom fields",
+      "shown": "results",
+      "slugs": ["docs-features-custom-fields"]
+    },
+    {
+      "query": "  Board  ",
+      "shown": "results",
+      "slugs": [
+        "docs-features-chat-board-filter",
+        "docs-features-agent-chat",
+        "docs-features-agents-dashboard",
+        "docs-connect-an-agent",
+        "docs-mcp-agents",
+        "docs-features-board-visibility",
+        "docs-features-board-settings",
+        "docs-features-boards",
+        "docs-features-calendar",
+        "docs-features-custom-fields",
+        "docs-features-favorites",
+        "docs-features-pages",
+        "docs-features-reports",
+        "docs-features-search-screen",
+        "docs-features-collaboration",
+        "docs-features-superhuman-snippets",
+        "docs-features-keyboard-shortcuts",
+        "how-to-create-tasks-in-hypertasks",
+        "how-to-create-a-kanban-board-in-hypertasks",
+        "pricing-plans",
+        "video-tutorial-a-guide-to-keyboard-driven-productivity",
+        "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+        "managing-and-creating-columns-in-hypertasks",
+        "quick-board-switching-with-the-hypertasks-sidebar",
+        "filter-tasks-by-star-status",
+        "how-to-edit-comments-in-hypertasks",
+        "how-to-star-tasks-and-comments-in-hypertasks",
+        "moving-tasks-between-boards-in-hypertasks",
+        "using-board-search-in-hypertasks-ctrlf",
+        "using-project-board-views-in-hypertasks",
+        "how-to-reach-inbox-zero-with-hypertasks",
+        "using-the-ai-chat-to-manage-your-board-and-inbox"
+      ]
+    },
+    {
+      "query": "webhoook",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "keyboard shortcuts",
+      "shown": "results",
+      "slugs": [
+        "docs-features-search-screen",
+        "docs-features-superhuman-snippets",
+        "docs-features-keyboard-shortcuts",
+        "filter-tasks-by-star-status",
+        "how-to-edit-comments-in-hypertasks",
+        "how-to-star-tasks-and-comments-in-hypertasks",
+        "using-board-search-in-hypertasks-ctrlf",
+        "how-to-reach-inbox-zero-with-hypertasks"
+      ]
+    },
+    {
+      "query": "résumé",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "how do i connect my coding agent to a board and get it to pick up tickets automatically without asking me every time please explain the whole setup step by step including the settings i need",
+      "shown": "no-results",
+      "slugs": []
+    },
+    {
+      "query": "",
+      "shown": "categories",
+      "slugs": []
+    }
+  ]
+}
