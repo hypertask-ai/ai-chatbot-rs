@@ -31,7 +31,7 @@ import {
   conversationStep,
   stepConversation,
 } from "./conversation-machine.js";
-import { CustomerAlerts } from "./customer-alerts.js";
+import { CustomerAlerts, raiseCustomerAlert } from "./customer-alerts.js";
 import { HandoffEmail } from "./handoff-email.js";
 import type { HandoffEmailMessage } from "./handoff-email.js";
 
@@ -124,12 +124,14 @@ export const requestHandoff = implement(requestHandoffContract, (input) =>
       },
     ]);
 
-    yield* alerts.handoffRequested({
-      conversationId,
-      isEval: conversation.isEval,
-      visitorEmail: conversation.email ?? null,
-      visitorName: conversation.name ?? null,
-    });
+    yield* raiseCustomerAlert(
+      alerts.handoffRequested({
+        conversationId,
+        isEval: conversation.isEval,
+        visitorEmail: conversation.email ?? null,
+        visitorName: conversation.name ?? null,
+      })
+    );
 
     const answer: HandoffAnswer = { status: "handoff_requested" };
 
@@ -222,12 +224,14 @@ export const leaveHandoffEmail = implement(leaveHandoffEmailContract, (input) =>
       },
     ]);
 
-    yield* alerts.handoffRequested({
-      conversationId,
-      isEval: conversation.isEval,
-      visitorEmail: normalizedEmail,
-      visitorName: conversation.name ?? null,
-    });
+    yield* raiseCustomerAlert(
+      alerts.handoffRequested({
+        conversationId,
+        isEval: conversation.isEval,
+        visitorEmail: normalizedEmail,
+        visitorName: conversation.name ?? null,
+      })
+    );
 
     const transcript = yield* messages.list(conversationId);
 

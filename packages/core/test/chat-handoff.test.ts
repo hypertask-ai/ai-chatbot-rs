@@ -7,12 +7,14 @@ import type {
 } from "../src/chat-conversation-store.js";
 import { memoryChatConversations } from "../src/chat-conversation-store.js";
 import { memoryChatMessages } from "../src/chat-message-store.js";
+import { customerAlertText } from "../src/customer-alert-text.js";
 import {
   CHAT_SECOND,
   chatConversationRow,
   chatConversationSeed,
   chatMessageSeed,
   chatStack,
+  failingChatAlerts,
   postChat,
   recordingChatAlerts,
   recordingTeamEmail,
@@ -849,5 +851,71 @@ it.effect("answers 404 when the store loses the conversation", () =>
       body: { error: "Conversation not found" },
       status: 404,
     });
+  }).pipe(Effect.scoped)
+);
+
+it.effect("carries the chat the team opens in the alert", () =>
+  Effect.gen(function* runScenario() {
+    const stack = yield* chatStack([
+      chatConversationSeed({ email: "ada@example.com", id: "c1", name: "Ada" }),
+    ]);
+
+    yield* postChat(stack.handler, {
+      body: { conversationId: "c1" },
+      path: HANDOFF_PATH,
+    });
+
+    const alerts = yield* stack.alerts.alerts;
+
+    expect(
+      alerts.map((alert) =>
+        customerAlertText({ alert, type: "handoff_requested" })
+      )
+    ).toEqual([
+      '<b>Handoff Requested</b>\n\nCustomer: Ada\nEmail: ada@example.com\n\n<a href="https://help.hypertask.ai/admin#conv=c1">Accept Handoff</a>',
+    ]);
+  }).pipe(Effect.scoped)
+);
+
+it.effect("answers the handoff when the alert sender fails", () =>
+  Effect.gen(function* runScenario() {
+    const conversations = yield* memoryChatConversations([
+      chatConversationSeed({ email: "ada@example.com", id: "c1", name: "Ada" }),
+    ]);
+
+    const transcript = yield* memoryChatMessages();
+    const teamEmail = yield* recordingTeamEmail(true);
+
+    const handler = yield* serveChat(
+      conversations.operations,
+      transcript.operations,
+      failingChatAlerts(),
+      teamEmail.operations
+    );
+
+    const answer = yield* postChat(handler, {
+      body: { conversationId: "c1" },
+      path: HANDOFF_PATH,
+    });
+
+    expect(answer).toEqual({
+      body: { status: "handoff_requested" },
+      status: 200,
+    });
+    expect(written(yield* transcript.messages)).toEqual([
+      [
+        "bot",
+        "I'll connect you with a human. They'll respond as soon as possible.",
+      ],
+    ]);
+    expect(yield* conversations.conversations).toEqual([
+      chatConversationRow({
+        email: "ada@example.com",
+        id: "c1",
+        name: "Ada",
+        status: "handoff_requested",
+        updatedAt: CHAT_SECOND,
+      }),
+    ]);
   }).pipe(Effect.scoped)
 );
