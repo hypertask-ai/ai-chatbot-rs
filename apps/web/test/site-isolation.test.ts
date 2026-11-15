@@ -29,9 +29,9 @@ describe("the test address cannot reach live data or the real AI", () => {
   });
 
   it("refuses a live binding under the test address", () => {
-    expect(() => assertTestAddressIsolated(testBasePath, ["DB"], [])).toThrow(
-      "separate test store"
-    );
+    expect(() => {
+      assertTestAddressIsolated(testBasePath, ["DB"], []);
+    }).toThrow("separate test store");
     expect(
       liveBindingNamesOnTestAddress(testBasePath, ["DB", "AI"], [])
     ).toStrictEqual(["DB", "AI"]);

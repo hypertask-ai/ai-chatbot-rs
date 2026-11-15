@@ -38,7 +38,7 @@ const escapesTestAddress = (html: string): boolean =>
 it.prop(
   "a route survives the site base path on the way in and on the way out",
   {
-    basePath: Schema.Literals(["", testBasePath]),
+    basePath: Schema.Literals(["", "/ratstack"]),
     route: Schema.Literals([
       "/",
       "/help",

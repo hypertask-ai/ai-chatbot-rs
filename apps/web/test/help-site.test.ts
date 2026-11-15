@@ -189,6 +189,7 @@ describe("the help site mounted under the test address", () => {
 
         for (const name of recorded.comparedHeaders) {
           const stored = row.headers[name] ?? null;
+
           const expected =
             name === "location" && stored !== null
               ? addSiteBasePath(testBasePath, stored)
@@ -318,15 +319,19 @@ describe("a crawl of the test address", () => {
           `${testBasePath}/en`,
           `${testBasePath}/en/foo`,
         ]);
+
         const queue = [...seen];
 
         while (queue.length > 0) {
           const path = queue.shift() ?? testBasePath;
+
           const response = yield* answerHelpSiteAt(testBasePath)(
             new Request(`${site}${path}`)
           );
+
           const location = response.headers.get("location");
           const body = yield* Effect.promise(() => response.text());
+
           const found =
             location === null
               ? internalAddresses(body)

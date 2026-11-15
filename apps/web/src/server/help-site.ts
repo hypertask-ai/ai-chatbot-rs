@@ -50,6 +50,7 @@ const answerHealth = Effect.fn("helpSite.health")(function* answerHealth(
   request: Request
 ) {
   const routed = routedRequest(basePath, request);
+
   const answered = yield* Effect.promise(() =>
     healthAnswers.handler(new Request(routed.url, { method: "GET" }))
   );
