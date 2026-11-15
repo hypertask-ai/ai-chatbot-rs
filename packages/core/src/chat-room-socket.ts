@@ -1,11 +1,15 @@
 import { Effect, Ref, Schema } from "effect";
 
 import { ChatRoomClock } from "./chat-room-clock.js";
-import { startChatRoom, stepChatRoom } from "./chat-room-machine.js";
+import {
+  chatRoomHealth,
+  startChatRoom,
+  stepChatRoom,
+} from "./chat-room-machine.js";
 import type {
-  ChatRoomEffect,
   ChatRoomEvent,
   ChatRoomHealth,
+  ChatRoomStep,
   ChatRoomState,
 } from "./chat-room-machine.js";
 
@@ -34,21 +38,14 @@ export const ChatRoomBroadcastAnswerSchema = Schema.Struct({
 
 export type ChatRoomBroadcastAnswer = typeof ChatRoomBroadcastAnswerSchema.Type;
 
-const jsonHeaders = { "Content-Type": "application/json" } as const;
-
 export const broadcastAnswerResponse = (recipients: number): Response =>
-  new Response(JSON.stringify({ success: true, recipients }), {
-    headers: jsonHeaders,
-  });
+  Response.json({ recipients, success: true });
 
 export const healthAnswerResponse = (health: ChatRoomHealth): Response =>
-  new Response(
-    JSON.stringify({
-      connections: health.connections,
-      queueSize: health.queueSize,
-    }),
-    { headers: jsonHeaders }
-  );
+  Response.json({
+    connections: health.connections,
+    queueSize: health.queueSize,
+  });
 
 const withoutSession = (
   held: ReadonlyMap<string, RoomSocket>,
@@ -61,24 +58,13 @@ const withoutSession = (
   return next;
 };
 
-const sendTo = (socket: RoomSocket, frame: string): boolean => {
+const attempt = (act: () => void): boolean => {
   try {
-    socket.send(frame);
+    act();
+
     return true;
   } catch {
     return false;
-  }
-};
-
-const closeSocket = (
-  socket: RoomSocket,
-  code: number,
-  reason: string
-): void => {
-  try {
-    socket.close(code, reason);
-  } catch {
-    return;
   }
 };
 
@@ -90,26 +76,27 @@ export const makeChatRoom = Effect.gen(function* makeChatRoomLive() {
   const forget = (sessionId: string) =>
     Ref.update(sockets, (held) => withoutSession(held, sessionId));
 
-  const deliver = (effects: readonly ChatRoomEffect[]) =>
+  const deliver = ({ closes, sends }: ChatRoomStep) =>
     Effect.gen(function* deliverEffects() {
       const held = yield* Ref.get(sockets);
       const failed: string[] = [];
 
-      for (const effect of effects) {
-        const socket = held.get(effect.sessionId);
+      for (const send of sends) {
+        const socket = held.get(send.sessionId);
 
-        if (socket === undefined) {
-          continue;
+        if (socket !== undefined && !attempt(() => socket.send(send.frame))) {
+          failed.push(send.sessionId);
+        }
+      }
+
+      for (const close of closes) {
+        const socket = held.get(close.sessionId);
+
+        if (socket !== undefined) {
+          attempt(() => socket.close(close.code, close.reason));
         }
 
-        if (effect._tag === "Send") {
-          if (!sendTo(socket, effect.frame)) {
-            failed.push(effect.sessionId);
-          }
-        } else {
-          closeSocket(socket, effect.code, effect.reason);
-          yield* forget(effect.sessionId);
-        }
+        yield* forget(close.sessionId);
       }
 
       return failed;
@@ -122,7 +109,7 @@ export const makeChatRoom = Effect.gen(function* makeChatRoomLive() {
 
       yield* Ref.set(state, next.state);
 
-      return yield* deliver(next.effects);
+      return yield* deliver(next);
     });
 
   const dropFailed = (sessionIds: readonly string[], at: number) =>
@@ -183,10 +170,7 @@ export const makeChatRoom = Effect.gen(function* makeChatRoomLive() {
   const health = Effect.gen(function* readHealth() {
     const current = yield* Ref.get(state);
 
-    return {
-      connections: current.sessions.length,
-      queueSize: current.queue.length,
-    };
+    return chatRoomHealth(current);
   });
 
   const operations: ChatRoomLive = {

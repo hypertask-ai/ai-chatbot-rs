@@ -10,10 +10,7 @@ import {
   stepChatRoom,
   visitorRoomFrame,
 } from "../src/chat-room-machine.js";
-import type {
-  ChatRoomEffect,
-  ChatRoomState,
-} from "../src/chat-room-machine.js";
+import type { ChatRoomState, ChatRoomStep } from "../src/chat-room-machine.js";
 
 const connect = (state: ChatRoomState, sessionId: string, at: number) =>
   stepChatRoom(state, { at, sessionId, type: "CONNECT" });
@@ -37,28 +34,36 @@ const ping = (state: ChatRoomState, at: number) =>
 const timeout = (state: ChatRoomState, at: number) =>
   stepChatRoom(state, { at, type: "TIMEOUT" });
 
+const broadcastAll = (
+  state: ChatRoomState,
+  frames: readonly string[]
+): ChatRoomState => {
+  let held = state;
+
+  for (const [index, frame] of frames.entries()) {
+    ({ state: held } = broadcast(held, frame, index + 1));
+  }
+
+  return held;
+};
+
 const framesSentTo = (
-  effects: readonly ChatRoomEffect[],
+  step: ChatRoomStep,
   sessionId: string
 ): readonly string[] =>
-  effects.flatMap((effect) =>
-    effect._tag === "Send" && effect.sessionId === sessionId
-      ? [effect.frame]
-      : []
+  step.sends.flatMap((send) =>
+    send.sessionId === sessionId ? [send.frame] : []
   );
 
 describe("chat room machine", () => {
   it("sends the queued frames to a late joiner in arrival order", () => {
-    let state = broadcast(startChatRoom(), "first", 1000).state;
+    let queued = broadcast(startChatRoom(), "first", 1000);
 
-    state = broadcast(state, "second", 2000).state;
+    queued = broadcast(queued.state, "second", 2000);
 
-    const joined = connect(state, "session-b", 3000);
+    const joined = connect(queued.state, "session-b", 3000);
 
-    expect(framesSentTo(joined.effects, "session-b")).toEqual([
-      "first",
-      "second",
-    ]);
+    expect(framesSentTo(joined, "session-b")).toEqual(["first", "second"]);
     expect(joined.state.queue.map((entry) => entry.frame)).toEqual([
       "first",
       "second",
@@ -69,13 +74,13 @@ describe("chat room machine", () => {
   });
 
   it("replays only the frames younger than five seconds", () => {
-    let state = broadcast(startChatRoom(), "stale", 1000).state;
+    let queued = broadcast(startChatRoom(), "stale", 1000);
 
-    state = broadcast(state, "fresh", 7000).state;
+    queued = broadcast(queued.state, "fresh", 7000);
 
-    const joined = connect(state, "session-b", 9000);
+    const joined = connect(queued.state, "session-b", 9000);
 
-    expect(framesSentTo(joined.effects, "session-b")).toEqual(["fresh"]);
+    expect(framesSentTo(joined, "session-b")).toEqual(["fresh"]);
     expect(joined.state.queue.map((entry) => entry.frame)).toEqual([
       "stale",
       "fresh",
@@ -88,10 +93,7 @@ describe("chat room machine", () => {
       (_, index) => `frame-${index}`
     );
 
-    const state = frames.reduce(
-      (held, frame, index) => broadcast(held, frame, index + 1).state,
-      startChatRoom()
-    );
+    const state = broadcastAll(startChatRoom(), frames);
 
     expect(state.queue).toHaveLength(CHAT_ROOM_QUEUE_SIZE);
     expect(state.queue[0]?.frame).toBe("frame-1");
@@ -99,51 +101,46 @@ describe("chat room machine", () => {
   });
 
   it("drops a queued frame older than one minute on the tick", () => {
-    let state = connect(startChatRoom(), "session-a", 0).state;
+    let held = connect(startChatRoom(), "session-a", 0);
 
-    state = broadcast(state, "old", 0).state;
-    state = broadcast(state, "young", 1000).state;
+    held = broadcast(held.state, "old", 0);
+    held = broadcast(held.state, "young", 1000);
 
-    const swept = timeout(state, CHAT_ROOM_RETENTION_MS);
+    const swept = timeout(held.state, CHAT_ROOM_RETENTION_MS);
 
     expect(swept.state.queue.map((entry) => entry.frame)).toEqual(["young"]);
   });
 
   it("pings every connection and marks it silent on the tick", () => {
-    const state = connect(startChatRoom(), "session-a", 0).state;
-    const swept = ping(state, CHAT_ROOM_PING_INTERVAL_MS);
+    const connected = connect(startChatRoom(), "session-a", 0);
+    const swept = ping(connected.state, CHAT_ROOM_PING_INTERVAL_MS);
 
-    expect(framesSentTo(swept.effects, "session-a")).toEqual([
+    expect(framesSentTo(swept, "session-a")).toEqual([
       chatRoomPingFrame(CHAT_ROOM_PING_INTERVAL_MS),
     ]);
     expect(swept.state.sessions[0]?.isAlive).toBe(false);
   });
 
   it("closes a silent connection on the next tick with the old code and reason", () => {
-    let state = connect(startChatRoom(), "session-a", 0).state;
+    let held = connect(startChatRoom(), "session-a", 0);
 
-    state = ping(state, 30_000).state;
+    held = ping(held.state, 30_000);
 
-    const swept = timeout(state, 60_000);
+    const swept = timeout(held.state, 60_000);
 
-    expect(swept.effects).toEqual([
-      {
-        _tag: "Close",
-        code: 1000,
-        reason: "Connection timeout",
-        sessionId: "session-a",
-      },
+    expect(swept.closes).toEqual([
+      { code: 1000, reason: "Connection timeout", sessionId: "session-a" },
     ]);
     expect(swept.state.sessions).toEqual([]);
     expect(swept.state.status).toBe("empty");
   });
 
   it("keeps a connection that answers the ping", () => {
-    let state = connect(startChatRoom(), "session-a", 0).state;
+    let held = connect(startChatRoom(), "session-a", 0);
 
-    state = ping(state, 30_000).state;
+    held = ping(held.state, 30_000);
 
-    const answered = message(state, "session-a", "pong", 31_000);
+    const answered = message(held.state, "session-a", "pong", 31_000);
 
     expect(answered.state.sessions[0]).toEqual({
       connectedAt: 0,
@@ -154,26 +151,26 @@ describe("chat room machine", () => {
 
     const swept = timeout(answered.state, 60_000);
 
-    expect(swept.effects).toEqual([]);
+    expect(swept.closes).toEqual([]);
     expect(swept.state.sessions.map((session) => session.id)).toEqual([
       "session-a",
     ]);
   });
 
   it("ignores an inbound message that is not the pong", () => {
-    const state = connect(startChatRoom(), "session-a", 0).state;
-    const answered = message(state, "session-a", "hello", 1000);
+    const connected = connect(startChatRoom(), "session-a", 0);
+    const answered = message(connected.state, "session-a", "hello", 1000);
 
-    expect(answered.effects).toEqual([]);
-    expect(answered.state.sessions).toEqual(state.sessions);
+    expect(answered.sends).toEqual([]);
+    expect(answered.state.sessions).toEqual(connected.state.sessions);
   });
 
   it("removes a connection when its socket closes and empties the room at the last one", () => {
-    let state = connect(startChatRoom(), "session-a", 0).state;
+    let held = connect(startChatRoom(), "session-a", 0);
 
-    state = connect(state, "session-b", 1000).state;
+    held = connect(held.state, "session-b", 1000);
 
-    const one = disconnect(state, "session-a", 2000);
+    const one = disconnect(held.state, "session-a", 2000);
 
     expect(one.state.sessions.map((session) => session.id)).toEqual([
       "session-b",
@@ -187,24 +184,22 @@ describe("chat room machine", () => {
   });
 
   it("sends a broadcast frame to every connection and queues it once", () => {
-    let state = connect(startChatRoom(), "session-a", 1000).state;
+    let held = connect(startChatRoom(), "session-a", 1000);
 
-    state = connect(state, "session-b", 1000).state;
+    held = connect(held.state, "session-b", 1000);
 
-    const sent = broadcast(state, "hello", 2000);
+    const sent = broadcast(held.state, "hello", 2000);
 
-    expect(sent.effects).toEqual([
-      { _tag: "Send", frame: "hello", sessionId: "session-a" },
-      { _tag: "Send", frame: "hello", sessionId: "session-b" },
-    ]);
+    expect(framesSentTo(sent, "session-a")).toEqual(["hello"]);
+    expect(framesSentTo(sent, "session-b")).toEqual(["hello"]);
     expect(sent.state.queue.map((entry) => entry.frame)).toEqual(["hello"]);
   });
 
   it("does not clean the queue while the room holds no connection", () => {
-    const queued = broadcast(startChatRoom(), "old", 0).state;
-    const swept = timeout(queued, 120_000);
+    const queued = broadcast(startChatRoom(), "old", 0);
+    const swept = timeout(queued.state, 120_000);
 
-    expect(swept.effects).toEqual([]);
+    expect(swept.closes).toEqual([]);
     expect(swept.state.queue.map((entry) => entry.frame)).toEqual(["old"]);
   });
 
@@ -217,7 +212,7 @@ describe("chat room machine", () => {
 
     const joined = connect(startChatRoom(), "session-a", 0);
 
-    expect(joined.effects).toEqual([]);
+    expect(joined.sends).toEqual([]);
     expect(joined.state.queue).toEqual([]);
   });
 

@@ -31,6 +31,7 @@ const fakeNamespace = (answer: (call: RoomCall) => Response) =>
       fetch: (request: Request) =>
         Effect.gen(function* fetchRoom() {
           const body = yield* Effect.promise(() => request.text());
+
           const call = {
             body,
             method: request.method,
@@ -129,6 +130,7 @@ describe("chat room connection route", () => {
         const namespace = yield* fakeNamespace(() =>
           broadcastAnswerResponse(2)
         );
+
         const frame = visitorRoomFrame({
           at: 1000,
           content: "Hi",

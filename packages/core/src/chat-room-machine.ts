@@ -1,5 +1,5 @@
 import { setupEffect } from "@xstate/effect";
-import { Data, Schema } from "effect";
+import { Schema } from "effect";
 import { initialTransition, transition, types } from "xstate";
 import type { EventFromLogic, SnapshotFrom } from "xstate";
 
@@ -33,6 +33,21 @@ export const ChatRoomSessionSchema = Schema.Struct({
 
 export type ChatRoomSession = typeof ChatRoomSessionSchema.Type;
 
+export const ChatRoomSendSchema = Schema.Struct({
+  frame: Schema.String,
+  sessionId: Schema.String,
+});
+
+export type ChatRoomSend = typeof ChatRoomSendSchema.Type;
+
+export const ChatRoomCloseSchema = Schema.Struct({
+  code: Schema.Natural,
+  reason: Schema.String,
+  sessionId: Schema.String,
+});
+
+export type ChatRoomClose = typeof ChatRoomCloseSchema.Type;
+
 export const ChatRoomStatusSchema = Schema.Literals(["empty", "live"]);
 
 export type ChatRoomStatus = typeof ChatRoomStatusSchema.Type;
@@ -52,19 +67,9 @@ export const ChatRoomHealthSchema = Schema.Struct({
 
 export type ChatRoomHealth = typeof ChatRoomHealthSchema.Type;
 
-export type ChatRoomEffect = Data.TaggedEnum<{
-  Close: {
-    readonly code: number;
-    readonly reason: string;
-    readonly sessionId: string;
-  };
-  Send: { readonly frame: string; readonly sessionId: string };
-}>;
-
-export const chatRoomEffect = Data.taggedEnum<ChatRoomEffect>();
-
 export interface ChatRoomStep {
-  readonly effects: readonly ChatRoomEffect[];
+  readonly closes: readonly ChatRoomClose[];
+  readonly sends: readonly ChatRoomSend[];
   readonly state: ChatRoomState;
 }
 
@@ -82,12 +87,14 @@ export const ChatRoomEventsSchema = {
 };
 
 interface ChatRoomContext {
-  readonly effects: readonly ChatRoomEffect[] | undefined;
+  readonly closes: readonly ChatRoomClose[] | undefined;
   readonly queue: readonly ChatRoomFrame[];
+  readonly sends: readonly ChatRoomSend[] | undefined;
   readonly sessions: readonly ChatRoomSession[];
 }
 
 export const chatRoomPingFrame = (at: number): string =>
+  // oxlint-disable-next-line sort-keys -- The chat widget reads this frame and the old room wrote the two keys in this order.
   JSON.stringify({ type: "ping", timestamp: at });
 
 export const visitorRoomFrame = (input: {
@@ -95,6 +102,7 @@ export const visitorRoomFrame = (input: {
   readonly content: string;
   readonly messageId: string;
 }): string =>
+  // oxlint-disable-next-line sort-keys -- The chat widget reads this frame and the old route wrote the four keys in this order.
   JSON.stringify({
     role: "user",
     content: input.content,
@@ -106,6 +114,7 @@ export const adminRoomFrame = (input: {
   readonly content: string;
   readonly messageId: string;
 }): string =>
+  // oxlint-disable-next-line sort-keys -- The chat widget reads this frame and the old admin route wrote the three keys in this order.
   JSON.stringify({
     role: "admin",
     content: input.content,
@@ -117,33 +126,24 @@ export const chatRoomHealth = (state: ChatRoomState): ChatRoomHealth => ({
   queueSize: state.queue.length,
 });
 
-const replayEffects = (
+const replaySends = (
   context: ChatRoomContext,
   sessionId: string,
   at: number
-): readonly ChatRoomEffect[] =>
+): readonly ChatRoomSend[] =>
   context.queue
     .filter((entry) => entry.at > at - CHAT_ROOM_REPLAY_MS)
-    .map((entry) => chatRoomEffect.Send({ frame: entry.frame, sessionId }));
+    .map((entry) => ({ frame: entry.frame, sessionId }));
 
-const sendEffects = (
-  sessions: readonly ChatRoomSession[],
-  frame: string
-): readonly ChatRoomEffect[] =>
-  sessions.map((session) =>
-    chatRoomEffect.Send({ frame, sessionId: session.id })
-  );
+const sendTo = (sessions: readonly ChatRoomSession[], frame: string) =>
+  sessions.map((session) => ({ frame, sessionId: session.id }));
 
-const closeEffects = (
-  sessions: readonly ChatRoomSession[]
-): readonly ChatRoomEffect[] =>
-  sessions.map((session) =>
-    chatRoomEffect.Close({
-      code: CHAT_ROOM_CLOSE_CODE,
-      reason: CHAT_ROOM_CLOSE_REASON,
-      sessionId: session.id,
-    })
-  );
+const closeOf = (sessions: readonly ChatRoomSession[]) =>
+  sessions.map((session) => ({
+    code: CHAT_ROOM_CLOSE_CODE,
+    reason: CHAT_ROOM_CLOSE_REASON,
+    sessionId: session.id,
+  }));
 
 export const chatRoomMachine = setupEffect({
   schemas: {
@@ -152,22 +152,29 @@ export const chatRoomMachine = setupEffect({
     input: Schema.Struct({}),
   },
 }).createMachine({
-  context: () => ({ effects: undefined, queue: [], sessions: [] }),
+  context: () => ({
+    closes: undefined,
+    queue: [],
+    sends: undefined,
+    sessions: [],
+  }),
   initial: "empty",
   on: {
     BROADCAST: ({ context, event }) => ({
       context: {
         ...context,
-        effects: sendEffects(context.sessions, event.frame),
+        closes: [],
         queue: [...context.queue, { at: event.at, frame: event.frame }].slice(
           -CHAT_ROOM_QUEUE_SIZE
         ),
+        sends: sendTo(context.sessions, event.frame),
       },
     }),
     CONNECT: ({ context, event }) => ({
       context: {
         ...context,
-        effects: replayEffects(context, event.sessionId, event.at),
+        closes: [],
+        sends: replaySends(context, event.sessionId, event.at),
         sessions: [
           ...context.sessions,
           {
@@ -186,14 +193,15 @@ export const chatRoomMachine = setupEffect({
       );
 
       return {
-        context: { ...context, effects: [], sessions },
+        context: { ...context, closes: [], sends: [], sessions },
         target: sessions.length === 0 ? ".empty" : ".live",
       };
     },
     MESSAGE: ({ context, event }) => ({
       context: {
         ...context,
-        effects: [],
+        closes: [],
+        sends: [],
         sessions:
           event.data === CHAT_ROOM_PONG
             ? context.sessions.map((session) =>
@@ -212,7 +220,8 @@ export const chatRoomMachine = setupEffect({
         PING: ({ context, event }) => ({
           context: {
             ...context,
-            effects: sendEffects(context.sessions, chatRoomPingFrame(event.at)),
+            closes: [],
+            sends: sendTo(context.sessions, chatRoomPingFrame(event.at)),
             sessions: context.sessions.map((session) => ({
               ...session,
               isAlive: false,
@@ -221,16 +230,19 @@ export const chatRoomMachine = setupEffect({
         }),
         TIMEOUT: ({ context, event }) => {
           const silent = context.sessions.filter((session) => !session.isAlive);
+
           const sessions = context.sessions.filter(
             (session) => session.isAlive
           );
+
           const cutoff = event.at - CHAT_ROOM_RETENTION_MS;
 
           return {
             context: {
               ...context,
-              effects: closeEffects(silent),
+              closes: closeOf(silent),
               queue: context.queue.filter((entry) => entry.at > cutoff),
+              sends: [],
               sessions,
             },
             target: sessions.length === 0 ? ".empty" : ".live",
@@ -262,8 +274,9 @@ export const stepChatRoom = (
 ): ChatRoomStep => {
   const snapshot = chatRoomMachine.resolveState({
     context: {
-      effects: undefined,
+      closes: undefined,
       queue: state.queue,
+      sends: undefined,
       sessions: state.sessions,
     },
     value: state.status,
@@ -271,5 +284,9 @@ export const stepChatRoom = (
 
   const [next] = transition(chatRoomMachine, snapshot, event);
 
-  return { effects: next.context.effects ?? [], state: chatRoomState(next) };
+  return {
+    closes: next.context.closes ?? [],
+    sends: next.context.sends ?? [],
+    state: chatRoomState(next),
+  };
 };

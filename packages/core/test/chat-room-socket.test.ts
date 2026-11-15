@@ -15,6 +15,11 @@ interface RoomMove {
   readonly reason: string;
 }
 
+interface TestClock {
+  readonly advance: (millis: number) => Effect.Effect<void>;
+  readonly value: { readonly now: Effect.Effect<number> };
+}
+
 const testClock = (initial: number) =>
   Effect.gen(function* makeTestClock() {
     const at = yield* Ref.make(initial);
@@ -41,16 +46,19 @@ const fakeSocket = () => {
   return { closed, frames, socket };
 };
 
-const brokenSocket = (): RoomSocket => ({
-  close: () => undefined,
-  send: () => {
-    throw new Error("the socket is gone");
-  },
-});
+const brokenSocket = (): RoomSocket => {
+  const held = fakeSocket();
 
-const roomAt = (clock: {
-  readonly value: { readonly now: Effect.Effect<number> };
-}) => makeChatRoom.pipe(Effect.provideService(ChatRoomClock, clock.value));
+  return {
+    close: held.socket.close,
+    send: () => {
+      throw new Error("the socket is gone");
+    },
+  };
+};
+
+const roomAt = (clock: TestClock) =>
+  makeChatRoom.pipe(Effect.provideService(ChatRoomClock, clock.value));
 
 describe("chat room sockets", () => {
   it.effect(
@@ -185,7 +193,7 @@ describe("chat room sockets", () => {
       const body = yield* Effect.promise(() => response.text());
 
       expect(response.headers.get("content-type")).toBe("application/json");
-      expect(body).toBe('{"success":true,"recipients":2}');
+      expect(body).toBe('{"recipients":2,"success":true}');
     })
   );
 });
