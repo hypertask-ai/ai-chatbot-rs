@@ -6,7 +6,7 @@ import {
   HAIKU_MODEL,
   emptyUsage,
 } from "./answer-model.js";
-import type { TokenUsage } from "./answer-model.js";
+import type { AnswerModel, TokenUsage } from "./answer-model.js";
 import {
   buildAnswerRequest,
   profileContextBlock,
@@ -71,6 +71,16 @@ export const firstAnswerEligible = (input: FirstAnswerEligibility): boolean =>
   input.page === null &&
   input.historyCount === 0 &&
   !profileIsKnown(input.profile);
+
+export type ChatAnswerRequirements =
+  | AnswerModel
+  | ChatAnswerCleanup
+  | ChatArticleContext
+  | ChatCitations
+  | ChatClock
+  | ChatConversationStore
+  | ChatMessageStore
+  | FirstAnswerCache;
 
 export interface ChatAnswerInput {
   readonly answerMessageId: string;

@@ -127,18 +127,23 @@ interface MemoryConversation {
   readonly visitorSecretHash: string | undefined;
 }
 
-const seedConversation = (seed: ChatConversationSeed): ChatConversation => ({
-  archived: seed.archived,
-  email: seed.email,
-  hasAccount: seed.hasAccount,
-  id: seed.id,
-  isEval: seed.isEval,
-  name: seed.name,
-  profileCompleted: seed.profileCompleted,
-  status: seed.status,
-  updatedAt: seed.updatedAt,
-  visitorId: seed.visitorId,
-});
+const seedConversation = (seed: ChatConversationSeed): ChatConversation => {
+  const base: ChatConversation = {
+    archived: seed.archived,
+    email: seed.email,
+    hasAccount: seed.hasAccount,
+    id: seed.id,
+    isEval: seed.isEval,
+    name: seed.name,
+    profileCompleted: seed.profileCompleted,
+    status: seed.status,
+    updatedAt: seed.updatedAt,
+  };
+
+  return seed.visitorId === undefined
+    ? base
+    : { ...base, visitorId: seed.visitorId };
+};
 
 const newestReturningCustomer = (
   held: ReadonlyMap<string, MemoryConversation>,
