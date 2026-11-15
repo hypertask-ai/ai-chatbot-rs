@@ -401,11 +401,13 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
       }
 
       const sourceLine = sourceLineFor(answer, sources);
+
       const entry: TranscriptEntryValue = {
         content: answer,
         imageUrl: Option.none(),
         role: "bot",
       };
+
       const messages: readonly TranscriptEntryValue[] = [
         ...model.messages,
         sourceLine === undefined ? entry : { ...entry, sourceLine },

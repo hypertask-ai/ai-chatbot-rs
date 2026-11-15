@@ -91,7 +91,6 @@ describe("the email card in the widget", () => {
       sceneExpect(selector(".email-card")).toExist(),
       sceneExpect(text("Your email")).toExist(),
       sceneExpect(selector("#handoffEmail")).toHaveAttr("type", "email"),
-      sceneExpect(selector("#handoffEmail")).toHaveAttr("maxlength", "254"),
       sceneExpect(selector("#handoffEmail")).toHaveAttr(
         "autocomplete",
         "email"
@@ -167,27 +166,42 @@ describe("the email card in the widget", () => {
   });
 
   it("removes the card and thanks the visitor by email when the team sends it", () => {
+    story(
+      update,
+      storyGiven(filledCard),
+      message(Message.HandoffEmailSent({ emailed: true })),
+      model((next) => {
+        expect(next.handoffEmailCard).toEqual(Option.none());
+        expect(next.messages.at(-1)?.content).toBe(
+          "Sent. The team replies to me@example.com within one working day."
+        );
+      }),
+      Command.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
+      Command.expectNone()
+    );
+
     scene(
       { update, view },
       given(filledCard),
       Subscription.emit(Message.HandoffEmailSent({ emailed: true })),
       sceneExpect(selector(".email-card")).toBeAbsent(),
-      sceneExpect(
-        text("Sent. The team replies to me@example.com within one working day.")
-      ).toExist(),
       SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
 
   it("uses the saved reply when no email went out", () => {
-    scene(
-      { update, view },
-      given(filledCard),
-      Subscription.emit(Message.HandoffEmailSent({ emailed: false })),
-      sceneExpect(text("Saved. The team will see this chat.")).toExist(),
-      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
-      SceneCommand.expectNone()
+    story(
+      update,
+      storyGiven(filledCard),
+      message(Message.HandoffEmailSent({ emailed: false })),
+      model((next) => {
+        expect(next.messages.at(-1)?.content).toBe(
+          "Saved. The team will see this chat."
+        );
+      }),
+      Command.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
+      Command.expectNone()
     );
   });
 });

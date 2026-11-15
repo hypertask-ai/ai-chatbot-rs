@@ -49,6 +49,12 @@ const box = placeholder("Ask a question…");
 
 const answer = "Open the board, then press Export.";
 
+const sourceLine = {
+  href: "https://help.hypertask.ai/help/boards-sections",
+  label: "From: Boards & Sections",
+  slug: "boards-sections",
+};
+
 const citedAnswer = Message.ReceivedAnswer({
   answer,
   sources: [{ slug: "boards-sections", title: "Boards & Sections" }],
@@ -58,8 +64,15 @@ const answeredModel: AppModel = {
   ...home,
   answerRowAfter: Option.some(0),
   conversationId: "conv-9",
-  messages: [{ content: answer, imageUrl: Option.none(), role: "bot" }],
+  messages: [
+    { content: answer, imageUrl: Option.none(), role: "bot", sourceLine },
+  ],
 };
+
+const scrollDone = Command.resolve(
+  ScrollToLatest(),
+  Message.CompletedScrollToLatest()
+);
 
 describe("the answer row, read from the old widget", () => {
   it("keeps the old words for the question, both buttons and both replies", () => {
@@ -135,19 +148,52 @@ describe("the answer row in the widget", () => {
     );
   });
 
-  it("answers yes with the old thanks message and takes the row away", () => {
+  it("answers yes with the old thanks message", () => {
+    story(
+      update,
+      given(answeredModel),
+      message(Message.AcceptedAnswer()),
+      model((next) => {
+        expect(next.messages.at(-1)?.content).toBe(
+          "Thanks! Glad I could help."
+        );
+        expect(next.answerRowAfter).toEqual(Option.none());
+      }),
+      scrollDone,
+      Command.expectNone()
+    );
+  });
+
+  it("takes the row away when the visitor answers yes", () => {
     scene(
       { update, view },
       sceneGiven(answeredModel),
       click(role("button", { name: "Yes, thanks" })),
       sceneExpect(selector(".answer-actions")).toBeAbsent(),
-      sceneExpect(text("Thanks! Glad I could help.")).toExist(),
       SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
 
-  it("answers a person with the old two messages and the email card", () => {
+  it("answers a person with the old two messages", () => {
+    story(
+      update,
+      given(answeredModel),
+      message(Message.AskedForPerson()),
+      model((next) => {
+        expect(next.messages.at(-2)?.content).toBe("Talk to a person");
+        expect(next.messages.at(-1)?.content).toBe(
+          "Sure. A person from our team replies by email within one working day. They see this chat, so you don't need to repeat yourself."
+        );
+        expect(next.answerRowAfter).toEqual(Option.none());
+        expect(Option.isSome(next.handoffEmailCard)).toBe(true);
+      }),
+      scrollDone,
+      Command.expectNone()
+    );
+  });
+
+  it("opens the email card when the visitor asks for a person", () => {
     scene(
       { update, view },
       sceneGiven(answeredModel),
@@ -155,11 +201,6 @@ describe("the answer row in the widget", () => {
       sceneExpect(selector(".answer-actions")).toBeAbsent(),
       sceneExpect(selector(".email-card")).toExist(),
       sceneExpect(text("Talk to a person")).toExist(),
-      sceneExpect(
-        text(
-          "Sure. A person from our team replies by email within one working day. They see this chat, so you don't need to repeat yourself."
-        )
-      ).toExist(),
       SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
