@@ -67,6 +67,15 @@ const requestAt = (path: string, row: typeof RecordedRow.Type): Request => {
 const answer = (request: Request): Promise<Response> =>
   handleRequest(request, { renderDocument: () => "", renderPage });
 
+const answerMounted = (request: Request) =>
+  answerHelpSiteAt(testBasePath)(request).pipe(
+    Effect.flatMap((answered) =>
+      answered === null
+        ? Effect.die(new Error(`The help site did not answer ${request.url}`))
+        : Effect.succeed(answered)
+    )
+  );
+
 describe("help site answers recorded from the old site", () => {
   for (const row of recorded.rows) {
     it.effect(`answers ${row.id} the way the old site does`, () =>
@@ -178,7 +187,7 @@ describe("the help site mounted under the test address", () => {
   for (const row of recorded.rows) {
     it.effect(`answers ${row.id} under ${testBasePath}`, () =>
       Effect.gen(function* mountedRow() {
-        const response = yield* answerHelpSiteAt(testBasePath)(
+        const response = yield* answerMounted(
           requestAt(pathAtTestAddress(row.path), row)
         );
 
@@ -212,7 +221,7 @@ describe("the help site mounted under the test address", () => {
 
   it.effect("answers the health check under the test address", () =>
     Effect.gen(function* mountedHealth() {
-      const response = yield* answerHelpSiteAt(testBasePath)(
+      const response = yield* answerMounted(
         new Request(`${site}${testBasePath}/health`)
       );
 
@@ -229,7 +238,7 @@ describe("the help site mounted under the test address", () => {
     () =>
       Effect.gen(function* mountedRedirects() {
         for (const path of ["/", "/en", "/en/", "/en/foo", "/en/foo/bar"]) {
-          const response = yield* answerHelpSiteAt(testBasePath)(
+          const response = yield* answerMounted(
             new Request(`${site}${addSiteBasePath(testBasePath, path)}`)
           );
 
@@ -245,7 +254,7 @@ describe("the help site mounted under the test address", () => {
     "answers an unknown path inside the test address with the CORS headers",
     () =>
       Effect.gen(function* mountedNotFound() {
-        const response = yield* answerHelpSiteAt(testBasePath)(
+        const response = yield* answerMounted(
           new Request(`${site}${testBasePath}/nope`, {
             headers: { origin: "https://docs.hypertask.ai" },
           })
@@ -264,9 +273,7 @@ describe("the help site mounted under the test address", () => {
     () =>
       Effect.gen(function* outsideTestAddress() {
         for (const path of ["/health", "/", "/help", "/en/foo"]) {
-          const response = yield* answerHelpSiteAt(testBasePath)(
-            new Request(`${site}${path}`)
-          );
+          const response = yield* answerMounted(new Request(`${site}${path}`));
 
           expect(response.status, path).toBe(404);
         }
@@ -277,7 +284,7 @@ describe("the help site mounted under the test address", () => {
     "answers a preflight under the test address with the same CORS headers",
     () =>
       Effect.gen(function* mountedPreflight() {
-        const response = yield* answerHelpSiteAt(testBasePath)(
+        const response = yield* answerMounted(
           new Request(`${site}${testBasePath}/api/chat/message`, {
             headers: {
               "access-control-request-method": "POST",
@@ -325,9 +332,7 @@ describe("a crawl of the test address", () => {
         while (queue.length > 0) {
           const path = queue.shift() ?? testBasePath;
 
-          const response = yield* answerHelpSiteAt(testBasePath)(
-            new Request(`${site}${path}`)
-          );
+          const response = yield* answerMounted(new Request(`${site}${path}`));
 
           const location = response.headers.get("location");
           const body = yield* Effect.promise(() => response.text());
