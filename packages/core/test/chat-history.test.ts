@@ -8,10 +8,7 @@ import type {
 } from "../src/chat-conversation-store.js";
 import { memoryChatMessages } from "../src/chat-message-store.js";
 import type { ChatMessage } from "../src/chat-message-store.js";
-import {
-  VISITOR_SECRET_MAX_LENGTH,
-  hashVisitorSecret,
-} from "../src/chat-visitor-auth.js";
+import { hashVisitorSecret } from "../src/chat-visitor-auth.js";
 import {
   CHAT_SECOND,
   chatConversationSeed,
@@ -578,18 +575,23 @@ it.effect("refuses when the ownership read fails", () =>
 
 const secretText = Arbitrary.schema(Schema.String);
 
-const usableSecret = (value: string): boolean =>
-  value !== "" &&
-  value.length <= VISITOR_SECRET_MAX_LENGTH &&
-  !/\s/u.test(value);
+const headerSafeSecret = (value: string): string =>
+  value.replaceAll(/[^\w.-]/gu, "").slice(0, 200);
 
 it.effect.prop(
   "grants the conversation only to the secret whose hash it stores",
   { other: secretText, owner: secretText },
   ({ other, owner }) =>
     Effect.gen(function* runScenario() {
-      if (usableSecret(owner) && usableSecret(other) && owner !== other) {
-        const ownerHash = yield* hashVisitorSecret(owner);
+      const ownerSecret = headerSafeSecret(owner);
+      const otherSecret = headerSafeSecret(other);
+
+      if (
+        ownerSecret !== "" &&
+        otherSecret !== "" &&
+        ownerSecret !== otherSecret
+      ) {
+        const ownerHash = yield* hashVisitorSecret(ownerSecret);
 
         const stack = yield* chatStack(
           [owned(OWNED_ID, { visitorSecretHash: ownerHash })],
@@ -597,12 +599,12 @@ it.effect.prop(
         );
 
         const allowed = yield* getChat(stack.handler, {
-          authorization: `Bearer ${owner}`,
+          authorization: `Bearer ${ownerSecret}`,
           path: historyPath(OWNED_ID),
         });
 
         const refused = yield* getChat(stack.handler, {
-          authorization: `Bearer ${other}`,
+          authorization: `Bearer ${otherSecret}`,
           path: historyPath(OWNED_ID),
         });
 
