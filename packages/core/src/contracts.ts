@@ -22,6 +22,7 @@ import {
   HelpArticlePane,
   HelpArticleSummary,
 } from "./help-article.js";
+import { HelpRetrievalAnswer } from "./help-search.js";
 import { NoPath } from "./no-path.js";
 import { FileStatsError, FileStatsSchema } from "./stats.js";
 import { UnknownPage } from "./unknown-page.js";
@@ -59,6 +60,8 @@ export {
 } from "./help-article.js";
 
 export { HelpArticleNotFound } from "./help-article-not-found.js";
+
+export { HelpRetrievalAnswer, HelpRetrievalArticle } from "./help-search.js";
 
 export { UnknownPerson } from "./unknown-person.js";
 
@@ -367,6 +370,16 @@ export const readHelpArticlePaneContract = defineContract(
     output: HelpArticlePane,
   }
 );
+
+export const debugHelpRetrievalContract = defineContract("debugHelpRetrieval", {
+  annotations: { idempotent: true, readOnly: true },
+  description:
+    "Answer the articles the help chat retrieves for a question, in rank order",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/api/chat/debug-rag" },
+  input: Schema.Struct({ q: Schema.optional(Schema.String) }),
+  output: HelpRetrievalAnswer,
+});
 
 export const PromptSlug = Schema.String.check(
   Schema.isPattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)

@@ -421,6 +421,9 @@ importers:
       '@effect/sql-pg':
         specifier: 4.1.2
         version: 4.1.2(effect@4.1.2)
+      '@rat-stack/core':
+        specifier: workspace:*
+        version: link:../core
       alchemy:
         specifier: 2.0.0-beta.85
         version: 2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.2.1))(effect@4.1.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))(ws@8.22.1)
@@ -446,6 +449,9 @@ importers:
       '@electric-sql/pglite':
         specifier: 0.5.15
         version: 0.5.15
+      '@rat-stack/capability':
+        specifier: workspace:*
+        version: link:../capability
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
