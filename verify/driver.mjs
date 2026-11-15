@@ -426,11 +426,9 @@ const compareOne = async (browser, routePath) => {
   const baseLines = await readText(baseReport.textFile);
   const baseSet = new Set(baseLines);
   const headSet = new Set(headLines);
-  const addedInHead = headLines.filter((line) => !baseSet.has(line)).toSorted();
+  const addedInHead = headLines.filter((line) => !baseSet.has(line));
 
-  const missingFromHead = baseLines
-    .filter((line) => !headSet.has(line))
-    .toSorted();
+  const missingFromHead = baseLines.filter((line) => !headSet.has(line));
 
   return {
     addedInHead,
