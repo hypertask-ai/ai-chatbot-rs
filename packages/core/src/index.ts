@@ -248,6 +248,30 @@ export {
   type FileStats,
 } from "./stats.js";
 
+export { PERSON_FOLLOWUP, SYSTEM_PROMPT } from "./answer-prompt.js";
+
+export {
+  buildAnswerRequest,
+  HISTORY_TURN_LIMIT,
+  MAX_OUTPUT_TOKENS,
+  pageContextBlock,
+  profileContextBlock,
+  textFromUserContent,
+  toAnswerUserContent,
+  trimConversation,
+  visitorAsksForPerson,
+  type AnswerPageContext,
+  type AnswerRequestInput,
+  type AnswerUserContent,
+  type ChatTurn,
+} from "./answer-request.js";
+
+export {
+  VisitorProfileRowSchema,
+  visitorProfileFromRow,
+  type VisitorProfileRow,
+} from "./visitor-profile-row.js";
+
 export {
   answerMachine,
   answerOutcome,
