@@ -176,7 +176,7 @@ describe("help answer request", () => {
       ),
     });
 
-    expect(request.messages.at(-1)).toEqual(
+    expect(request.messages.at(-1)?.content).toEqual(
       toAnswerUserContent(
         "How do I connect Claude?",
         "data:image/png;base64,AAAA"
