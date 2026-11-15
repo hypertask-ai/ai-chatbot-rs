@@ -1,0 +1,77 @@
+name: Parity
+
+on:
+  workflow_dispatch:
+    inputs:
+      old_base:
+        description: Base URL of the current help site.
+        required: false
+        default: https://help.hypertask.ai
+      new_base:
+        description: Base URL of the rebuilt site. Leave empty to capture the baseline only.
+        required: false
+        default: ""
+      threshold:
+        description: Maximum pixel difference per page, in percent.
+        required: false
+        default: "0.1"
+      behaviour:
+        description: Send one test-marked chat to each site and compare its shape. Needs the eval secret.
+        required: false
+        type: choice
+        options:
+          - "false"
+          - "true"
+        default: "false"
+  pull_request:
+    paths:
+      - .github/workflows/parity.yml
+      - scripts/help-parity.ts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: parity-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Use Node.js 24.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable corepack pnpm
+        run: corepack enable && corepack prepare pnpm@11.3.0 --activate
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Capture and compare
+        env:
+          OLD_BASE: ${{ github.event.inputs.old_base || 'https://help.hypertask.ai' }}
+          NEW_BASE: ${{ github.event.inputs.new_base || '' }}
+          THRESHOLD: ${{ github.event.inputs.threshold || '0.1' }}
+          BEHAVIOUR: ${{ github.event.inputs.behaviour || 'false' }}
+          EVAL_TOKEN: ${{ secrets.EVAL_INGEST_SECRET }}
+        run: |
+          node scripts/help-parity.ts \
+            --old-base "$OLD_BASE" \
+            --new-base "$NEW_BASE" \
+            --threshold "$THRESHOLD" \
+            --behaviour "$BEHAVIOUR" \
+            --out parity-out
+      - name: Upload parity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-${{ github.run_id }}
+          path: parity-out
+          if-no-files-found: warn
