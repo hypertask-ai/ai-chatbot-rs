@@ -262,12 +262,18 @@ describe("widget loader", () => {
 
     expect(displayOf(bubble)).toBe("block");
 
+    const stopped: string[] = [];
+
     handler(
       bubble.querySelector(".proactive-close"),
       "click"
     )({
-      stopPropagation: () => undefined,
+      stopPropagation: () => {
+        stopped.push("close");
+      },
     });
+
+    expect(stopped).toEqual(["close"]);
 
     expect(displayOf(bubble)).toBe("none");
     expect(run.storage.get(key)).toBe("true");

@@ -11,11 +11,11 @@ type SourceRow = Readonly<{
   expected: Readonly<{ slug: string; title: string }> | undefined;
   label: string;
   name: string;
-  sources: ReadonlyArray<{ slug: string; title?: string | null }>;
+  sources: readonly { slug: string; title?: string | null }[];
   text: string | null;
 }>;
 
-const rows: ReadonlyArray<SourceRow> = [
+const rows: readonly SourceRow[] = [
   {
     expected: { slug: "connect-claude", title: "Connect Claude" },
     label: "the first cited source that has a slug",

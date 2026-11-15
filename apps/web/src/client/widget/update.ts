@@ -346,7 +346,7 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
       Option.match(model.handoffEmailCard, {
         onNone: () => ({ model }),
         onSome: (card) => {
-          const messages: ReadonlyArray<TranscriptEntryValue> = [
+          const messages: readonly TranscriptEntryValue[] = [
             ...model.messages,
             {
               content: emailSentMessage(card.email.trim(), emailed),
@@ -401,15 +401,16 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
       }
 
       const sourceLine = sourceLineFor(answer, sources);
-      const messages: ReadonlyArray<TranscriptEntryValue> = [
+      const entry: TranscriptEntryValue = {
+        content: answer,
+        imageUrl: Option.none(),
+        role: "bot",
+      };
+      const messages: readonly TranscriptEntryValue[] = [
         ...model.messages,
-        {
-          content: answer,
-          imageUrl: Option.none(),
-          role: "bot",
-          ...(sourceLine === undefined ? {} : { sourceLine }),
-        },
+        sourceLine === undefined ? entry : { ...entry, sourceLine },
       ];
+
       const placement = answerRowAfter(messages.length);
 
       return {

@@ -96,16 +96,14 @@ describe("the answer row in the widget", () => {
       Subscription.emit(citedAnswer),
       sceneExpect(selector(".message.bot")).toExist(),
       sceneExpect(selector(".source-line")).toExist(),
-      sceneExpect(
-        role("link", { name: "From: Boards & Sections" })
-      ).toHaveAttr("href", "https://help.hypertask.ai/help/boards-sections"),
+      sceneExpect(role("link", { name: "From: Boards & Sections" })).toHaveAttr(
+        "href",
+        "https://help.hypertask.ai/help/boards-sections"
+      ),
       sceneExpect(text("Did that answer it?")).toExist(),
       sceneExpect(role("button", { name: "Yes, thanks" })).toExist(),
       sceneExpect(role("button", { name: "Talk to a person" })).toExist(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
@@ -119,10 +117,7 @@ describe("the answer row in the widget", () => {
       ),
       sceneExpect(selector(".source-line")).toBeAbsent(),
       sceneExpect(selector(".answer-actions")).toExist(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
@@ -147,10 +142,7 @@ describe("the answer row in the widget", () => {
       click(role("button", { name: "Yes, thanks" })),
       sceneExpect(selector(".answer-actions")).toBeAbsent(),
       sceneExpect(text("Thanks! Glad I could help.")).toExist(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
@@ -168,10 +160,7 @@ describe("the answer row in the widget", () => {
           "Sure. A person from our team replies by email within one working day. They see this chat, so you don't need to repeat yourself."
         )
       ).toExist(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
@@ -197,10 +186,7 @@ describe("the answer row in the widget", () => {
       typeText(box, "One more thing"),
       keydown(box, "Enter"),
       sceneExpect(selector(".answer-actions")).toBeAbsent(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });

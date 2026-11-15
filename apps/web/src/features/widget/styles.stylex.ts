@@ -111,8 +111,8 @@ export const styles = stylex.create({
   },
   emailSubmit: {
     background: widget.ink,
-    borderStyle: "none",
     borderRadius: "999px",
+    borderStyle: "none",
     color: widget.btnFg,
     cursor: "pointer",
     fontFamily: widget.fontBody,

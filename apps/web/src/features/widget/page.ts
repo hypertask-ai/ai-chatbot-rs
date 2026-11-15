@@ -309,6 +309,7 @@ const emailCardView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html => {
 const messagesView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html => {
   const placement = Option.getOrNull(model.answerRowAfter);
   const answerRowShown = answerRowVisible(placement, model.messages.length);
+
   const transcript = model.messages.flatMap((entry, index) => [
     transcriptView(entry, h),
     ...(entry.sourceLine === undefined

@@ -175,10 +175,7 @@ describe("the email card in the widget", () => {
       sceneExpect(
         text("Sent. The team replies to me@example.com within one working day.")
       ).toExist(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
@@ -189,10 +186,7 @@ describe("the email card in the widget", () => {
       given(filledCard),
       Subscription.emit(Message.HandoffEmailSent({ emailed: false })),
       sceneExpect(text("Saved. The team will see this chat.")).toExist(),
-      SceneCommand.resolve(
-        ScrollToLatest(),
-        Message.CompletedScrollToLatest()
-      ),
+      SceneCommand.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       SceneCommand.expectNone()
     );
   });
