@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { plainTextOf, withoutElements } from "@rat-stack/core";
 import { Effect } from "effect";
 import { renderToString } from "foldkit/experimental/server";
 
@@ -27,10 +28,7 @@ const patterns = {
   image: /<img\b[^>]*\bsrc="(?<src>[^"]*)"/gu,
   relatedBlock: /<div class="related-articles">(?<block>[\s\S]*?)<\/div>/u,
   relatedLink: /href="(?<href>[^"]*)"[^>]*>(?<title>[^<]*)</gu,
-  script: /<script\b[\s\S]*?<\/script>/gu,
   space: /\s+/gu,
-  style: /<style\b[\s\S]*?<\/style>/gu,
-  tag: /<[^>]*>/gu,
   title: /<title>(?<title>[\s\S]*?)<\/title>/u,
 };
 
@@ -59,7 +57,7 @@ const titleOf = (html: string): string =>
   patterns.title.exec(html)?.groups?.title ?? "";
 
 const withoutCode = (html: string): string =>
-  html.replaceAll(patterns.script, " ").replaceAll(patterns.style, " ");
+  withoutElements(html, ["script", "style"]);
 
 const decodeEntities = (text: string): string => {
   let decoded = text;
@@ -72,7 +70,7 @@ const decodeEntities = (text: string): string => {
 };
 
 const textOf = (html: string): string =>
-  decodeEntities(withoutCode(html).replaceAll(patterns.tag, " "))
+  decodeEntities(plainTextOf(withoutCode(html), " "))
     .replaceAll(patterns.space, " ")
     .trim();
 

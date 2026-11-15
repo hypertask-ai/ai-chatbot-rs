@@ -89,6 +89,7 @@ export {
   formatHelpArticleContent,
   isHtmlHelpArticle,
   plainTextOf,
+  withoutElements,
 } from "./help-article-html.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";

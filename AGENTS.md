@@ -218,6 +218,14 @@ Changes:
 - Hot pink is the only accent. `--accent` (#ff1493) marks borders, rules and focus rings; `--accent-text` (#c8006e, 5.7:1 on white) is the only pink text. Use it for at most one thing per screen, plus focus. News chrome uses no pink. The allowed selectors cover `:focus-visible` and copy controls; links, headings, tables and tier cells never use it. `apps/site/test/accent.test.ts` holds the allowed selectors.
 - Pins stay exact. A vendored dependency carries a matching `minimumReleaseAgeExclude` entry and a removal rule in `vendor/README.md`.
 
+### One owner per rule
+
+A rule with a single owner names that owner and the file that enforces it. A new case joins the owner instead of growing a second copy.
+
+| Rule | One owner | Enforced by |
+| --- | --- | --- |
+| Strip HTML tags with the tokenizer, never with a regex. A regex misses upper case tags such as `<SCRIPT>`. | `plainTextOf` and `withoutElements` in `packages/core/src/help-article-html.ts` | `packages/core/test/tag-stripping-owner.test.ts` |
+
 ## Architecture
 
 Where the help site's parts live, and which way the imports run.
