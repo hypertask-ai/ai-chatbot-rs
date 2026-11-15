@@ -40,6 +40,27 @@ export { helpCategoryName } from "./help-category.js";
 export { helpArticlePane } from "./help-article-pane.js";
 
 export {
+  expandedHelpQueryTerms,
+  helpArticleStem,
+  helpArticleTokens,
+  rankHelpArticles,
+  scoreHelpSearchMatches,
+  HelpRetrievalAnswer,
+  HelpRetrievalArticle,
+  HelpSearchArticle,
+  type HelpRetrievalAnswerValue,
+  type HelpSearchArticleValue,
+} from "./help-search.js";
+
+export {
+  DEBUG_RETRIEVAL_DEFAULT_QUERY,
+  HelpArticleCorpus,
+  debugHelpRetrieval,
+  findHelpArticles,
+  helpRetrievalCapabilities,
+} from "./help-retrieval.js";
+
+export {
   helpArticleCapabilities,
   helpSearchKeywords,
   listHelpArticles,
