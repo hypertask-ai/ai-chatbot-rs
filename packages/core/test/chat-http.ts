@@ -5,6 +5,7 @@ import { Etag, HttpPlatform, HttpRouter } from "effect/http";
 import type { HttpServerRequest } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
+import { ChatClock } from "../src/chat-clock.js";
 import {
   ChatConversationStore,
   memoryChatConversations,
@@ -70,6 +71,7 @@ export const serveChat = (
       Layer.succeed(ChatMessageStore, messages),
       Layer.succeed(CustomerAlerts, alerts),
       Layer.succeed(HandoffEmail, teamEmail),
+      Layer.succeed(ChatClock, { now: Effect.succeed(CHAT_SECOND) }),
       NodeCrypto.layer,
       TestServices
     );

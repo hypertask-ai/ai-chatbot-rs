@@ -1,6 +1,7 @@
 import { implement } from "@rat-stack/capability/implement";
-import { Clock, Effect, Schema } from "effect";
+import { Effect, Schema } from "effect";
 
+import { ChatClock } from "./chat-clock.js";
 import {
   conversationNotFoundFailure,
   profileAccountInvalidFailure,
@@ -142,7 +143,8 @@ export const saveVisitorProfile = implement(
         return yield* Effect.fail(conversationNotFoundFailure);
       }
 
-      const at = Math.floor((yield* Clock.currentTimeMillis) / 1000);
+      const clock = yield* ChatClock;
+      const at = yield* clock.now;
 
       const stepped = stepConversation(conversationStateOf(conversation), {
         account: account ?? links.account ?? conversation.hasAccount,

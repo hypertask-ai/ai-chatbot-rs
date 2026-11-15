@@ -1,6 +1,5 @@
 import { expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { TestClock } from "effect/testing";
 
 import type {
   ChatConversationOperations,
@@ -57,7 +56,6 @@ const written = (
 
 it.effect("refuses a profile with no name or email and writes nothing", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -85,8 +83,6 @@ it.effect("refuses a profile with no name or email and writes nothing", () =>
 
 it.effect("names the email as the one missing field", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({ id: "c1", name: "Ada" }),
     ]);
@@ -111,8 +107,6 @@ it.effect("names the email as the one missing field", () =>
 
 it.effect("names the name as the one missing field", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({ email: "ada@example.com", id: "c1" }),
     ]);
@@ -137,7 +131,6 @@ it.effect("names the name as the one missing field", () =>
 
 it.effect("answers 404 for a conversation that does not exist", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([]);
 
     const answer = yield* postChat(stack.handler, {
@@ -154,8 +147,6 @@ it.effect("answers 404 for a conversation that does not exist", () =>
 
 it.effect("ignores the stored profile_completed flag", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({
         email: "ada@example.com",
@@ -181,8 +172,6 @@ it.effect(
   "moves the conversation to a person, replies and raises the alert",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
-
       const stack = yield* chatStack([
         chatConversationSeed({
           email: "ada@example.com",
@@ -228,8 +217,6 @@ it.effect(
 
 it.effect("reopens a closed conversation to a handoff", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({
         email: "ada@example.com",
@@ -262,8 +249,6 @@ it.effect("reopens a closed conversation to a handoff", () =>
 
 it.effect("moves a human conversation back to a handoff request", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({
         email: "ada@example.com",
@@ -287,8 +272,6 @@ it.effect("moves a human conversation back to a handoff request", () =>
 
 it.effect("does not gate a second handoff request", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({
         email: "ada@example.com",
@@ -327,8 +310,6 @@ it.effect("does not gate a second handoff request", () =>
 
 it.effect("alerts with the eval flag on an eval conversation", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({
         email: "ada@example.com",
@@ -360,7 +341,6 @@ it.effect("alerts with the eval flag on an eval conversation", () =>
 
 it.effect("refuses an empty email", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -381,7 +361,6 @@ it.effect("refuses an empty email", () =>
 
 it.effect("refuses an email that is not shaped like an email", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -399,7 +378,6 @@ it.effect("refuses an email that is not shaped like an email", () =>
 
 it.effect("refuses an email longer than 254 characters", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -417,7 +395,6 @@ it.effect("refuses an email longer than 254 characters", () =>
 
 it.effect("accepts an email of exactly 254 characters", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
     const email = `${"a".repeat(242)}@example.com`;
 
@@ -437,7 +414,6 @@ it.effect("accepts an email of exactly 254 characters", () =>
 
 it.effect("refuses a missing conversation id", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -455,7 +431,6 @@ it.effect("refuses a missing conversation id", () =>
 
 it.effect("answers 401 without a bearer token", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -472,7 +447,6 @@ it.effect("answers 401 without a bearer token", () =>
 
 it.effect("answers 401 for a token longer than 512 characters", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -492,7 +466,6 @@ it.effect(
   "answers 401 for an authorization header that is not a bearer token",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
       const stack = yield* chatStack([owned("c1")]);
 
       const basic = yield* postChat(stack.handler, {
@@ -514,8 +487,6 @@ it.effect(
 
 it.effect("answers 404 when the secret does not own the conversation", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       owned("c1", {
         visitorSecretHash:
@@ -538,7 +509,6 @@ it.effect("answers 404 when the secret does not own the conversation", () =>
 
 it.effect("answers 404 for a conversation that does not exist", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([]);
 
     const answer = yield* postChat(stack.handler, {
@@ -558,8 +528,6 @@ it.effect(
   "leaves the email, moves to a person, replies and emails the team",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
-
       const stack = yield* chatStack(
         [
           owned("c1", {
@@ -643,7 +611,6 @@ it.effect(
 
 it.effect("uses the inserted visitor message as the first question", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1")]);
 
     const answer = yield* postChat(stack.handler, {
@@ -664,8 +631,6 @@ it.effect("uses the inserted visitor message as the first question", () =>
 
 it.effect("keeps the first question to 60 characters and one line", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack(
       [owned("c1")],
       [
@@ -692,8 +657,6 @@ it.effect("keeps the first question to 60 characters and one line", () =>
 
 it.effect("refuses a second request inside the 60 second window", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       owned("c1", {
         status: "handoff_requested",
@@ -728,8 +691,6 @@ it.effect("refuses a second request inside the 60 second window", () =>
 
 it.effect("accepts a second request at exactly 60 seconds", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       owned("c1", {
         status: "handoff_requested",
@@ -755,7 +716,6 @@ it.effect("accepts a second request at exactly 60 seconds", () =>
 
 it.effect("moves a closed conversation to a handoff request", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1", { status: "closed" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -776,7 +736,6 @@ it.effect("moves a closed conversation to a handoff request", () =>
 
 it.effect("skips the team email on an eval conversation", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([owned("c1", { isEval: true })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -803,7 +762,6 @@ it.effect("skips the team email on an eval conversation", () =>
 
 it.effect("reports unsent when the email provider answers false", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const conversations = yield* memoryChatConversations([owned("c1")]);
     const transcript = yield* memoryChatMessages();
     const alerts = yield* recordingChatAlerts();
@@ -832,7 +790,6 @@ it.effect("reports unsent when the email provider answers false", () =>
 
 it.effect("refuses with 429 when the store's window guard loses the race", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const memory = yield* memoryChatConversations([owned("c1")]);
     const transcript = yield* memoryChatMessages();
     const alerts = yield* recordingChatAlerts();
@@ -865,7 +822,6 @@ it.effect("refuses with 429 when the store's window guard loses the race", () =>
 
 it.effect("answers 404 when the store loses the conversation", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const memory = yield* memoryChatConversations([owned("c1")]);
     const transcript = yield* memoryChatMessages();
     const alerts = yield* recordingChatAlerts();

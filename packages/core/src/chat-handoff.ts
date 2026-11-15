@@ -1,7 +1,8 @@
 import { implement } from "@rat-stack/capability/implement";
-import { Clock, Effect, Schema } from "effect";
+import { Effect, Schema } from "effect";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 
+import { ChatClock } from "./chat-clock.js";
 import {
   conversationNotFoundFailure,
   handoffEmailInvalidFailure,
@@ -92,7 +93,8 @@ export const requestHandoff = implement(requestHandoffContract, (input) =>
       return yield* Effect.fail(conversationNotFoundFailure);
     }
 
-    const at = Math.floor((yield* Clock.currentTimeMillis) / 1000);
+    const clock = yield* ChatClock;
+    const at = yield* clock.now;
 
     const stepped = stepConversation(conversationStateOf(conversation), {
       at,
@@ -171,7 +173,8 @@ export const leaveHandoffEmail = implement(leaveHandoffEmailContract, (input) =>
       return yield* Effect.fail(conversationNotFoundFailure);
     }
 
-    const at = Math.floor((yield* Clock.currentTimeMillis) / 1000);
+    const clock = yield* ChatClock;
+    const at = yield* clock.now;
 
     const stepped = stepConversation(conversationStateOf(conversation), {
       at,

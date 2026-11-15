@@ -1,6 +1,5 @@
 import { expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { TestClock } from "effect/testing";
 
 import {
   CHAT_SECOND,
@@ -14,7 +13,6 @@ const PROFILE_PATH = "/api/chat/profile";
 
 it.effect("saves a name and leaves the profile incomplete", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -44,7 +42,6 @@ it.effect("saves a name and leaves the profile incomplete", () =>
 
 it.effect("trims and lowercases an email and leaves the name empty", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -80,7 +77,6 @@ it.effect(
   "marks the profile complete when a name and an email are present",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
       const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
       const answer = yield* postChat(stack.handler, {
@@ -116,7 +112,6 @@ it.effect(
 
 it.effect("saves the account type the visitor gives", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -152,7 +147,6 @@ it.effect(
   "refuses an account type outside the four values and writes nothing",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
       const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
       const answer = yield* postChat(stack.handler, {
@@ -174,7 +168,6 @@ it.effect(
 
 it.effect("validates the account before it reads the conversation", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([]);
 
     const answer = yield* postChat(stack.handler, {
@@ -193,7 +186,6 @@ it.effect("validates the account before it reads the conversation", () =>
 
 it.effect("refuses a body with no profile fields", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -215,7 +207,6 @@ it.effect(
   "refuses a missing or empty conversation id before anything else",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
       const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
       const missing = yield* postChat(stack.handler, {
@@ -241,7 +232,6 @@ it.effect(
 
 it.effect("answers 404 for a conversation that does not exist", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([]);
 
     const answer = yield* postChat(stack.handler, {
@@ -258,8 +248,6 @@ it.effect("answers 404 for a conversation that does not exist", () =>
 
 it.effect("fills a name and an account from a returning customer", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({ id: "c1" }),
       chatConversationSeed({
@@ -312,8 +300,6 @@ it.effect("fills a name and an account from a returning customer", () =>
 
 it.effect("does not fill an account the returning customer never set", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({ id: "c1" }),
       chatConversationSeed({
@@ -350,8 +336,6 @@ it.effect(
   "ignores an eval conversation when it looks for a returning customer",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
-
       const stack = yield* chatStack([
         chatConversationSeed({ id: "c1" }),
         chatConversationSeed({
@@ -389,8 +373,6 @@ it.effect(
   "does not treat an empty name on another conversation as a returning customer",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
-
       const stack = yield* chatStack([
         chatConversationSeed({ id: "c1" }),
         chatConversationSeed({
@@ -426,7 +408,6 @@ it.effect(
 
 it.effect("stores an email that is not shaped like an email", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -460,7 +441,6 @@ it.effect("stores an email that is not shaped like an email", () =>
 
 it.effect("stores a name exactly as sent", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
     const stack = yield* chatStack([chatConversationSeed({ id: "c1" })]);
 
     const answer = yield* postChat(stack.handler, {
@@ -496,8 +476,6 @@ it.effect(
   "keeps the account from a returning customer when the name is given",
   () =>
     Effect.gen(function* runScenario() {
-      yield* TestClock.setTime(CHAT_SECOND * 1000);
-
       const stack = yield* chatStack([
         chatConversationSeed({ id: "c1" }),
         chatConversationSeed({
@@ -537,8 +515,6 @@ it.effect(
 
 it.effect("keeps a profile complete when the row already holds an email", () =>
   Effect.gen(function* runScenario() {
-    yield* TestClock.setTime(CHAT_SECOND * 1000);
-
     const stack = yield* chatStack([
       chatConversationSeed({
         email: "ada@example.com",

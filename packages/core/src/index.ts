@@ -30,6 +30,8 @@ export {
 
 export { saveVisitorProfile } from "./chat-profile.js";
 
+export { ChatClock, type ChatClockValue } from "./chat-clock.js";
+
 export {
   ChatConversationSchema,
   ChatConversationSeedSchema,
