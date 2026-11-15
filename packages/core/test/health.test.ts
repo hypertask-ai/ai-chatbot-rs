@@ -7,6 +7,7 @@ describe("health capability", () => {
   it.effect("reports the service as ok", () =>
     Effect.gen(function* healthAnswer() {
       const answer = yield* health.handler({});
+
       const encoded = yield* Schema.encodeEffect(health.contract.output)(
         answer
       );

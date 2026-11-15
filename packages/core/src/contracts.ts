@@ -299,6 +299,7 @@ export const inspectFileContract = defineContract("inspectFile", {
   output: FileStatsSchema,
 });
 
+// oxlint-disable-next-line sort-keys -- The old worker sends status before service and the recorded answer compares the encoded body.
 export const HealthOutput = Schema.Struct({
   status: Schema.Literals(["ok"]),
   service: Schema.Literals(["ai-chatbot"]),

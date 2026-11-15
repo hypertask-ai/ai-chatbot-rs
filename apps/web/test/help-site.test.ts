@@ -29,16 +29,16 @@ const recorded = Schema.decodeUnknownSync(
   Schema.fromJsonString(RecordedAnswers)
 )(
   readFileSync(
-    new URL("./fixtures/help-site-answers.json", import.meta.url),
-    "utf8"
+    new URL("fixtures/help-site-answers.json", import.meta.url),
+    "utf-8"
   )
 );
 
 const site = "https://help.hypertask.ai";
 
-const hostAddedVaryFields = ["accept", "sec-fetch-dest"];
+const hostAddedVaryFields = new Set(["accept", "sec-fetch-dest"]);
 
-const varyFields = (value: string | null): ReadonlyArray<string> =>
+const varyFields = (value: string | null): readonly string[] =>
   (value ?? "")
     .split(",")
     .map((field) => field.trim().toLowerCase())
@@ -84,7 +84,7 @@ describe("help site answers recorded from the old site", () => {
             expect(
               answered.filter(
                 (field) =>
-                  !kept.includes(field) && !hostAddedVaryFields.includes(field)
+                  !kept.includes(field) && !hostAddedVaryFields.has(field)
               ),
               `${row.id} adds no field beyond ${expected} and the page host`
             ).toEqual([]);
@@ -150,6 +150,7 @@ describe("help site answers recorded from the old site", () => {
             })
           )
         );
+
         const root = yield* Effect.promise(() =>
           answer(
             new Request(`${site}/`, {

@@ -56,7 +56,7 @@ export const answerHelpSite = async (
   }
 
   if (pathname === "/health") {
-    return answerHealth(request);
+    return await answerHealth(request);
   }
 
   if (redirectsFrom(pathname)) {
