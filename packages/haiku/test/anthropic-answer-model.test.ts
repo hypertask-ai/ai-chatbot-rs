@@ -6,6 +6,7 @@ import {
   AnswerModel,
   buildAnswerRequest,
   toAnswerUserContent,
+  visitorProfileFromRow,
 } from "@rat-stack/core";
 import type {
   AnswerModelFailure,
@@ -100,11 +101,11 @@ const answerRequest = buildAnswerRequest({
     title: "Install the CLI",
     url: "https://docs.hypertask.ai/cli/install",
   },
-  profile: {
+  profile: visitorProfileFromRow({
     has_hypertask_account: "unknown",
     visitor_email: null,
     visitor_name: "Ada",
-  },
+  }),
   userContent: toAnswerUserContent(
     "What is this error?",
     "data:image/png;base64,iVBORw0KGgo=\nAAA"

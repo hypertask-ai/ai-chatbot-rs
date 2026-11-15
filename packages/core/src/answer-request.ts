@@ -8,6 +8,7 @@ import type {
   AnswerTextBlock,
 } from "./answer-model.js";
 import { PERSON_FOLLOWUP, SYSTEM_PROMPT } from "./answer-prompt.js";
+import type { VisitorProfile } from "./conversation-machine.js";
 
 export const MAX_OUTPUT_TOKENS = 800;
 
@@ -16,12 +17,6 @@ export const HISTORY_TURN_LIMIT = 8;
 export interface ChatTurn {
   readonly content: string;
   readonly role: "assistant" | "user";
-}
-
-export interface VisitorProfile {
-  readonly has_hypertask_account: string;
-  readonly visitor_email: string | null;
-  readonly visitor_name: string | null;
 }
 
 export interface AnswerPageContext {
@@ -137,15 +132,11 @@ export const toAnswerUserContent = (
   return [textBlock(fallback), imageBlockOf(mediaType, data)];
 };
 
-const accountOf = (profile: VisitorProfile): string | null => {
-  const account = profile.has_hypertask_account;
+const accountOf = (profile: VisitorProfile): string | null =>
+  profile.account === "unknown" ? null : profile.account;
 
-  if (account === "" || account === "unknown") {
-    return null;
-  }
-
-  return account;
-};
+const absentAsNull = (value: string | undefined): string | null =>
+  value === undefined || value === "" ? null : value;
 
 export const profileContextBlock = (
   profile?: VisitorProfile | null
@@ -154,8 +145,8 @@ export const profileContextBlock = (
     return null;
   }
 
-  const name = profile.visitor_name === "" ? null : profile.visitor_name;
-  const email = profile.visitor_email === "" ? null : profile.visitor_email;
+  const name = absentAsNull(profile.name);
+  const email = absentAsNull(profile.email);
   const account = accountOf(profile);
 
   if (name === null && email === null && account === null) {

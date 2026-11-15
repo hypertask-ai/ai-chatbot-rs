@@ -157,8 +157,13 @@ export {
   type AnswerRequestInput,
   type AnswerUserContent,
   type ChatTurn,
-  type VisitorProfile,
 } from "./answer-request.js";
+
+export {
+  VisitorProfileRowSchema,
+  visitorProfileFromRow,
+  type VisitorProfileRow,
+} from "./visitor-profile-row.js";
 
 export {
   answerMachine,
