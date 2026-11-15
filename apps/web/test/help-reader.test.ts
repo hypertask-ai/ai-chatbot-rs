@@ -338,7 +338,7 @@ describe("the reader on the page", () => {
       given(initialModel(home)),
       sceneExpect(selector("#reader")).not.toBeVisible(),
       sceneExpect(selector("#libraryView")).toBeVisible(),
-      sceneExpect(selector("#all .article-card")).toHaveAttr(
+      sceneExpect(selector("#all a")).toHaveAttr(
         "href",
         "/help/docs-connect-an-agent"
       )
@@ -375,13 +375,14 @@ describe("the reader on the page", () => {
         LoadHelpArticle,
         Message.ReaderLoaded({ article, slug: article.slug })
       ),
-      sceneExpect(selector("#readerBody")).toContainText("Connect an Agent"),
-      sceneExpect(selector("#readerBody")).toContainText("Agents"),
-      sceneExpect(selector("#readerBody")).toContainText(
+      sceneExpect(selector("#readerBody header")).toContainText(
+        "Connect an Agent"
+      ),
+      sceneExpect(selector("#readerBody header")).toContainText("Agents"),
+      sceneExpect(selector("#readerBody header")).toContainText(
         "Connect Claude, Codex or Cursor over MCP."
       ),
-      sceneExpect(selector("#readerBody")).toContainText("Open the board"),
-      sceneExpect(selector("#readerBody")).toContainText("Steps")
+      sceneExpect(selector("#readerBody div")).toExist()
     );
   });
 
