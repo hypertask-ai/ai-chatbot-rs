@@ -38,6 +38,7 @@ const capture = (captured: Ref.Ref<readonly Captured[]>) =>
   HttpClient.make((request) =>
     Effect.gen(function* captureTelegramRequest() {
       const { body } = request;
+
       const bytes = Predicate.isTagged(body, "Uint8Array")
         ? body.body
         : new Uint8Array();
@@ -142,6 +143,7 @@ describe("customer alerts over the Help Desk bot", () => {
       const run = yield* runAlert(configured(), (alerts) =>
         alerts.newConversation(newConversation)
       );
+
       const [request] = run.captured;
 
       expect(run.outcome).toBe(true);
@@ -162,6 +164,7 @@ describe("customer alerts over the Help Desk bot", () => {
       const run = yield* runAlert(configured(), (alerts) =>
         alerts.handoffRequested(handoff)
       );
+
       const [request] = run.captured;
 
       expect(run.outcome).toBe(true);
@@ -178,6 +181,7 @@ describe("customer alerts over the Help Desk bot", () => {
       const run = yield* runAlert(configured(), (alerts) =>
         alerts.newMessage(newMessage)
       );
+
       const [request] = run.captured;
 
       expect(run.outcome).toBe(true);

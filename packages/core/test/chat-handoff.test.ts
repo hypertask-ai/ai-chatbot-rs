@@ -882,6 +882,7 @@ it.effect("answers the handoff when the alert sender fails", () =>
     const conversations = yield* memoryChatConversations([
       chatConversationSeed({ email: "ada@example.com", id: "c1", name: "Ada" }),
     ]);
+
     const transcript = yield* memoryChatMessages();
     const teamEmail = yield* recordingTeamEmail(true);
 
