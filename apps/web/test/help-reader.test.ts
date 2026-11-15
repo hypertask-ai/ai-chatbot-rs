@@ -21,9 +21,9 @@ import {
   ReaderPhase,
   initialModel,
 } from "../src/client/help/index.js";
+import type { ReaderPhaseValue } from "../src/client/help/index.js";
 import { helpArticleSlugOf } from "../src/client/help/reader-link.js";
 import { readerHidesLibrary, readerStep } from "../src/client/help/reader.js";
-import type { ReaderPhaseValue } from "../src/client/help/reader.js";
 import { update } from "../src/client/help/update.js";
 import { view } from "../src/features/help/index.js";
 

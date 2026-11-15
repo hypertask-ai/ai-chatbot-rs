@@ -32,7 +32,7 @@ const readerChanged = (
 ): UpdateReturn => {
   const step = readerStep(model.reader, readerEvent);
   const next = { ...model, reader: step.phase };
-  const reads = step.reads;
+  const { reads } = step;
 
   return reads === undefined
     ? { model: next }
@@ -40,10 +40,11 @@ const readerChanged = (
 };
 
 export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
-  Message.matchOrElse(
-    message,
-    {
-      ArticleFeedbackGiven: ({ sentiment }) => feedbackGiven(model, sentiment),
-    },
-    (readerEvent) => readerChanged(model, readerEvent)
-  );
+  Message.match<UpdateReturn>(message, {
+    ArticleFeedbackGiven: ({ sentiment }) => feedbackGiven(model, sentiment),
+    ReaderClosed: (readerEvent) => readerChanged(model, readerEvent),
+    ReaderFailed: (readerEvent) => readerChanged(model, readerEvent),
+    ReaderLoaded: (readerEvent) => readerChanged(model, readerEvent),
+    ReaderOpened: (readerEvent) => readerChanged(model, readerEvent),
+    ReaderViewportChanged: (readerEvent) => readerChanged(model, readerEvent),
+  });
