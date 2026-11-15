@@ -393,7 +393,7 @@ const readerContent = (
   });
 
 const reader = (
-  h: Builder,
+  h: HtmlBuilder<AppMessage>,
   page: HelpCenterPage,
   phase: ReaderPhaseValue
 ): Html =>

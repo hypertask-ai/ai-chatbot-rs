@@ -33,7 +33,7 @@ export const helpArticleSlugOf = (
         url.origin === origin
           ? Option.flatMap(
               Option.fromUndefinedOr(
-                ARTICLE_PATH.exec(url.pathname)?.groups?.["slug"]
+                ARTICLE_PATH.exec(url.pathname)?.groups?.slug
               ),
               decodedSegment
             )

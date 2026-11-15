@@ -86,7 +86,7 @@ const textOf = (html: string): string => {
 
 const headingsOf = (html: string): readonly string[] =>
   [...html.matchAll(patterns.heading)].map((match) =>
-    textOf(match.groups?.["heading"] ?? "")
+    textOf(match.groups?.heading ?? "")
   );
 
 const bodyOf = (html: string): string => {
@@ -129,6 +129,7 @@ const openedAt = (
 const pageWithPane = (path: string, wide: boolean) =>
   Effect.gen(function* withPane() {
     const article = yield* paneAt(path);
+
     const flags = yield* helpPageFlags({ slug: null }).pipe(
       Effect.provide(recordedHelpArticles)
     );

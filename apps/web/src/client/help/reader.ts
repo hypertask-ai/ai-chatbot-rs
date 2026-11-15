@@ -16,24 +16,16 @@ export const ReaderEvent = defineTaggedUnion(readerMessageCases);
 
 export type ReaderEventValue = typeof ReaderEvent.Type;
 
-export type ReaderCommand = Readonly<{
-  _tag: "LoadHelpArticle";
-  slug: string;
-}>;
-
 export interface ReaderStep {
-  readonly commands: readonly ReaderCommand[];
   readonly phase: ReaderPhaseValue;
+  readonly reads?: readonly string[];
 }
 
-const unchanged = (phase: ReaderPhaseValue): ReaderStep => ({
-  commands: [],
-  phase,
-});
+const unchanged = (phase: ReaderPhaseValue): ReaderStep => ({ phase });
 
 const loading = (slug: string, wide: boolean): ReaderStep => ({
-  commands: [{ _tag: "LoadHelpArticle", slug }],
   phase: ReaderPhase.Loading({ slug, wide }),
+  reads: [slug],
 });
 
 const sized = (phase: ReaderPhaseValue, wide: boolean): ReaderPhaseValue =>

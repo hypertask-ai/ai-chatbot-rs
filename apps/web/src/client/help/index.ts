@@ -13,7 +13,12 @@ export {
   initialModel,
 } from "./model.js";
 
-export type { AppModel, HelpPageValue, ReaderPhaseValue } from "./model.js";
+export type {
+  AppModel,
+  HelpArticlePageValue,
+  HelpPageValue,
+  ReaderPhaseValue,
+} from "./model.js";
 
 export { Message } from "./message.js";
 
@@ -21,7 +26,7 @@ export type { AppMessage } from "./message.js";
 
 export { readerHidesLibrary, readerStep } from "./reader.js";
 
-export type { ReaderCommand, ReaderStep } from "./reader.js";
+export type { ReaderStep } from "./reader.js";
 
 export { helpArticleSlugOf } from "./reader-link.js";
 

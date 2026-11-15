@@ -5,6 +5,7 @@ import { Message } from "./message.js";
 import type { AppMessage } from "./message.js";
 import type { AppModel } from "./model.js";
 import { readerStep } from "./reader.js";
+import type { ReaderEventValue } from "./reader.js";
 
 type UpdateReturn = Update.Return<AppModel, AppMessage>;
 
@@ -25,20 +26,24 @@ const feedbackGiven = (
   };
 };
 
+const readerChanged = (
+  model: AppModel,
+  readerEvent: ReaderEventValue
+): UpdateReturn => {
+  const step = readerStep(model.reader, readerEvent);
+  const next = { ...model, reader: step.phase };
+  const reads = step.reads;
+
+  return reads === undefined
+    ? { model: next }
+    : { commands: reads.map((slug) => LoadHelpArticle({ slug })), model: next };
+};
+
 export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
-  Message.matchOrElse<UpdateReturn>(
+  Message.matchOrElse(
     message,
     {
       ArticleFeedbackGiven: ({ sentiment }) => feedbackGiven(model, sentiment),
     },
-    (readerEvent) => {
-      const step = readerStep(model.reader, readerEvent);
-
-      return {
-        commands: step.commands.map((command) =>
-          LoadHelpArticle({ slug: command.slug })
-        ),
-        model: { ...model, reader: step.phase },
-      };
-    }
+    (readerEvent) => readerChanged(model, readerEvent)
   );

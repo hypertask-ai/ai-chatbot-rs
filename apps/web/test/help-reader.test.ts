@@ -29,6 +29,11 @@ import { view } from "../src/features/help/index.js";
 
 const origin = "https://help.hypertask.ai";
 
+const link = (href: string | null, target: string | null = null) => ({
+  href,
+  target,
+});
+
 const article: HelpArticlePageValue = {
   category: "cat-1",
   excerpt: "Connect Claude, Codex or Cursor over MCP.",
@@ -188,7 +193,7 @@ describe("the in page reader, one row of the old script at a time", () => {
       const step = readerStep(row.phase, row.event);
 
       expect(step.phase).toEqual(row.expected);
-      expect(step.commands).toHaveLength(row.commands);
+      expect(step.reads ?? []).toHaveLength(row.commands);
     });
   }
 
@@ -201,8 +206,8 @@ describe("the in page reader, one row of the old script at a time", () => {
       readerStep(
         closed,
         Message.ReaderOpened({ slug: article.slug, wide: true })
-      ).commands
-    ).toEqual([{ _tag: "LoadHelpArticle", slug: article.slug }]);
+      ).reads
+    ).toEqual([article.slug]);
   });
 
   it("hides the library only while the pane is open on a wide screen", () => {
@@ -215,11 +220,6 @@ describe("the in page reader, one row of the old script at a time", () => {
 });
 
 describe("what the old page counted as an article link", () => {
-  const link = (href: string | null, target: string | null = null) => ({
-    href,
-    target,
-  });
-
   const rows: readonly (readonly [
     string,
     string | null,
@@ -266,7 +266,7 @@ describe("what the old page counted as an article link", () => {
     ["no href", null, null, null],
     ["an empty href", "", null, null],
     ["a broken escape", "/help/%E0%A4%A", null, null],
-    ["a script address", "javascript:alert(1)", null, null],
+    ["a mail address", "mailto:help@hypertask.ai", null, null],
   ];
 
   for (const [name, href, target, slug] of rows) {

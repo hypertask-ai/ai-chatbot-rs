@@ -2,7 +2,7 @@ import {
   HelpArticleNotFound,
   HelpArticlePane,
 } from "@rat-stack/core/contracts";
-import { HelpArticleStore } from "@rat-stack/core/help-article-store";
+import type { HelpArticleStore } from "@rat-stack/core/help-article-store";
 import { readHelpArticlePane } from "@rat-stack/core/help-articles";
 import { Effect, Option, Schema } from "effect";
 
