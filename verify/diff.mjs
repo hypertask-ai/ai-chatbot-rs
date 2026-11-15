@@ -116,6 +116,7 @@ const mergeBaseOf = (cwd, base, head) => {
  * @returns {{ added: number | null, path: string, removed: number | null }[]}
  */
 const parseRows = (text) => {
+  /** @type {{ added: number | null, path: string, removed: number | null }[]} */
   const rows = [];
 
   for (const line of text.split("\n")) {
