@@ -17,36 +17,39 @@ const assets = {
   stylesheets: ["/assets/site.css"],
 };
 
-const responseAt = async (path: string): Promise<Response> => {
-  const result = await renderPage(
-    new Request(`https://help.hypertask.ai${path}`)
-  );
+const responseAt = (path: string) =>
+  Effect.gen(function* respond() {
+    const result = yield* Effect.promise(() =>
+      renderPage(new Request(`https://help.hypertask.ai${path}`))
+    );
 
-  return toResponse(
-    (application) => renderDocument(application, assets),
-    result
-  );
-};
+    return toResponse(
+      (application) => renderDocument(application, assets),
+      result
+    );
+  });
 
 describe("help addresses the live site does not answer", () => {
   for (const row of liveNotFound.rows) {
-    it(`answers ${row.path} like the live site`, async () => {
-      const response = await responseAt(row.path);
+    it.effect(`answers ${row.path} like the live site`, () =>
+      Effect.gen(function* address() {
+        const response = yield* responseAt(row.path);
 
-      expect(response.status, row.path).toBe(row.status);
-      expect(
-        response.headers.get("content-type")?.toLowerCase(),
-        row.path
-      ).toBe(row.headers["content-type"].toLowerCase());
+        expect(response.status, row.path).toBe(row.status);
+        expect(
+          response.headers.get("content-type")?.toLowerCase(),
+          row.path
+        ).toBe(row.headers["content-type"].toLowerCase());
 
-      if (row.body === null) {
-        expect(await response.text(), row.path).toContain(
-          `<title>${row.title}</title>`
-        );
-      } else {
-        expect(await response.text(), row.path).toBe(row.body);
-      }
-    });
+        const body = yield* Effect.promise(() => response.text());
+
+        if (row.body === null) {
+          expect(body, row.path).toContain(`<title>${row.title}</title>`);
+        } else {
+          expect(body, row.path).toBe(row.body);
+        }
+      })
+    );
   }
 
   it.effect("answers a removed article like an unknown address", () =>
