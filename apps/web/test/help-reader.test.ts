@@ -12,16 +12,14 @@ import {
 
 import { chatArticleSlugOf } from "../src/client/help/chat-link.js";
 import { LoadHelpArticle } from "../src/client/help/command.js";
-import type {
-  HelpArticlePageValue,
-  HelpPageValue,
-} from "../src/client/help/index.js";
 import {
   Message,
   ReaderPhase,
   initialModel,
+  type HelpArticlePageValue,
+  type HelpPageValue,
+  type ReaderPhaseValue,
 } from "../src/client/help/index.js";
-import type { ReaderPhaseValue } from "../src/client/help/index.js";
 import { helpArticleSlugOf } from "../src/client/help/reader-link.js";
 import { readerHidesLibrary, readerStep } from "../src/client/help/reader.js";
 import { update } from "../src/client/help/update.js";
