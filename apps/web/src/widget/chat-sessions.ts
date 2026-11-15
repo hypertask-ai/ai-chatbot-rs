@@ -1,0 +1,75 @@
+import { Schema } from "effect";
+
+import { widgetCopy } from "./copy.js";
+
+export const ChatStamp = Schema.Union([Schema.Number, Schema.String]);
+
+export const ChatSession = Schema.Struct({
+  created_at: Schema.optionalKey(Schema.NullOr(ChatStamp)),
+  id: Schema.String,
+  last_message: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  status: Schema.String,
+  updated_at: Schema.optionalKey(Schema.NullOr(ChatStamp)),
+});
+
+export type ChatSessionValue = typeof ChatSession.Type;
+
+export const ChatLine = Schema.Struct({
+  content: Schema.String,
+  role: Schema.Literals(["admin", "bot", "user"]),
+});
+
+export type ChatLineValue = typeof ChatLine.Type;
+
+const previewLimit = 50;
+
+const millisPerMinute = 60_000;
+const millisPerHour = 3_600_000;
+const millisPerDay = 86_400_000;
+
+export const sessionStamp = (
+  session: ChatSessionValue
+): number | string | null | undefined =>
+  session.updated_at ?? session.created_at;
+
+export const sessionPreview = (
+  lastMessage: string | null | undefined
+): string => {
+  const preview =
+    lastMessage === null || lastMessage === undefined || lastMessage === ""
+      ? widgetCopy.sessionNoMessages
+      : lastMessage;
+
+  return preview.length > previewLimit
+    ? `${preview.slice(0, previewLimit)}...`
+    : preview;
+};
+
+export const sessionTime = (
+  stamp: number | string | null | undefined,
+  nowMillis: number
+): string => {
+  const date = new Date(stamp ?? Number.NaN);
+  const diffMillis = nowMillis - date.getTime();
+  const minutes = Math.floor(diffMillis / millisPerMinute);
+  const hours = Math.floor(diffMillis / millisPerHour);
+  const days = Math.floor(diffMillis / millisPerDay);
+
+  if (minutes < 1) {
+    return widgetCopy.sessionJustNow;
+  }
+
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+
+  if (hours < 24) {
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  }
+
+  if (days < 7) {
+    return days === 1 ? widgetCopy.sessionYesterday : `${days} days ago`;
+  }
+
+  return date.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+};

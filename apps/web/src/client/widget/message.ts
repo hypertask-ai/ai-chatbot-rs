@@ -2,6 +2,8 @@ import { Schema } from "effect";
 import { File } from "foldkit/file";
 import { defineMessageUnion } from "foldkit/message";
 
+import { ChatLine, ChatSession } from "../../widget/chat-sessions.js";
+
 export const HostMessage = Schema.Union([
   Schema.Struct({
     isMobile: Schema.optionalKey(Schema.Boolean),
@@ -60,6 +62,11 @@ export const Message = defineMessageUnion({
   CompletedScrollToLatest: {},
   CompletedStoreSession: {},
   CompletedSyncChrome: {},
+  LoadedMenuSessions: {
+    now: Schema.Number,
+    sessions: Schema.Array(ChatSession),
+  },
+  LoadedPastChat: { messages: Schema.Array(ChatLine) },
   LoadedSession: {
     conversationId: Schema.String,
     sheet: Schema.Boolean,
@@ -67,6 +74,8 @@ export const Message = defineMessageUnion({
     visitorSecret: Schema.String,
   },
   OpenedLightbox: { dataUrl: Schema.String },
+  OpenedMenu: {},
+  PickedMenuSession: { sessionId: Schema.String, status: Schema.String },
   PickedSuggestion: { text: Schema.String },
   ReceivedHostMessage: {
     data: Schema.Unknown,
@@ -74,7 +83,9 @@ export const Message = defineMessageUnion({
     sameOrigin: Schema.Boolean,
   },
   RejectedAttachment: {},
+  RejectedMenuSessions: {},
   RemovedAttachment: {},
+  StartedNewConversation: {},
   Submitted: {},
   TookFile: { file: File },
 });
