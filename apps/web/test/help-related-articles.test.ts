@@ -32,11 +32,21 @@ const articleIn = (slug: string) => {
   return row;
 };
 
+const summaryIn = (slug: string) => {
+  const summary = recordedHelpArticleList.find((entry) => entry.slug === slug);
+
+  if (summary === undefined) {
+    throw new Error(`The recorded article list holds no article ${slug}.`);
+  }
+
+  return summary;
+};
+
 const relatedFor = (
   slug: string
 ): readonly { readonly slug: string; readonly title: string }[] =>
   relatedHelpArticles({
-    article: articleIn(slug),
+    article: summaryIn(slug),
     list: recordedHelpArticleList,
   });
 
@@ -57,14 +67,7 @@ describe("help related articles", () => {
     Effect.gen(function* alone() {
       const slug = "pricing-plans";
       const row = articleIn(slug);
-
-      const summary = recordedHelpArticleList.find(
-        (entry) => entry.slug === slug
-      );
-
-      if (summary === undefined) {
-        throw new Error(`The recorded article list holds no article ${slug}.`);
-      }
+      const summary = summaryIn(slug);
 
       const layer = HelpArticleStore.layer({
         articles: [row],

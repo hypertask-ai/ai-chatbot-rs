@@ -4,7 +4,7 @@ import { Effect } from "effect";
 import { toResponse } from "foldkit/experimental/server";
 
 import { renderDocument, renderPage } from "../src/entry.server.js";
-import { helpPageFlags } from "../src/server/help-pages.js";
+import { helpPageFlags, helpRouteOf } from "../src/server/help-pages.js";
 import {
   recordedHelpArticleList,
   recordedHelpArticleRows,
@@ -29,8 +29,12 @@ const responseAt = (path: string) =>
     );
   });
 
+const addressRows = liveNotFound.rows.filter((row) => row.body !== null);
+
+const encodedRow = liveNotFound.rows.find((row) => row.path.includes("%"));
+
 describe("help addresses the live site does not answer", () => {
-  for (const row of liveNotFound.rows) {
+  for (const row of addressRows) {
     it.effect(`answers ${row.path} like the live site`, () =>
       Effect.gen(function* address() {
         const response = yield* responseAt(row.path);
@@ -43,14 +47,21 @@ describe("help addresses the live site does not answer", () => {
 
         const body = yield* Effect.promise(() => response.text());
 
-        if (row.body === null) {
-          expect(body, row.path).toContain(`<title>${row.title}</title>`);
-        } else {
-          expect(body, row.path).toBe(row.body);
-        }
+        expect(body, row.path).toBe(row.body);
       })
     );
   }
+
+  it("decodes a percent encoded address to the article it names", () => {
+    if (encodedRow === undefined) {
+      throw new Error(
+        "The recorded answers hold no percent encoded address. Fix: record one with a GET to help.hypertask.ai."
+      );
+    }
+
+    expect(encodedRow.status).toBe(200);
+    expect(helpRouteOf(encodedRow.path)).toEqual({ slug: "pricing-plans" });
+  });
 
   it.effect("answers a removed article like an unknown address", () =>
     Effect.gen(function* removed() {
