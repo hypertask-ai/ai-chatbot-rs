@@ -66,9 +66,7 @@ export const unreadOf = (
   row.last_message_time !== null &&
   row.last_message_time > (lastSeen[row.id] ?? 0);
 
-export const inboxQueryOf = (
-  archived: string | undefined
-): AdminInboxQuery => ({
+export const inboxQueryOf = (archived?: string): AdminInboxQuery => ({
   archived: archived === "true",
 });
 
