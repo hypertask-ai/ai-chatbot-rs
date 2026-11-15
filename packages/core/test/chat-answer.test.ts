@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 
 import { expect, it } from "@effect/vitest";
-import { Context, Deferred, Effect, Fiber, Stream } from "effect";
+import { Context, Deferred, Effect, Fiber, Predicate, Stream } from "effect";
 import { TestClock } from "effect/testing";
 
 import {
@@ -121,6 +121,7 @@ it.effect("streams the recorded answer to the client in several parts", () =>
       ...seeded(),
       answers: [{ pieces: ["Pro is ", "$16 per ", "user."] }],
     });
+
     const readable = Stream.toReadableStreamWith(
       answerContext(stack),
       {}
@@ -129,6 +130,7 @@ it.effect("streams the recorded answer to the client in several parts", () =>
         new TextEncoder().encode(encodeChatStreamEvent(event))
       )
     );
+
     const parts = yield* readParts(readable);
     const decoder = new TextDecoder("utf-8");
 
@@ -156,6 +158,7 @@ it.effect("keeps a multi-byte answer whole across chunk boundaries", () =>
       ...seeded(),
       answers: [{ pieces: ["Prix : 16 € ", "café ", "— fin, naïve."] }],
     });
+
     const frames = yield* collect(
       stack,
       input({
@@ -178,6 +181,7 @@ it.effect("sends the busy frame when the model never answers", () =>
       ...seeded(),
       answers: [{ failure: "retryable", pieces: [] }],
     });
+
     const frames = yield* collectWithClock(
       collect(
         stack,
@@ -205,6 +209,7 @@ it.effect(
         ...seeded(),
         answers: [{ failure: "refused", pieces: ["Partial "] }],
       });
+
       const frames = yield* collect(
         stack,
         input({
@@ -229,6 +234,7 @@ it.effect("sends the failure frame when the answer breaks", () =>
       ...seeded(),
       answers: [{ pieces: ["Half an "], viaDefect: true }],
     });
+
     const frames = yield* collect(
       stack,
       input({
@@ -249,16 +255,19 @@ it.effect("sends the failure frame when the answer breaks", () =>
 
 it.effect("stores the partial answer when the visitor disconnects", () =>
   Effect.gen(function* runScenario() {
-    const hold = yield* Deferred.make<void>();
+    const hold = yield* Deferred.make<true>();
+
     const stack = yield* chatMessageStack({
       ...seeded(),
       answers: [{ hold: Deferred.await(hold), pieces: ["Only half "] }],
     });
+
     const asked = input({
       answerMessageId: "msg-6",
       conversationId: "conv-6",
       visitorMessageId: "msg-0f",
     });
+
     const frames = yield* withAnswer(
       Stream.runCollect(Stream.take(chatAnswerFrames(asked), 2)),
       stack
@@ -282,6 +291,7 @@ it.effect("answers the first question from the cache without the model", () =>
       cached: [["How much is Pro?", "Cached answer."]],
       ...seeded(),
     });
+
     const frames = yield* collect(stack, input());
 
     expect(frames.map((frame) => frame.type)).toEqual([
@@ -324,6 +334,7 @@ it.effect("never saves an answer that hit the output cap", () =>
       ...seeded(),
       answers: [{ pieces: ["A cut off ans"], stopReason: "max_tokens" }],
     });
+
     const frames = yield* collect(stack, input());
     const done = frames.at(-1);
 
@@ -381,6 +392,7 @@ it.effect(
         cleanup: (text) =>
           text.replaceAll("[PROFILE_ACCOUNT: paid]", "").trim(),
       });
+
       const frames = yield* collect(stack, input());
       const done = frames.at(-1);
 
@@ -399,6 +411,7 @@ it.effect("carries the cited sources in the done frame", () =>
       ...seeded(),
       answers: [{ pieces: ["See the pricing plans."] }],
     });
+
     const frames = yield* collect(stack, input());
     const done = frames.at(-1);
 
@@ -419,6 +432,7 @@ it.effect("reads the last twenty messages and leaves the new one out", () =>
           role: index % 2 === 0 ? "user" : "bot",
         })
     );
+
     const stack = yield* chatMessageStack({
       chats: [chatMessageRow({ id: "conv-1" })],
       messages: [
@@ -434,10 +448,11 @@ it.effect("reads the last twenty messages and leaves the new one out", () =>
 
     yield* collect(stack, input());
 
-    const request = (yield* stack.modelRequests)[0];
+    const [request] = yield* stack.modelRequests;
+
     const joined = (request?.messages ?? [])
       .map((message) =>
-        typeof message.content === "string"
+        Predicate.isString(message.content)
           ? message.content
           : message.content
               .map((block) => ("text" in block ? block.text : ""))
@@ -462,6 +477,7 @@ it.effect(
           { pieces: ["Pro is $16."] },
         ],
       });
+
       const frames = yield* collectWithClock(
         collect(stack, input()),
         "400 millis"

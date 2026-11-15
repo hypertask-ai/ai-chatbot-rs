@@ -13,15 +13,12 @@ import {
   toAnswerUserContent,
 } from "./answer-request.js";
 import type { ChatTurn, VisitorProfile } from "./answer-request.js";
+import { ChatAnswerCleanup } from "./chat-answer-cleanup.js";
+import { ChatArticleContext } from "./chat-article-context.js";
+import { ChatCitations } from "./chat-citations.js";
 import { ChatClock } from "./chat-clock.js";
 import { ChatConversationStore } from "./chat-conversation-store.js";
 import type { ChatConversation } from "./chat-conversation-store.js";
-import {
-  ChatAnswerCleanup,
-  ChatArticleContext,
-  ChatCitations,
-  FirstAnswerCache,
-} from "./chat-message-ports.js";
 import { ChatMessageStore } from "./chat-message-store.js";
 import type {
   ChatMessage,
@@ -36,6 +33,7 @@ import {
   errorEvent,
 } from "./chat-stream.js";
 import type { ChatStreamEvent } from "./chat-stream.js";
+import { FirstAnswerCache } from "./first-answer-cache.js";
 
 export const RESPONSE_CACHE_TTL_SECONDS = 600;
 
@@ -177,15 +175,19 @@ export const chatAnswerFrames = (input: ChatAnswerInput) =>
 
         const answer: Effect.Effect<void> = Effect.gen(function* answerTurn() {
           const conversation = yield* conversations.read(conversationId);
+
           const history = assistantTurns(
             yield* messages.list(conversationId),
             input.visitorMessageId
           );
+
           const profile =
             conversation === undefined ? null : answerProfileOf(conversation);
+
           const question = turn?.question ?? "";
           const page = turn?.page ?? null;
           const hasImage = turn?.hasImage === true;
+
           const eligible = firstAnswerEligible({
             hasImage,
             historyCount: history.length,
@@ -193,6 +195,7 @@ export const chatAnswerFrames = (input: ChatAnswerInput) =>
             profile,
             question,
           });
+
           const cached = eligible ? yield* cache.lookup(question) : undefined;
 
           yield* Queue.offer(
@@ -236,6 +239,7 @@ export const chatAnswerFrames = (input: ChatAnswerInput) =>
           }
 
           const articleContext = yield* articles.forQuestion(question);
+
           const request = buildAnswerRequest({
             articleContext,
             history,

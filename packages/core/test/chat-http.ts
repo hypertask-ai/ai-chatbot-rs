@@ -201,11 +201,11 @@ export const recordingChatAlerts = () =>
           Ref.update(seen, (held) => [...held, alert]).pipe(Effect.as(true)),
         newConversation: (alert: NewConversationAlert) =>
           Ref.update(conversations, (held) => [...held, alert]).pipe(
-            Effect.as(alert.isEval ? false : true)
+            Effect.as(!alert.isEval)
           ),
         newMessage: (alert: NewMessageAlert) =>
           Ref.update(messages, (held) => [...held, alert]).pipe(
-            Effect.as(alert.isEval ? false : true)
+            Effect.as(!alert.isEval)
           ),
       } satisfies CustomerAlertOperations,
     };

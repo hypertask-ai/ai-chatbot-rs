@@ -273,21 +273,42 @@ export {
 
 export {
   ChatAnswerCleanup,
-  ChatArticleContext,
-  ChatCitations,
-  ChatConfig,
-  ChatRateLimits,
-  ChatRequestFacts,
-  ChatRoom,
-  FirstAnswerCache,
   type ChatAnswerCleanupOperations,
+} from "./chat-answer-cleanup.js";
+
+export {
+  ChatArticleContext,
   type ChatArticleContextOperations,
+} from "./chat-article-context.js";
+
+export {
+  ChatCitations,
+  ChatCitationSchema,
   type ChatCitation,
   type ChatCitationsOperations,
+} from "./chat-citations.js";
+
+export { ChatConfig } from "./chat-config.js";
+
+export {
+  ChatRateLimits,
   type ChatRateLimitAnswer,
   type ChatRateLimitOperations,
+} from "./chat-rate-limits.js";
+
+export {
+  ChatRequestFacts,
   type ChatRequestFactsValue,
+} from "./chat-request-facts.js";
+
+export {
+  ChatRoom,
+  ChatRoomMessageSchema,
   type ChatRoomMessage,
   type ChatRoomOperations,
+} from "./chat-room.js";
+
+export {
+  FirstAnswerCache,
   type FirstAnswerCacheOperations,
-} from "./chat-message-ports.js";
+} from "./first-answer-cache.js";

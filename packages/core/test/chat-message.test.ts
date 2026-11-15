@@ -27,9 +27,11 @@ const planOf = (answer: ChatMessageAnswer | undefined): ChatMessageStreamed => {
 it.effect("refuses a blank message and an image that is not a data url", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatMessageStack();
+
     const blank = yield* postChatMessage(stack.handler, {
       body: { message: "   " },
     });
+
     const remote = yield* postChatMessage(stack.handler, {
       body: { imageUrl: "https://example.com/shot.png" },
     });
@@ -50,9 +52,11 @@ it.effect("refuses a blank message and an image that is not a data url", () =>
 it.effect("stores the trimmed message once and hands back the answer ids", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatMessageStack();
+
     const response = yield* postChatMessage(stack.handler, {
       body: { message: "  How much is Pro?  ", visitorId: "visitor-1" },
     });
+
     const plan = planOf(response.answer);
     const rows = yield* stack.conversations;
     const stored = yield* stack.messages;
@@ -97,9 +101,11 @@ it.effect(
   () =>
     Effect.gen(function* runScenario() {
       const stack = yield* chatMessageStack();
+
       const response = yield* postChatMessage(stack.handler, {
         body: { message: "Hello", visitorId: "visitor-1" },
       });
+
       const plan = planOf(response.answer);
       const secret = plan.visitorSecret ?? "";
       const rows = yield* stack.conversations;
@@ -113,6 +119,7 @@ it.effect(
 it.effect("keeps a presented secret that already belongs to the visitor", () =>
   Effect.gen(function* runScenario() {
     const presented = yield* hashVisitorSecret("presented-secret");
+
     const stack = yield* chatMessageStack({
       chats: [
         chatMessageRow({
@@ -122,10 +129,12 @@ it.effect("keeps a presented secret that already belongs to the visitor", () =>
         }),
       ],
     });
+
     const response = yield* postChatMessage(stack.handler, {
       authorization: "Bearer presented-secret",
       body: { message: "Hello again", visitorId: "visitor-1" },
     });
+
     const plan = planOf(response.answer);
     const rows = yield* stack.conversations;
 
@@ -139,6 +148,7 @@ it.effect(
   () =>
     Effect.gen(function* runScenario() {
       const other = yield* hashVisitorSecret("presented-secret");
+
       const stack = yield* chatMessageStack({
         chats: [
           chatMessageRow({
@@ -148,10 +158,12 @@ it.effect(
           }),
         ],
       });
+
       const response = yield* postChatMessage(stack.handler, {
         authorization: "Bearer presented-secret",
         body: { message: "Hello", visitorId: "visitor-1" },
       });
+
       const plan = planOf(response.answer);
       const rows = yield* stack.conversations;
 
@@ -165,10 +177,12 @@ it.effect(
   () =>
     Effect.gen(function* runScenario() {
       const marked = yield* chatMessageStack({ evalSecret: "eval-secret" });
+
       const response = yield* postChatMessage(marked.handler, {
         body: { message: "Replay this", visitorId: "visitor-1" },
         evalToken: "eval-secret",
       });
+
       const plan = planOf(response.answer);
 
       expect(yield* marked.conversations).toMatchObject([{ isEval: true }]);
@@ -221,6 +235,7 @@ it.effect("never flips the eval flag on a later message", () =>
 it.effect("stores an attached image as a line under the text", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatMessageStack();
+
     const response = yield* postChatMessage(stack.handler, {
       body: {
         imageUrl: "data:image/png;base64,AAAA",
@@ -228,6 +243,7 @@ it.effect("stores an attached image as a line under the text", () =>
         visitorId: "visitor-1",
       },
     });
+
     const plan = planOf(response.answer);
 
     expect(yield* stack.messages).toEqual([
@@ -243,6 +259,7 @@ it.effect("stores an attached image as a line under the text", () =>
 it.effect("answers 404 for a conversation that does not exist", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatMessageStack();
+
     const response = yield* postChatMessage(stack.handler, {
       body: { conversationId: "missing", message: "Hello" },
     });
@@ -258,6 +275,7 @@ it.effect("answers 404 for a conversation that does not exist", () =>
 it.effect("answers 429 when the chat limit is spent, before any read", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatMessageStack({ limitChat: false });
+
     const response = yield* postChatMessage(stack.handler, {
       body: { conversationId: "missing", message: "Hello" },
     });
@@ -274,6 +292,7 @@ it.effect("answers 429 when the chat limit is spent, before any read", () =>
 it.effect("answers 429 when the new conversation limit is spent", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatMessageStack({ limitNewConversation: false });
+
     const response = yield* postChatMessage(stack.handler, {
       body: { message: "Hello" },
     });
@@ -292,6 +311,7 @@ it.effect("does not charge the new conversation limit to a later message", () =>
       chats: [chatMessageRow({ id: "c1" })],
       limitNewConversation: false,
     });
+
     const response = yield* postChatMessage(stack.handler, {
       body: { conversationId: "c1", message: "Hello" },
     });
@@ -316,9 +336,11 @@ it.effect(
           }),
         ],
       });
+
       const response = yield* postChatMessage(stack.handler, {
         body: { conversationId: "c1", message: "  Are you there?  " },
       });
+
       const stored = yield* stack.messages;
 
       expect({ body: response.body, status: response.status }).toEqual({
@@ -358,6 +380,7 @@ it.effect("answers a handoff requested conversation the same way", () =>
     const stack = yield* chatMessageStack({
       chats: [chatMessageRow({ id: "c1", status: "handoff_requested" })],
     });
+
     const response = yield* postChatMessage(stack.handler, {
       body: { conversationId: "c1", message: "Anyone?" },
     });
@@ -379,6 +402,7 @@ it.effect("hands a closed conversation to the answer stream", () =>
     const stack = yield* chatMessageStack({
       chats: [chatMessageRow({ id: "c1", status: "closed" })],
     });
+
     const response = yield* postChatMessage(stack.handler, {
       body: { conversationId: "c1", message: "One more" },
     });

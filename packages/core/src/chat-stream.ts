@@ -59,16 +59,15 @@ export interface ChatStreamFailure {
 
 export const connectedEvent = (start: ChatStreamStart): ChatStreamConnected => {
   // oxlint-disable-next-line sort-keys -- The chat widget reads these frames and the fixtures compare the encoded bytes, which keep the old key order.
-  const frame: ChatStreamConnected = {
+  const base: ChatStreamConnected = {
     type: "connected",
     conversationId: start.conversationId,
     messageId: start.messageId,
-    ...(start.visitorSecret === undefined
-      ? {}
-      : { visitorSecret: start.visitorSecret }),
   };
 
-  return frame;
+  return start.visitorSecret === undefined
+    ? base
+    : { ...base, visitorSecret: start.visitorSecret };
 };
 
 export const chunkEvent = (
@@ -106,7 +105,7 @@ export const errorEvent = (failure: ChatStreamFailure): ChatStreamError => {
   return frame;
 };
 
-export const CHAT_STREAM_HEADERS: Readonly<Record<string, string>> = {
+export const CHAT_STREAM_HEADERS = {
   "Cache-Control": "no-cache",
   Connection: "keep-alive",
   "Content-Type": "text/event-stream",

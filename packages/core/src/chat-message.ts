@@ -4,6 +4,7 @@ import { Effect, Schema } from "effect";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 
 import { ChatClock } from "./chat-clock.js";
+import { ChatConfig } from "./chat-config.js";
 import {
   ConversationNotFound,
   conversationNotFoundFailure,
@@ -12,24 +13,23 @@ import {
   ChatConversationStore,
   conversationStateOf,
 } from "./chat-conversation-store.js";
-import type { ChatConversation } from "./chat-conversation-store.js";
-import {
-  ChatConfig,
-  ChatRateLimits,
-  ChatRequestFacts,
-  ChatRoom,
-} from "./chat-message-ports.js";
+import type {
+  ChatConversation,
+  ChatConversationOperations,
+} from "./chat-conversation-store.js";
 import { ChatMessageStore } from "./chat-message-store.js";
+import type { ChatMessageOperations } from "./chat-message-store.js";
+import { ChatRateLimits } from "./chat-rate-limits.js";
+import type { ChatRateLimitOperations } from "./chat-rate-limits.js";
+import { ChatRequestFacts } from "./chat-request-facts.js";
+import { ChatRoom } from "./chat-room.js";
 import {
   ChatVisitorAuth,
   hashVisitorSecret,
   readBearerToken,
 } from "./chat-visitor-auth.js";
 import { startConversation, stepConversation } from "./conversation-machine.js";
-import type {
-  ConversationState,
-  VisitorAccount,
-} from "./conversation-machine.js";
+import type { ConversationState } from "./conversation-machine.js";
 import { CustomerAlerts } from "./customer-alerts.js";
 
 export const UNKNOWN_CLIENT = "unknown";
@@ -169,6 +169,7 @@ export const sanitizePageContext = (
     title === undefined
       ? ""
       : title
+          // oxlint-disable-next-line no-control-regex -- The old route replaces every control character in the page title, so the range is the point.
           .replaceAll(/[\u0000-\u001F\u007F]/gu, " ")
           .replaceAll(/\s+/gu, " ")
           .trim()
@@ -180,16 +181,17 @@ export const sanitizePageContext = (
 export const chatTurnOf = (
   body: ChatMessageBody
 ): ChatRequestTurn | undefined => {
-  const message = body.message ?? "";
-  const imageUrl = body.imageUrl;
-  const hasMessage = message.trim() !== "";
+  const { imageUrl, message } = body;
+  const text = message ?? "";
+  const hasMessage = text.trim() !== "";
+
   const hasImage = imageUrl !== undefined && imageUrl.startsWith("data:image/");
 
   if (!hasMessage && !hasImage) {
     return undefined;
   }
 
-  const question = hasMessage ? message.trim() : "";
+  const question = hasMessage ? text.trim() : "";
 
   return {
     hasImage,
@@ -216,20 +218,20 @@ export const visitorSecretOf = (bytes: Uint8Array): string => {
     const second = bytes[index + 1];
     const third = bytes[index + 2];
 
-    encoded += alphabetAt(first >> 2);
-    encoded += alphabetAt(((first & 3) << 4) | ((second ?? 0) >> 4));
+    encoded += alphabetAt(Math.floor(first / 4));
+    encoded += alphabetAt((first % 4) * 16 + Math.floor((second ?? 0) / 16));
 
     if (second === undefined) {
       break;
     }
 
-    encoded += alphabetAt(((second & 15) << 2) | ((third ?? 0) >> 6));
+    encoded += alphabetAt((second % 16) * 4 + Math.floor((third ?? 0) / 64));
 
     if (third === undefined) {
       break;
     }
 
-    encoded += alphabetAt(third & 63);
+    encoded += alphabetAt(third % 64);
   }
 
   return encoded.replaceAll("+", "-").replaceAll("/", "_");
@@ -254,22 +256,209 @@ export const isVerifiedEvalRequest = (
   const length = Math.max(provided.length, expected.length);
 
   for (let index = 0; index < length; index += 1) {
-    difference |= (provided[index] ?? 0) ^ (expected[index] ?? 0);
+    const left = provided[index] ?? 0;
+    const right = expected[index] ?? 0;
+
+    difference = difference === 0 && left === right ? 0 : 1;
   }
 
   return difference === 0;
 };
 
-const visitorSecretAnswer = (
-  visitorSecret: string | undefined
-): { readonly visitorSecret?: string } =>
-  visitorSecret === undefined ? {} : { visitorSecret };
+export interface ChatMessageIds {
+  readonly answerMessageId: string;
+  readonly conversationId: string;
+  readonly isNew: boolean;
+  readonly visitorId: string;
+  readonly visitorMessageId: string;
+}
 
-const newConversationProfile: {
-  readonly account: VisitorAccount;
-  readonly email: string | undefined;
-  readonly name: string | undefined;
-} = { account: "unknown", email: undefined, name: undefined };
+const chatIdsOf = (
+  body: ChatMessageBody,
+  random: SecureRandom.SecureRandom["Service"]
+): Effect.Effect<ChatMessageIds> =>
+  Effect.gen(function* chatMessageIds() {
+    const requestedId = body.conversationId;
+    const isNew = requestedId === undefined || requestedId === "";
+    const conversationId = isNew ? yield* random.uuidV4() : requestedId;
+    const requestedVisitor = body.visitorId;
+
+    const visitorId =
+      requestedVisitor === undefined || requestedVisitor === ""
+        ? yield* random.uuidV4()
+        : requestedVisitor;
+
+    return {
+      answerMessageId: yield* random.uuidV4(),
+      conversationId,
+      isNew,
+      visitorId,
+      visitorMessageId: yield* random.uuidV4(),
+    };
+  });
+
+const chatLimitFailure = (
+  limits: ChatRateLimitOperations,
+  clientKey: string,
+  isNew: boolean
+): Effect.Effect<
+  | typeof chatRateLimitedFailure
+  | typeof newConversationRateLimitedFailure
+  | undefined
+> =>
+  Effect.gen(function* chatRateLimiCheck() {
+    const general = yield* limits.limitChat(clientKey);
+
+    const fresh = isNew
+      ? yield* limits.limitNewConversation(clientKey)
+      : { success: true };
+
+    if (!general.success) {
+      return chatRateLimitedFailure;
+    }
+
+    return fresh.success ? undefined : newConversationRateLimitedFailure;
+  });
+
+export interface VisitorSecretChoice {
+  readonly visitorSecret?: string;
+  readonly visitorSecretHash: string | undefined;
+}
+
+const boundVisitorSecret = (
+  conversations: ChatConversationOperations,
+  random: SecureRandom.SecureRandom["Service"],
+  presented: string | undefined,
+  visitorId: string
+): Effect.Effect<VisitorSecretChoice> =>
+  Effect.gen(function* bindVisibleVisitorSecret() {
+    const presentedHash =
+      presented === undefined ? undefined : yield* hashVisitorSecret(presented);
+
+    if (presentedHash !== undefined) {
+      const owned = yield* conversations.visitorOwnsSecret({
+        secretHash: presentedHash,
+        visitorId,
+      });
+
+      if (owned) {
+        return { visitorSecretHash: presentedHash };
+      }
+    }
+
+    const issued = visitorSecretOf(yield* random.randomBytes(32));
+
+    return {
+      visitorSecret: issued,
+      visitorSecretHash: yield* hashVisitorSecret(issued),
+    };
+  });
+
+export interface OpenedConversation {
+  readonly existing: ChatConversation | undefined;
+  readonly state: ConversationState;
+}
+
+const openConversation = (
+  conversations: ChatConversationOperations,
+  ids: ChatMessageIds,
+  at: number
+): Effect.Effect<OpenedConversation, typeof conversationNotFoundFailure> =>
+  Effect.gen(function* openConversationState() {
+    if (ids.isNew) {
+      return {
+        existing: undefined,
+        state: startConversation({
+          now: at,
+          profile: { account: "unknown", email: undefined, name: undefined },
+        }),
+      };
+    }
+
+    const existing = yield* conversations.read(ids.conversationId);
+
+    if (existing === undefined) {
+      return yield* Effect.fail(conversationNotFoundFailure);
+    }
+
+    return {
+      existing,
+      state: stepConversation(conversationStateOf(existing), {
+        at,
+        type: "VISITOR_MESSAGE",
+      }).state,
+    };
+  });
+
+const newConversationRow = (
+  ids: ChatMessageIds,
+  state: ConversationState,
+  isEval: boolean,
+  secretHash: string | undefined
+) => ({
+  archived: state.archived,
+  email: state.profile.email,
+  hasAccount: state.profile.account,
+  id: ids.conversationId,
+  isEval,
+  name: state.profile.name,
+  profileCompleted: false,
+  status: state.status,
+  updatedAt: state.updatedAt,
+  visitorId: ids.visitorId,
+  visitorSecretHash: secretHash,
+});
+
+const recordVisitorMessage = (
+  conversations: ChatConversationOperations,
+  messages: ChatMessageOperations,
+  ids: ChatMessageIds,
+  turn: ChatRequestTurn,
+  at: number
+): Effect.Effect<void> =>
+  Effect.gen(function* recordVisitorMessageRow() {
+    yield* messages.append([
+      {
+        content: turn.storedContent,
+        conversationId: ids.conversationId,
+        createdAt: at,
+        id: ids.visitorMessageId,
+        role: "user",
+      },
+    ]);
+
+    if (!ids.isNew) {
+      yield* conversations.touch({ at, id: ids.conversationId });
+    }
+  });
+
+const sentToPerson = (
+  ids: ChatMessageIds,
+  status: ChatMessageSent["status"],
+  visitorSecret: string | undefined
+): ChatMessageSent => {
+  const base = {
+    conversationId: ids.conversationId,
+    message: "Message sent",
+    status,
+  } as const;
+
+  return visitorSecret === undefined ? base : { ...base, visitorSecret };
+};
+
+const streamedAnswer = (
+  ids: ChatMessageIds,
+  visitorSecret: string | undefined
+): ChatMessageStreamed => {
+  const base = {
+    conversationId: ids.conversationId,
+    messageId: ids.answerMessageId,
+    status: "bot",
+    userMessageId: ids.visitorMessageId,
+  } as const;
+
+  return visitorSecret === undefined ? base : { ...base, visitorSecret };
+};
 
 export const sendChatMessage = implement(sendChatMessageContract, (input) =>
   Effect.gen(function* sendChatMessageEffect() {
@@ -290,153 +479,78 @@ export const sendChatMessage = implement(sendChatMessageContract, (input) =>
     const config = yield* ChatConfig;
     const random = yield* SecureRandom.SecureRandom;
 
-    const requestedId = input.conversationId;
-    const isNew = requestedId === undefined || requestedId === "";
-    const conversationId =
-      requestedId === undefined || requestedId === ""
-        ? yield* random.uuidV4()
-        : requestedId;
-    const requestedVisitor = input.visitorId;
-    const visitorId =
-      requestedVisitor === undefined || requestedVisitor === ""
-        ? yield* random.uuidV4()
-        : requestedVisitor;
-    const visitorMessageId = yield* random.uuidV4();
-    const answerMessageId = yield* random.uuidV4();
+    const ids = yield* chatIdsOf(input, random);
+
+    const limitFailure = yield* chatLimitFailure(
+      limits,
+      facts.clientKey,
+      ids.isNew
+    );
+
+    if (limitFailure !== undefined) {
+      return yield* Effect.fail(limitFailure);
+    }
+
     const at = yield* clock.now;
+    const opened = yield* openConversation(conversations, ids, at);
 
-    const general = yield* limits.limitChat(facts.clientKey);
-    const fresh = isNew
-      ? yield* limits.limitNewConversation(facts.clientKey)
-      : { success: true };
-
-    if (!general.success) {
-      return yield* Effect.fail(chatRateLimitedFailure);
-    }
-
-    if (!fresh.success) {
-      return yield* Effect.fail(newConversationRateLimitedFailure);
-    }
-
-    let existing: ChatConversation | undefined;
-
-    if (!isNew) {
-      existing = yield* conversations.read(conversationId);
-
-      if (existing === undefined) {
-        return yield* Effect.fail(conversationNotFoundFailure);
-      }
-    }
-
-    const isEval = isNew
+    const isEval = ids.isNew
       ? isVerifiedEvalRequest(facts.evalToken, config.evalIngestSecret)
-      : existing?.isEval === true;
+      : opened.existing?.isEval === true;
 
-    let visitorSecret: string | undefined;
-    let visitorSecretHash: string | undefined;
+    const secret = ids.isNew
+      ? yield* boundVisitorSecret(
+          conversations,
+          random,
+          readBearerToken(auth.authorization),
+          ids.visitorId
+        )
+      : { visitorSecretHash: undefined };
 
-    if (isNew) {
-      const presented = readBearerToken(auth.authorization);
-      const presentedHash =
-        presented === undefined
-          ? undefined
-          : yield* hashVisitorSecret(presented);
-      const owned =
-        presentedHash === undefined
-          ? false
-          : yield* conversations.visitorOwnsSecret({
-              secretHash: presentedHash,
-              visitorId,
-            });
-
-      if (presentedHash !== undefined && owned) {
-        visitorSecretHash = presentedHash;
-      } else {
-        const issued = visitorSecretOf(yield* random.randomBytes(32));
-        visitorSecret = issued;
-        visitorSecretHash = yield* hashVisitorSecret(issued);
-      }
+    if (ids.isNew) {
+      yield* conversations.create(
+        newConversationRow(ids, opened.state, isEval, secret.visitorSecretHash)
+      );
     }
 
-    const state: ConversationState =
-      existing === undefined
-        ? startConversation({ now: at, profile: newConversationProfile })
-        : stepConversation(conversationStateOf(existing), {
-            at,
-            type: "VISITOR_MESSAGE",
-          }).state;
+    yield* recordVisitorMessage(
+      conversations,
+      messages,
+      ids,
+      turn,
+      opened.state.updatedAt
+    );
 
-    if (isNew) {
-      yield* conversations.create({
-        archived: state.archived,
-        email: state.profile.email,
-        hasAccount: state.profile.account,
-        id: conversationId,
-        isEval,
-        name: state.profile.name,
-        profileCompleted: false,
-        status: state.status,
-        updatedAt: state.updatedAt,
-        visitorId,
-        visitorSecretHash,
-      });
-    }
-
-    yield* messages.append([
-      {
-        content: turn.storedContent,
-        conversationId,
-        createdAt: state.updatedAt,
-        id: visitorMessageId,
-        role: "user",
-      },
-    ]);
-
-    if (!isNew) {
-      yield* conversations.touch({ at: state.updatedAt, id: conversationId });
-    }
-
-    if (isNew) {
+    if (ids.isNew) {
       yield* alerts.newConversation({
-        conversationId,
+        conversationId: ids.conversationId,
         isEval,
         message: input.message,
       });
     }
 
-    if (state.status === "human" || state.status === "handoff_requested") {
-      yield* room.visitorMessage({
-        content: turn.storedContent,
-        conversationId,
-        messageId: visitorMessageId,
-      });
+    const personOwned =
+      opened.state.status === "human" ||
+      opened.state.status === "handoff_requested";
 
-      yield* alerts.newMessage({
-        conversationId,
-        isEval,
-        message: turn.storedContent,
-        visitorEmail: existing?.email ?? null,
-        visitorName: existing?.name ?? null,
-      });
-
-      const sent: ChatMessageAnswer = {
-        conversationId,
-        message: "Message sent",
-        status: state.status,
-        ...visitorSecretAnswer(visitorSecret),
-      };
-
-      return sent;
+    if (!personOwned) {
+      return streamedAnswer(ids, secret.visitorSecret);
     }
 
-    const streamed: ChatMessageAnswer = {
-      conversationId,
-      messageId: answerMessageId,
-      status: "bot",
-      userMessageId: visitorMessageId,
-      ...visitorSecretAnswer(visitorSecret),
-    };
+    yield* room.visitorMessage({
+      content: turn.storedContent,
+      conversationId: ids.conversationId,
+      messageId: ids.visitorMessageId,
+    });
 
-    return streamed;
+    yield* alerts.newMessage({
+      conversationId: ids.conversationId,
+      isEval,
+      message: turn.storedContent,
+      visitorEmail: opened.existing?.email ?? null,
+      visitorName: opened.existing?.name ?? null,
+    });
+
+    return sentToPerson(ids, opened.state.status, secret.visitorSecret);
   })
 );

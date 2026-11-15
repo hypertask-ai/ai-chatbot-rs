@@ -1,8 +1,7 @@
 import { NodeCrypto } from "@effect/platform-node";
 import { toHttpApi } from "@rat-stack/capability/http-api";
-import { Effect, Layer, Ref, Schema } from "effect";
+import { Effect, Layer, Ref, Schema, FileSystem, Path } from "effect";
 import type { Scope } from "effect";
-import { FileSystem, Path } from "effect";
 import { Etag, HttpPlatform, HttpRouter } from "effect/http";
 import type { HttpServerRequest } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
@@ -17,7 +16,17 @@ import type {
   AnswerRequest,
   TokenUsage,
 } from "../src/answer-model.js";
+import { ChatAnswerCleanup } from "../src/chat-answer-cleanup.js";
+import type { ChatAnswerCleanupOperations } from "../src/chat-answer-cleanup.js";
+import { ChatArticleContext } from "../src/chat-article-context.js";
+import type { ChatArticleContextOperations } from "../src/chat-article-context.js";
+import { ChatCitations } from "../src/chat-citations.js";
+import type {
+  ChatCitation,
+  ChatCitationsOperations,
+} from "../src/chat-citations.js";
 import { ChatClock } from "../src/chat-clock.js";
+import { ChatConfig } from "../src/chat-config.js";
 import {
   ChatConversationStore,
   memoryChatConversations,
@@ -27,26 +36,6 @@ import type {
   ChatConversationOperations,
   ChatConversationSeed,
 } from "../src/chat-conversation-store.js";
-import {
-  ChatAnswerCleanup,
-  ChatArticleContext,
-  ChatCitations,
-  ChatConfig,
-  ChatRateLimits,
-  ChatRequestFacts,
-  ChatRoom,
-  FirstAnswerCache,
-} from "../src/chat-message-ports.js";
-import type {
-  ChatAnswerCleanupOperations,
-  ChatArticleContextOperations,
-  ChatCitation,
-  ChatCitationsOperations,
-  ChatRateLimitOperations,
-  ChatRoomMessage,
-  ChatRoomOperations,
-  FirstAnswerCacheOperations,
-} from "../src/chat-message-ports.js";
 import {
   ChatMessageStore,
   memoryChatMessages,
@@ -60,6 +49,11 @@ import {
   sendChatMessage,
 } from "../src/chat-message.js";
 import type { ChatMessageAnswer } from "../src/chat-message.js";
+import { ChatRateLimits } from "../src/chat-rate-limits.js";
+import type { ChatRateLimitOperations } from "../src/chat-rate-limits.js";
+import { ChatRequestFacts } from "../src/chat-request-facts.js";
+import { ChatRoom } from "../src/chat-room.js";
+import type { ChatRoomMessage, ChatRoomOperations } from "../src/chat-room.js";
 import { ChatVisitorAuth } from "../src/chat-visitor-auth.js";
 import { CustomerAlerts } from "../src/customer-alerts.js";
 import type {
@@ -68,6 +62,8 @@ import type {
   NewConversationAlert,
   NewMessageAlert,
 } from "../src/customer-alerts.js";
+import { FirstAnswerCache } from "../src/first-answer-cache.js";
+import type { FirstAnswerCacheOperations } from "../src/first-answer-cache.js";
 import { CHAT_SECOND } from "./chat-http.js";
 
 export const ARTICLE_CONTEXT =
@@ -244,26 +240,34 @@ export const chatMessageStack = (
   Effect.gen(function* buildChatMessageStack() {
     const conversations = yield* memoryChatConversations(input.chats ?? []);
     const transcript = yield* memoryChatMessages(input.messages ?? []);
+
     const model = yield* scriptedAnswerModel(
       input.answers ?? [{ pieces: ["An answer."] }]
     );
+
     const handoffs = yield* Ref.make<readonly HandoffAlert[]>([]);
+
     const newConversations = yield* Ref.make<readonly NewConversationAlert[]>(
       []
     );
+
     const newMessages = yield* Ref.make<readonly NewMessageAlert[]>([]);
     const room = yield* Ref.make<readonly ChatRoomMessage[]>([]);
     const charged = yield* Ref.make<readonly string[]>([]);
     const looked = yield* Ref.make<readonly string[]>([]);
+
     const saved = yield* Ref.make<
       readonly { readonly question: string; readonly response: string }[]
     >([]);
+
     const cached = yield* Ref.make<ReadonlyMap<string, string>>(
-      new Map(input.cached ?? [])
+      new Map(input.cached)
     );
+
     const cleaned = yield* Ref.make<
       readonly { readonly conversationId: string; readonly text: string }[]
     >([]);
+
     const asked = yield* Ref.make<readonly string[]>([]);
     const cited = yield* Ref.make<readonly string[]>([]);
     const clock = { now: Effect.succeed(CHAT_SECOND) };
@@ -387,8 +391,8 @@ export const chatMessageStack = (
         stored: Ref.get(cached),
       },
       charged: Ref.get(charged),
-      clean: Ref.get(cleaned),
       cited: Ref.get(cited),
+      clean: Ref.get(cleaned),
       conversations: conversations.conversations,
       handler,
       messages: transcript.messages,
@@ -437,9 +441,12 @@ export const postChatMessage = (
         })
       )
     );
+
     const body = yield* Effect.promise(() => response.text());
+
     const decoded: Schema.Json | undefined =
       body === "" ? undefined : yield* decodeBody(body);
+
     const answer: ChatMessageAnswer | undefined =
       response.status === 200 && decoded !== undefined
         ? yield* decodeAnswer(decoded)

@@ -184,11 +184,11 @@ export const memoryChatConversations = (
     );
 
     const operations: ChatConversationOperations = {
-      create: (seed) =>
+      create: (conversationSeed) =>
         Ref.update(rows, (held) =>
-          new Map(held).set(seed.id, {
-            conversation: seedConversation(seed),
-            visitorSecretHash: seed.visitorSecretHash,
+          new Map(held).set(conversationSeed.id, {
+            conversation: seedConversation(conversationSeed),
+            visitorSecretHash: conversationSeed.visitorSecretHash,
           })
         ),
       findReturningCustomer: (query) =>
