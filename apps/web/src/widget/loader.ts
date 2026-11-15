@@ -33,6 +33,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   var HOST_CONV_KEY = ${json(hostStorageKeys.conversation)};
   var HOST_VISITOR_KEY = ${json(hostStorageKeys.visitor)};
   var HOST_SECRET_KEY = ${json(hostStorageKeys.visitorSecret)};
+  var CHAT_ORIGIN = ${json(baseUrl)};
   var THEME = ${json(widgetTheme)};
 
   var isExpanded = false;
@@ -153,7 +154,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   }
 
   function tellChat(message) {
-    if (iframeStarted && iframe.contentWindow) iframe.contentWindow.postMessage(message, '*');
+    if (iframeStarted && iframe.contentWindow) iframe.contentWindow.postMessage(message, CHAT_ORIGIN);
   }
 
   var btn = document.createElement('button');
@@ -325,7 +326,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
     if (e.data && e.data.type === 'chat-widget-session') {
       storageSet(HOST_CONV_KEY, e.data.conversationId || '');
       storageSet(HOST_VISITOR_KEY, e.data.visitorId || '');
-      storageSet(HOST_SECRET_KEY, e.data.visitorSecret || '');
+      if (typeof e.data.visitorSecret === 'string' && e.data.visitorSecret !== '') storageSet(HOST_SECRET_KEY, e.data.visitorSecret);
       return;
     }
     if (e.data && e.data.type === 'chat-widget-expand') {

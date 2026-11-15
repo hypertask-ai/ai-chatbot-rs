@@ -278,4 +278,19 @@ describe("widget loader", () => {
       )
     ).toHaveLength(1);
   });
+
+  it("names the frame origin on every message it sends into the frame", () => {
+    const run = runWidgetLoader(script);
+
+    handler(element(run, "chat-widget-btn"), "click")();
+    handler(frame(run), "load")();
+
+    const posted = frame(run).postedTo;
+
+    expect(posted.length).toBeGreaterThan(0);
+    expect([...new Set(posted.map((each) => each.targetOrigin))]).toEqual([
+      origin,
+    ]);
+    expect(script).toContain("postMessage(message, CHAT_ORIGIN)");
+  });
 });

@@ -123,11 +123,11 @@ const onMobile = (
 
 const onPage = (
   model: AppModel,
-  fromParent: boolean,
+  trustedParent: boolean,
   pageTitle: string | undefined,
   pageUrl: string | undefined
 ): UpdateReturn =>
-  fromParent
+  trustedParent
     ? {
         model: {
           ...model,
@@ -139,10 +139,10 @@ const onPage = (
 
 const onBoot = (
   model: AppModel,
-  fromParent: boolean,
+  trustedParent: boolean,
   host: BootMessage
 ): UpdateReturn => {
-  if (!fromParent) {
+  if (!trustedParent) {
     return { model };
   }
 
@@ -178,7 +178,7 @@ const onBoot = (
 
   return {
     commands: [
-      StoreSession({ conversationId, visitorId, visitorSecret }),
+      StoreSession({ conversationId, visitorId }),
       ...syncChrome(next),
     ],
     model: next,
@@ -187,11 +187,11 @@ const onBoot = (
 
 const onAttachment = (
   model: AppModel,
-  fromParent: boolean,
+  trustedParent: boolean,
   sameOrigin: boolean,
   dataUrl: string | undefined
 ): UpdateReturn =>
-  fromParent &&
+  trustedParent &&
   sameOrigin &&
   dataUrl !== undefined &&
   dataUrl.startsWith("data:image/")
@@ -206,7 +206,7 @@ const onViewportFit = (model: AppModel): UpdateReturn => ({
 const hostUpdate = (
   model: AppModel,
   host: HostMessageValue,
-  fromParent: boolean,
+  trustedParent: boolean,
   sameOrigin: boolean
 ): UpdateReturn => {
   switch (host.type) {
@@ -227,11 +227,11 @@ const hostUpdate = (
     }
 
     case "chat-widget-page": {
-      return onPage(model, fromParent, host.pageTitle, host.pageUrl);
+      return onPage(model, trustedParent, host.pageTitle, host.pageUrl);
     }
 
     case "chat-widget-boot": {
-      return onBoot(model, fromParent, host);
+      return onBoot(model, trustedParent, host);
     }
 
     case "chat-viewport-fit": {
@@ -239,7 +239,7 @@ const hostUpdate = (
     }
 
     case "help-attachment": {
-      return onAttachment(model, fromParent, sameOrigin, host.dataUrl);
+      return onAttachment(model, trustedParent, sameOrigin, host.dataUrl);
     }
 
     case "send-suggestion": {
@@ -267,18 +267,17 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
     CompletedScrollToLatest: () => ({ model }),
     CompletedStoreSession: () => ({ model }),
     CompletedSyncChrome: () => ({ model }),
-    LoadedSession: ({ conversationId, sheet, visitorId, visitorSecret }) => {
+    LoadedSession: ({ conversationId, sheet, visitorId }) => {
       const next = {
         ...model,
         conversationId,
         sheet,
         visitorId,
-        visitorSecret,
       };
 
       return {
         commands: [
-          PublishSession({ conversationId, visitorId, visitorSecret }),
+          PublishSession({ conversationId, visitorId }),
           ...syncChrome(next),
         ],
         model: next,
@@ -288,12 +287,12 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
       model: { ...model, lightbox: Option.some(dataUrl) },
     }),
     PickedSuggestion: ({ text }) => submit({ ...model, input: text }, text),
-    ReceivedHostMessage: ({ data, fromParent, sameOrigin }) => {
+    ReceivedHostMessage: ({ data, trustedParent, sameOrigin }) => {
       const host = Schema.decodeUnknownOption(HostMessage)(data);
 
       return Option.isNone(host)
         ? { model }
-        : hostUpdate(model, host.value, fromParent, sameOrigin);
+        : hostUpdate(model, host.value, trustedParent, sameOrigin);
     },
     RejectedAttachment: () => appendBot(model, widgetCopy.attachmentRejected),
     RemovedAttachment: () => ({

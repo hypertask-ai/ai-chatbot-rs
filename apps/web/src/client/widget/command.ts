@@ -3,6 +3,7 @@ import { uuidV4Unsafe } from "effect/crypto/SecureRandom";
 import { Command } from "foldkit";
 import { File, readAsDataUrl } from "foldkit/file";
 
+import { parentOrigin } from "../../widget/parent-origin.js";
 import { frameStorageKeys } from "../../widget/storage.js";
 import { Message } from "./message.js";
 
@@ -27,11 +28,31 @@ const write = (key: string, value: string): void => {
 };
 
 const postToParent = (body: Record<string, string>): void => {
-  if (window.parent === window) {
+  const target = parentOrigin();
+
+  if (window.parent === window || target === undefined) {
     return;
   }
 
-  window.parent.postMessage(body, "*");
+  window.parent.postMessage(body, target);
+};
+
+const sessionMessage = (input: {
+  conversationId: string;
+  visitorId: string;
+  visitorSecret?: string;
+}): Record<string, string> => {
+  const body: Record<string, string> = {
+    conversationId: input.conversationId,
+    type: "chat-widget-session",
+    visitorId: input.visitorId,
+  };
+
+  if (input.visitorSecret !== undefined && input.visitorSecret !== "") {
+    body.visitorSecret = input.visitorSecret;
+  }
+
+  return body;
 };
 
 export const LoadSession = Command.define("LoadSession", {
@@ -44,7 +65,6 @@ export const LoadSession = Command.define("LoadSession", {
       conversationId: read(frameStorageKeys.conversation),
       sheet: window.parent === window && window.innerWidth <= 900,
       visitorId,
-      visitorSecret: read(frameStorageKeys.visitorSecret),
     });
   }),
   messages: [Message.LoadedSession],
@@ -54,16 +74,15 @@ export const PublishSession = Command.define("PublishSession", {
   args: {
     conversationId: Schema.String,
     visitorId: Schema.String,
-    visitorSecret: Schema.String,
+    visitorSecret: Schema.optionalKey(Schema.String),
   },
   execute: ({ conversationId, visitorId, visitorSecret }) =>
     Effect.sync(() => {
-      postToParent({
-        conversationId,
-        type: "chat-widget-session",
-        visitorId,
-        visitorSecret,
-      });
+      postToParent(
+        visitorSecret === undefined
+          ? sessionMessage({ conversationId, visitorId })
+          : sessionMessage({ conversationId, visitorId, visitorSecret })
+      );
 
       return Message.CompletedPublishSession();
     }),
@@ -74,21 +93,14 @@ export const StoreSession = Command.define("StoreSession", {
   args: {
     conversationId: Schema.String,
     visitorId: Schema.String,
-    visitorSecret: Schema.String,
   },
-  execute: ({ conversationId, visitorId, visitorSecret }) =>
+  execute: ({ conversationId, visitorId }) =>
     Effect.sync(() => {
       write(frameStorageKeys.conversation, conversationId);
       write(frameStorageKeys.visitor, visitorId);
-      write(frameStorageKeys.visitorSecret, visitorSecret);
 
-      if (conversationId !== "" || visitorId !== "" || visitorSecret !== "") {
-        postToParent({
-          conversationId,
-          type: "chat-widget-session",
-          visitorId,
-          visitorSecret,
-        });
+      if (conversationId !== "" || visitorId !== "") {
+        postToParent(sessionMessage({ conversationId, visitorId }));
       }
 
       return Message.CompletedStoreSession();

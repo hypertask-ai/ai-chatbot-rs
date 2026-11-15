@@ -124,7 +124,7 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: imageDataUrl, type: "help-attachment" },
-          fromParent: true,
+          trustedParent: true,
           sameOrigin: true,
         })
       ),
@@ -142,7 +142,7 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: imageDataUrl, type: "help-attachment" },
-          fromParent: true,
+          trustedParent: true,
           sameOrigin: true,
         })
       ),
@@ -166,14 +166,14 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: imageDataUrl, type: "help-attachment" },
-          fromParent: true,
+          trustedParent: true,
           sameOrigin: false,
         })
       ),
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: "https://evil.test/x.png", type: "help-attachment" },
-          fromParent: true,
+          trustedParent: true,
           sameOrigin: true,
         })
       ),
@@ -188,7 +188,7 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { type: "chat-widget-nothing" },
-          fromParent: true,
+          trustedParent: true,
           sameOrigin: true,
         })
       ),
@@ -203,7 +203,7 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { isMobile: true, pinned: true, type: "chat-widget-pinned" },
-          fromParent: true,
+          trustedParent: true,
           sameOrigin: true,
         })
       ),
