@@ -70,7 +70,7 @@ const answerRedirect = (basePath: string, request: Request): Response =>
     })
   );
 
-const answerOutsideTestAddress = (request: Request): Response =>
+const answerNotFound = (request: Request): Response =>
   withCors(request, new Response("Not found", { status: 404 }));
 
 export const answerHelpSiteAt = (basePath: string) => {
@@ -91,7 +91,7 @@ export const answerHelpSiteAt = (basePath: string) => {
     }
 
     if (!isWithinSiteBasePath(basePath, pathname)) {
-      return withSiteNoindex(basePath, answerOutsideTestAddress(request));
+      return withSiteNoindex(basePath, answerNotFound(request));
     }
 
     const route = removeSiteBasePath(basePath, pathname);
@@ -106,7 +106,9 @@ export const answerHelpSiteAt = (basePath: string) => {
       return withSiteNoindex(basePath, answerRedirect(basePath, request));
     }
 
-    return null;
+    return basePath === ""
+      ? null
+      : withSiteNoindex(basePath, answerNotFound(request));
   });
 };
 
