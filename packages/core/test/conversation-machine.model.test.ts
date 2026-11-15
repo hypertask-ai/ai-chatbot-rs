@@ -116,11 +116,23 @@ const eventFor = (
     }
 
     case "saveEmail": {
-      return { at, email: visitorEmail, type: "PROFILE_SAVED" };
+      return {
+        account: undefined,
+        at,
+        email: visitorEmail,
+        name: undefined,
+        type: "PROFILE_SAVED",
+      };
     }
 
     case "saveName": {
-      return { at, name: scenario.name, type: "PROFILE_SAVED" };
+      return {
+        account: undefined,
+        at,
+        email: undefined,
+        name: scenario.name,
+        type: "PROFILE_SAVED",
+      };
     }
 
     case "visitorLeavesEmail": {

@@ -81,10 +81,10 @@ export const ConversationEventsSchema = {
   ADMIN_TAKES_OVER: Schema.Struct({ at: Schema.Natural }),
   ADMIN_UNARCHIVES: Schema.Struct({ at: Schema.Natural }),
   PROFILE_SAVED: Schema.Struct({
-    account: Schema.optionalKey(VisitorAccountSchema),
+    account: Schema.UndefinedOr(VisitorAccountSchema),
     at: Schema.Natural,
-    email: Schema.optionalKey(Schema.String),
-    name: Schema.optionalKey(Schema.String),
+    email: Schema.UndefinedOr(Schema.String),
+    name: Schema.UndefinedOr(Schema.String),
   }),
   VISITOR_LEAVES_EMAIL: Schema.Struct({
     at: Schema.Natural,
