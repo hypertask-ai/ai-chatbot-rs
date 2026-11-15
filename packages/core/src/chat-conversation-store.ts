@@ -106,10 +106,10 @@ export const conversationStateOf = (
   updatedAt: conversation.updatedAt,
 });
 
-type MemoryConversation = {
+interface MemoryConversation {
   readonly conversation: ChatConversation;
   readonly visitorSecretHash: string | undefined;
-};
+}
 
 const seedConversation = (seed: ChatConversationSeed): ChatConversation => ({
   archived: seed.archived,

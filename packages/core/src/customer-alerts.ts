@@ -1,4 +1,5 @@
-import { Context, Effect, Schema } from "effect";
+import { Context, Schema } from "effect";
+import type { Effect } from "effect";
 
 export const HandoffAlertSchema = Schema.Struct({
   conversationId: Schema.String,

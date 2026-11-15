@@ -59,7 +59,7 @@ const returningLinksOf = (
 };
 
 const profileCompletedIn = (profile: VisitorProfile): boolean =>
-  Boolean(profile.name && profile.email);
+  hasText(profile.name) && hasText(profile.email);
 
 const autoPopulatedIn = (
   links: ReturningLinks
