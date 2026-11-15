@@ -14,6 +14,7 @@ import type { ChatMessage } from "./chat-message-store.js";
 import { chatReadGrant } from "./chat-read-access.js";
 import { ChatVisitorAuth } from "./chat-visitor-auth.js";
 import { ConversationStatusSchema } from "./conversation-machine.js";
+
 export const ChatHistoryMessageSchema = Schema.Struct({
   content: Schema.String,
   created_at: Schema.Natural,
@@ -69,25 +70,30 @@ const ascendingBySecond = (left: ChatMessage, right: ChatMessage): number =>
 
 const newestMessage = (
   transcript: readonly ChatMessage[]
-): ChatMessage | undefined =>
-  transcript.reduce<ChatMessage | undefined>(
-    (newest, message) =>
-      newest === undefined || message.createdAt > newest.createdAt
-        ? message
-        : newest,
-    undefined
-  );
+): ChatMessage | undefined => {
+  let newest: ChatMessage | undefined;
+
+  for (const message of transcript) {
+    if (newest === undefined || message.createdAt > newest.createdAt) {
+      newest = message;
+    }
+  }
+
+  return newest;
+};
 
 const historyAnswer = (
   transcript: readonly ChatMessage[],
   conversation: ChatConversation | undefined
 ): ChatHistoryAnswer => {
-  const messages = [...transcript].sort(ascendingBySecond).map((message) => ({
-    content: message.content,
-    created_at: message.createdAt,
-    id: message.id,
-    role: message.role,
-  }));
+  const messages = [...transcript]
+    .toSorted(ascendingBySecond)
+    .map((message) => ({
+      content: message.content,
+      created_at: message.createdAt,
+      id: message.id,
+      role: message.role,
+    }));
 
   return conversation === undefined
     ? { messages }
@@ -145,7 +151,7 @@ export const listChatSessions = implement(listChatSessionsContract, (input) =>
       visitorId: grant.visitorId,
     });
 
-    const sessions = yield* Effect.forEach(recent, (conversation) =>
+    const sessions = yield* Effect.forEach([...recent], (conversation) =>
       messages
         .list(conversation.id)
         .pipe(Effect.map((transcript) => sessionOf(conversation, transcript)))

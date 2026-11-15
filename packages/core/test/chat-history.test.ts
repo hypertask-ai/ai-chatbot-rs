@@ -157,7 +157,7 @@ const recordedStack = (seed: readonly ChatConversationSeed[]) =>
       ADMIN_PASSWORD
     );
 
-    return { hashes: recorded.hashes, handler };
+    return { handler, hashes: recorded.hashes };
   });
 
 it.effect("reads a conversation's messages and status for its owner", () =>
@@ -178,7 +178,7 @@ it.effect("orders the messages by their created second", () =>
   Effect.gen(function* runScenario() {
     const stack = yield* chatStack(
       [owned(OWNED_ID)],
-      [...OWNER_TRANSCRIPT].reverse()
+      OWNER_TRANSCRIPT.toReversed()
     );
 
     const answer = yield* getChat(stack.handler, {

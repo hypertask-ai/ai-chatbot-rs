@@ -71,7 +71,7 @@ export interface ChatSessionsReadRequest extends ChatReadRequestBase {
 
 const grantOf = (
   request: ChatHistoryReadRequest | ChatSessionsReadRequest,
-  visitorSecretHash: string | undefined
+  visitorSecretHash?: string
 ): ConversationReadGrant | VisitorReadGrant =>
   "conversationId" in request
     ? {
@@ -116,7 +116,7 @@ export function chatReadGrant(
     }
 
     if (credential.type === "admin") {
-      return grantOf(request, undefined);
+      return grantOf(request);
     }
 
     const secretHash = yield* hashVisitorSecret(credential.secret);

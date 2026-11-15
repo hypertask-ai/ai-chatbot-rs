@@ -216,14 +216,14 @@ export const memoryChatConversations = (
         Ref.get(rows).pipe(
           Effect.map((held) =>
             [...held.values()]
-              .filter(
-                (entry) =>
-                  entry.conversation.visitorId === query.visitorId &&
-                  (query.secretHash === undefined ||
-                    entry.visitorSecretHash === query.secretHash)
+              .flatMap((entry) =>
+                entry.conversation.visitorId === query.visitorId &&
+                (query.secretHash === undefined ||
+                  entry.visitorSecretHash === query.secretHash)
+                  ? [entry.conversation]
+                  : []
               )
-              .map((entry) => entry.conversation)
-              .sort((left, right) => right.updatedAt - left.updatedAt)
+              .toSorted((left, right) => right.updatedAt - left.updatedAt)
               .slice(0, VISITOR_SESSIONS_LIMIT)
           )
         ),
