@@ -15,8 +15,9 @@ import {
 } from "foldkit/scene";
 
 import {
-  ScrollToLatest,
   RequestHostClose,
+  ScrollToLatest,
+  SyncChrome,
 } from "../src/client/widget/command.js";
 import { Message } from "../src/client/widget/message.js";
 import { initialModel } from "../src/client/widget/model.js";
