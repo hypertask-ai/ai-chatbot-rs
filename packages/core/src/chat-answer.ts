@@ -12,7 +12,7 @@ import {
   profileContextBlock,
   toAnswerUserContent,
 } from "./answer-request.js";
-import type { ChatTurn, VisitorProfile } from "./answer-request.js";
+import type { ChatTurn } from "./answer-request.js";
 import { ChatAnswerCleanup } from "./chat-answer-cleanup.js";
 import { ChatArticleContext } from "./chat-article-context.js";
 import { ChatCitations } from "./chat-citations.js";
@@ -33,7 +33,9 @@ import {
   errorEvent,
 } from "./chat-stream.js";
 import type { ChatStreamEvent } from "./chat-stream.js";
+import type { VisitorProfile } from "./conversation-machine.js";
 import { FirstAnswerCache } from "./first-answer-cache.js";
+import { visitorProfileFromRow } from "./visitor-profile-row.js";
 
 export const RESPONSE_CACHE_TTL_SECONDS = 600;
 
@@ -99,11 +101,12 @@ interface StoredAnswer {
   readonly usage: TokenUsage;
 }
 
-const answerProfileOf = (conversation: ChatConversation): VisitorProfile => ({
-  has_hypertask_account: conversation.hasAccount,
-  visitor_email: conversation.email ?? null,
-  visitor_name: conversation.name ?? null,
-});
+const answerProfileOf = (conversation: ChatConversation): VisitorProfile =>
+  visitorProfileFromRow({
+    has_hypertask_account: conversation.hasAccount,
+    visitor_email: conversation.email ?? null,
+    visitor_name: conversation.name ?? null,
+  });
 
 export const historyTurnsOf = (
   messages: readonly ChatMessage[],

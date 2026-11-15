@@ -188,28 +188,36 @@ export const chatMessageSeed = (seed: ChatMessageSeed): ChatMessage => {
 
 export const recordingChatAlerts = () =>
   Effect.gen(function* recordChatAlerts() {
-    const seen = yield* Ref.make<readonly HandoffAlert[]>([]);
+    const handoffs = yield* Ref.make<readonly HandoffAlert[]>([]);
     const conversations = yield* Ref.make<readonly NewConversationAlert[]>([]);
     const messages = yield* Ref.make<readonly NewMessageAlert[]>([]);
 
     return {
-      alerts: Ref.get(seen),
-      conversations: Ref.get(conversations),
-      messages: Ref.get(messages),
+      alerts: Ref.get(handoffs),
+      newConversations: Ref.get(conversations),
+      newMessages: Ref.get(messages),
       operations: {
         handoffRequested: (alert: HandoffAlert) =>
-          Ref.update(seen, (held) => [...held, alert]).pipe(Effect.as(true)),
+          Ref.update(handoffs, (held) => [...held, alert]).pipe(
+            Effect.as(true)
+          ),
         newConversation: (alert: NewConversationAlert) =>
           Ref.update(conversations, (held) => [...held, alert]).pipe(
-            Effect.as(!alert.isEval)
+            Effect.as(true)
           ),
         newMessage: (alert: NewMessageAlert) =>
           Ref.update(messages, (held) => [...held, alert]).pipe(
-            Effect.as(!alert.isEval)
+            Effect.as(true)
           ),
       } satisfies CustomerAlertOperations,
     };
   });
+
+export const failingChatAlerts = (): CustomerAlertOperations => ({
+  handoffRequested: () => Effect.die("Telegram is unreachable"),
+  newConversation: () => Effect.die("Telegram is unreachable"),
+  newMessage: () => Effect.die("Telegram is unreachable"),
+});
 
 export const recordingTeamEmail = (outcome: boolean) =>
   Effect.gen(function* recordTeamEmail() {

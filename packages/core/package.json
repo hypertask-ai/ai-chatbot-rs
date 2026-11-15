@@ -79,6 +79,31 @@
       "import": "./dist/contracts.js",
       "default": "./dist/contracts.js"
     },
+    "./help-article-store": {
+      "types": "./src/help-article-store.ts",
+      "import": "./dist/help-article-store.js",
+      "default": "./dist/help-article-store.js"
+    },
+    "./help-plans": {
+      "types": "./src/help-plans.ts",
+      "import": "./dist/help-plans.js",
+      "default": "./dist/help-plans.js"
+    },
+    "./help-articles": {
+      "types": "./src/help-articles.ts",
+      "import": "./dist/help-articles.js",
+      "default": "./dist/help-articles.js"
+    },
+    "./help-search": {
+      "types": "./src/help-search.ts",
+      "import": "./dist/help-search.js",
+      "default": "./dist/help-search.js"
+    },
+    "./help-retrieval": {
+      "types": "./src/help-retrieval.ts",
+      "import": "./dist/help-retrieval.js",
+      "default": "./dist/help-retrieval.js"
+    },
     "./intake": {
       "types": "./src/intake.ts",
       "import": "./dist/intake.js",

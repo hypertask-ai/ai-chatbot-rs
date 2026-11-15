@@ -6,6 +6,7 @@ import {
   AnswerModel,
   buildAnswerRequest,
   toAnswerUserContent,
+  visitorProfileFromRow,
 } from "@rat-stack/core";
 import type {
   AnswerModelFailure,
@@ -15,11 +16,7 @@ import type {
 import { Effect, Layer, Predicate, Redacted, Ref } from "effect";
 import { HttpClient, HttpClientResponse } from "effect/http";
 
-import {
-  ANTHROPIC_MESSAGES_URL,
-  AnthropicConfig,
-  answerModelLayer,
-} from "../src/index.js";
+import { AnthropicConfig, answerModelLayer } from "../src/index.js";
 
 interface Captured {
   readonly body: string;
@@ -33,6 +30,8 @@ interface AnswerRun {
   readonly read: AnswerStreamRead;
   readonly text: string;
 }
+
+const TEST_ACCOUNT_ID = "test-account-id";
 
 const fixtureText = (name: string): string =>
   readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf-8");
@@ -100,11 +99,11 @@ const answerRequest = buildAnswerRequest({
     title: "Install the CLI",
     url: "https://docs.hypertask.ai/cli/install",
   },
-  profile: {
+  profile: visitorProfileFromRow({
     has_hypertask_account: "unknown",
     visitor_email: null,
     visitor_name: "Ada",
-  },
+  }),
   userContent: toAnswerUserContent(
     "What is this error?",
     "data:image/png;base64,iVBORw0KGgo=\nAAA"
@@ -122,7 +121,10 @@ const collect = (
     const layer = answerModelLayer.pipe(
       Layer.provide(
         Layer.merge(
-          AnthropicConfig.configLayer({ apiKey: Redacted.make("test-key") }),
+          AnthropicConfig.configLayer({
+            accountId: Redacted.make(TEST_ACCOUNT_ID),
+            apiKey: Redacted.make("test-key"),
+          }),
           Layer.succeed(
             HttpClient.HttpClient,
             clientOf(responseOf(chunks, status), captured)
@@ -150,7 +152,9 @@ describe("help answer model over the Cloudflare AI Gateway", () => {
       const run = yield* collect([fixtureBytes("answer.sse")]);
       const [request] = run.captured;
 
-      expect(request?.url).toBe(ANTHROPIC_MESSAGES_URL);
+      expect(request?.url).toBe(
+        "https://gateway.ai.cloudflare.com/v1/test-account-id/hypertask-ai/anthropic/v1/messages"
+      );
       expect(request?.method).toBe("POST");
       expect(request?.header["x-api-key"]).toBe("test-key");
       expect(request?.header["anthropic-version"]).toBe("2023-06-01");

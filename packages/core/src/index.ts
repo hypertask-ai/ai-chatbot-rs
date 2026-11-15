@@ -11,14 +11,85 @@ export {
 export { FileInspector } from "./file-inspector.js";
 
 export {
+  HelpArticle,
+  HelpArticleMatch,
+  HelpArticleNotFound,
+  HelpArticlePane,
+  HelpArticleSummary,
+  HelpArticleTimestamp,
   ReadOutput,
   ResourceNotFound,
   SearchMatch,
   SearchOutput,
   inspectFileContract,
+  listHelpArticlesContract,
   readContract,
+  readHelpArticleContract,
+  readHelpArticlePaneContract,
   searchContract,
+  searchHelpArticlesContract,
 } from "./contracts.js";
+
+export {
+  HelpArticleStore,
+  type HelpArticleMatchValue,
+  type HelpArticleMemory,
+  type HelpArticleSearch,
+  type HelpArticleSummaryValue,
+  type HelpArticleValue,
+} from "./help-article-store.js";
+
+export {
+  expandedHelpQueryTerms,
+  helpArticleStem,
+  helpArticleTokens,
+  rankHelpArticles,
+  scoreHelpSearchMatches,
+  HelpRetrievalAnswer,
+  HelpRetrievalArticle,
+  HelpSearchArticle,
+  type HelpRetrievalAnswerValue,
+  type HelpSearchArticleValue,
+} from "./help-search.js";
+
+export {
+  DEBUG_RETRIEVAL_DEFAULT_QUERY,
+  HelpArticleCorpus,
+  debugHelpRetrieval,
+  findHelpArticles,
+  helpRetrievalCapabilities,
+} from "./help-retrieval.js";
+
+export {
+  helpArticleCapabilities,
+  helpSearchKeywords,
+  listHelpArticles,
+  readHelpArticle,
+  readHelpArticlePane,
+  searchHelpArticles,
+} from "./help-articles.js";
+
+export {
+  FREE_BOARD_CAP,
+  PAID_SEAT_CAP,
+  PRICING_ARTICLE_SLUG,
+  SALES_EMAIL,
+  SIGNUP_URL,
+  TRIAL_DAYS,
+  YEARLY_SAVE_PERCENT,
+  helpPlans,
+  helpPlansHtml,
+  helpSeatRate,
+  type HelpPlan,
+  type HelpPlanId,
+  type HelpSeatRate,
+} from "./help-plans.js";
+
+export {
+  formatHelpArticleContent,
+  isHtmlHelpArticle,
+  plainTextOf,
+} from "./help-article-html.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
 
@@ -75,11 +146,31 @@ export {
   HandoffAlertSchema,
   NewConversationAlertSchema,
   NewMessageAlertSchema,
+  raiseCustomerAlert,
+  type CustomerAlert,
   type CustomerAlertOperations,
   type HandoffAlert,
   type NewConversationAlert,
   type NewMessageAlert,
 } from "./customer-alerts.js";
+
+export {
+  CUSTOMER_ALERT_CHAT_URL,
+  CUSTOMER_ALERT_PREVIEW_LENGTH,
+  CUSTOMER_ALERT_UNKNOWN_VISITOR,
+  customerAlertChatUrl,
+  customerAlertMessagePreview,
+  customerAlertText,
+  customerAlertVisitorLabel,
+  escapeCustomerAlertHtml,
+} from "./customer-alert-text.js";
+
+export {
+  EVAL_HEADER,
+  EXCLUDE_EVAL_SQL,
+  isEvalConversation,
+  isVerifiedEvalRequest,
+} from "./eval-traffic.js";
 
 export {
   HandoffEmail,
@@ -173,8 +264,13 @@ export {
   type AnswerRequestInput,
   type AnswerUserContent,
   type ChatTurn,
-  type VisitorProfile as AnswerVisitorProfile,
 } from "./answer-request.js";
+
+export {
+  VisitorProfileRowSchema,
+  visitorProfileFromRow,
+  type VisitorProfileRow,
+} from "./visitor-profile-row.js";
 
 export {
   answerMachine,
@@ -222,7 +318,6 @@ export {
   ChatMessageAnswerSchema,
   ChatMessageSentSchema,
   ChatMessageStreamedSchema,
-  isVerifiedEvalRequest,
   newConversationRateLimitedFailure,
   sanitizePageContext,
   sendChatMessage,
