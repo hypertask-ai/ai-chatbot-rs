@@ -38,6 +38,7 @@ const owned = (
   }: Partial<Omit<ChatConversationSeed, "id">> = {}
 ): ChatConversationSeed => ({
   archived: false,
+  createdAt: CHAT_SECOND - 100,
   email: "ada@example.com",
   hasAccount: "unknown",
   id,

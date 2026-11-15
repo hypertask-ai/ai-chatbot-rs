@@ -23,6 +23,31 @@ export {
 export { capabilities, inspectFile } from "./inspect-file.js";
 
 export {
+  ChatHistoryAnswerSchema,
+  ChatHistoryMessageSchema,
+  ChatSessionSchema,
+  ChatSessionsAnswerSchema,
+  listChatSessions,
+  listChatSessionsContract,
+  readChatHistory,
+  readChatHistoryContract,
+  type ChatHistoryAnswer,
+  type ChatSession,
+  type ChatSessionsAnswer,
+} from "./chat-history.js";
+
+export {
+  chatReadCredentialOf,
+  chatReadGrant,
+  type ChatHistoryReadRequest,
+  type ChatReadCredential,
+  type ChatReadRefusal,
+  type ChatSessionsReadRequest,
+  type ConversationReadGrant,
+  type VisitorReadGrant,
+} from "./chat-read-access.js";
+
+export {
   HANDOFF_EMAIL_REPLY,
   HANDOFF_EMAIL_USER_MESSAGE,
   HANDOFF_REPLY,
@@ -41,6 +66,7 @@ export {
   ChatConversationSeedSchema,
   ChatConversationStore,
   ReturningCustomerSchema,
+  VISITOR_SESSIONS_LIMIT,
   conversationStateOf,
   memoryChatConversations,
   type ChatConversation,
@@ -49,6 +75,7 @@ export {
   type ChatHandoffEmailChange,
   type ChatHandoffEmailOutcome,
   type ChatProfileChange,
+  type RecentVisitorSessionsQuery,
   type ReturningCustomer,
 } from "./chat-conversation-store.js";
 

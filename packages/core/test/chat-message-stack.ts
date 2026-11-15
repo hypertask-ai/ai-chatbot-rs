@@ -355,7 +355,10 @@ export const chatMessageStack = (
       Layer.succeed(ChatAnswerCleanup, cleanup),
       Layer.succeed(ChatCitations, citations),
       Layer.succeed(CustomerAlerts, alerts),
-      ChatConfig.configLayer({ evalIngestSecret: input.evalSecret ?? "" }),
+      ChatConfig.configLayer({
+        adminPassword: "",
+        evalIngestSecret: input.evalSecret ?? "",
+      }),
       NodeCrypto.layer
     );
 
@@ -476,6 +479,7 @@ export const chatMessageRow = (
 
   return {
     archived: false,
+    createdAt: CHAT_SECOND - 100,
     email: undefined,
     hasAccount: "unknown",
     id,
