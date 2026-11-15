@@ -127,6 +127,25 @@ describe("chat widget menu state", () => {
     );
   });
 
+  it("views the chat already on screen read only once it is closed", () => {
+    story(
+      update,
+      given({ ...home, conversationId: "conv-2" }),
+      message(
+        Message.PickedMenuSession({ sessionId: "conv-2", status: "closed" })
+      ),
+      message(Message.LoadedPastChat({ messages: lines })),
+      model((next) => {
+        expect(next.readOnly).toBe(true);
+        expect(next.pastChat).toBe(true);
+        expect(next.conversationId).toBe("conv-2");
+      }),
+      Command.expectExact(ScrollToLatest()),
+      Command.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
+      Command.expectNone()
+    );
+  });
+
   it("resumes an open chat and hands the new id to the host", () => {
     story(
       update,

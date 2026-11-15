@@ -287,7 +287,7 @@ const loadedPastChat = (
         role: line.role,
       })),
       pastChat: true,
-      readOnly: !isCurrent || status === "closed",
+      readOnly: status === "closed",
       selection: Option.none(),
       suggestionsHidden: model.suggestionsHidden || messages.length > 0,
     },
