@@ -14,7 +14,7 @@ import type {
   AdminTouchChange,
 } from "@rat-stack/core/admin-conversation-store";
 import { UsageDayRow } from "@rat-stack/core/admin-usage";
-import { Effect, Layer, Schema } from "effect";
+import { Effect, Layer, Option, Schema } from "effect";
 
 import { DatabaseError } from "./model.js";
 import type { DatabaseOperation } from "./model.js";
@@ -102,12 +102,14 @@ const loadConversation = (source: AdminConversationQueries, id: string) =>
     const [row] = rows;
 
     if (row === undefined) {
-      return;
+      return Option.none();
     }
 
-    return yield* Schema.decodeUnknownEffect(AdminConversationRow)(row).pipe(
-      Effect.mapError(queryFailure("readAdminConversation"))
-    );
+    const conversation = yield* Schema.decodeUnknownEffect(
+      AdminConversationRow
+    )(row).pipe(Effect.mapError(queryFailure("readAdminConversation")));
+
+    return Option.some(conversation);
   }).pipe(Effect.orDie);
 
 const loadUsage = (source: AdminConversationQueries, since: number) =>

@@ -1,4 +1,4 @@
-import { Context, Effect, Schema } from "effect";
+import { Context, Effect, Option, Schema } from "effect";
 
 export const Unauthorized = Schema.Struct({
   error: Schema.Literal("Unauthorized"),
@@ -73,26 +73,26 @@ export const sameText = (left: string | undefined, right: string): boolean => {
 
 export const adminIdentity = (
   facts: AdminRequestFacts
-): Effect.Effect<AdminGrant | undefined> =>
+): Effect.Effect<Option.Option<AdminGrant>> =>
   Effect.gen(function* readAdminIdentity() {
     const password = yield* AdminPassword;
+    const token = facts.accessJwt;
+    const login = yield* AccessLogin;
+    const bearer: AdminGrant = { via: "bearer" };
+    const access: AdminGrant = { via: "access" };
 
     if (
       password !== "" &&
       sameText(facts.authorization, `Bearer ${password}`)
     ) {
-      return { via: "bearer" };
+      return Option.some(bearer);
     }
-
-    const token = facts.accessJwt;
 
     if (token === undefined) {
-      return;
+      return Option.none();
     }
 
-    const login = yield* AccessLogin;
-
-    return (yield* login.verify(token)) ? { via: "access" } : undefined;
+    return (yield* login.verify(token)) ? Option.some(access) : Option.none();
   });
 
 export const adminFromRequest = {
@@ -101,11 +101,11 @@ export const adminFromRequest = {
     Effect.gen(function* grantAdmin() {
       const grant = yield* adminIdentity(adminFactsOf(request.headers));
 
-      if (grant === undefined) {
+      if (Option.isNone(grant)) {
         return yield* Effect.fail({ error: "Unauthorized" as const });
       }
 
-      return grant;
+      return grant.value;
     }),
   tag: Admin,
 };

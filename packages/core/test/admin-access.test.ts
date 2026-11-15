@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 
 import {
   AccessLogin,
@@ -53,7 +53,7 @@ describe("the admin login rule", () => {
         bearerFacts(`Bearer ${PASSWORD}`)
       ).pipe(Effect.provide(accessLayer("good-token", PASSWORD)));
 
-      expect(grant).toEqual({ via: "bearer" });
+      expect(grant).toEqual(Option.some({ via: "bearer" }));
     })
   );
 
@@ -73,11 +73,11 @@ describe("the admin login rule", () => {
         bearerFacts("Basic YWRtaW46YWRtaW4=")
       ).pipe(Effect.provide(layer));
 
-      expect([visitor, malformed, otherScheme]).toEqual([
-        undefined,
-        undefined,
-        undefined,
-      ]);
+      expect([
+        Option.isNone(visitor),
+        Option.isNone(malformed),
+        Option.isNone(otherScheme),
+      ]).toEqual([true, true, true]);
     })
   );
 
@@ -87,7 +87,7 @@ describe("the admin login rule", () => {
         Effect.provide(accessLayer("good-token", ""))
       );
 
-      expect(grant).toBeUndefined();
+      expect(Option.isNone(grant)).toBe(true);
     })
   );
 
@@ -97,7 +97,7 @@ describe("the admin login rule", () => {
         Effect.provide(accessLayer("good-token", PASSWORD))
       );
 
-      expect(grant).toEqual({ via: "access" });
+      expect(grant).toEqual(Option.some({ via: "access" }));
     })
   );
 
@@ -107,7 +107,7 @@ describe("the admin login rule", () => {
         Effect.provide(accessLayer("good-token", PASSWORD))
       );
 
-      expect(grant).toBeUndefined();
+      expect(Option.isNone(grant)).toBe(true);
     })
   );
 
@@ -117,7 +117,7 @@ describe("the admin login rule", () => {
         Effect.provide(accessLayer("good-token", PASSWORD))
       );
 
-      expect(grant).toBeUndefined();
+      expect(Option.isNone(grant)).toBe(true);
     })
   );
 

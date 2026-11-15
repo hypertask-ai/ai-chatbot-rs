@@ -1,4 +1,5 @@
 import { Context, Schema } from "effect";
+import type { Option } from "effect";
 import type { Effect } from "effect";
 
 import type { UsageDayRowValue } from "./admin-usage.js";
@@ -113,7 +114,7 @@ export interface AdminConversationOperations {
   ) => Effect.Effect<readonly AdminMessageRowValue[]>;
   readonly readConversation: (
     id: string
-  ) => Effect.Effect<AdminConversationRowValue | undefined>;
+  ) => Effect.Effect<Option.Option<AdminConversationRowValue>>;
   readonly setArchived: (change: AdminArchivedChange) => Effect.Effect<void>;
   readonly setStatus: (change: AdminStatusChange) => Effect.Effect<void>;
   readonly setUpdatedAt: (change: AdminTouchChange) => Effect.Effect<void>;

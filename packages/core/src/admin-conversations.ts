@@ -143,7 +143,7 @@ export const readAdminConversation = implement(
         const conversation = yield* store.readConversation(id);
         const messages = yield* store.listMessages(id);
 
-        return { conversation: conversation ?? null, messages };
+        return { conversation: Option.getOrNull(conversation), messages };
       })
     )
 );
