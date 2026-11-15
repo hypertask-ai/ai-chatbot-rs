@@ -264,6 +264,7 @@ export {
   RESPONSE_CACHE_TTL_SECONDS,
   chatAnswerFrames,
   firstAnswerEligible,
+  historyTurnsOf,
   normalizeQuestion,
   profileIsKnown,
   responseCacheKey,

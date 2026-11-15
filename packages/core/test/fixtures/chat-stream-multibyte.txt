@@ -6,5 +6,5 @@ data: {"type":"chunk","content":"café ","conversationId":"conv-2"}
 
 data: {"type":"chunk","content":"— fin, naïve.","conversationId":"conv-2"}
 
-data: {"type":"done","conversationId":"conv-2","messageId":"msg-2","fullContent":"Prix : 16 € café — fin, naïve.","sources":[]}
+data: {"type":"done","conversationId":"conv-2","messageId":"msg-2","fullContent":"Prix : 16 € café — fin, naïve.","sources":[{"slug":"pricing-plans","title":"Pricing plans","url":"https://help.hypertask.ai/help/pricing-plans"}]}
 

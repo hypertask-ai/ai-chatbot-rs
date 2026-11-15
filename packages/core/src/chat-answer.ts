@@ -105,7 +105,7 @@ const answerProfileOf = (conversation: ChatConversation): VisitorProfile => ({
   visitor_name: conversation.name ?? null,
 });
 
-const assistantTurns = (
+export const historyTurnsOf = (
   messages: readonly ChatMessage[],
   visitorMessageId: string
 ): readonly ChatTurn[] =>
@@ -186,7 +186,7 @@ export const chatAnswerFrames = (input: ChatAnswerInput) =>
           function* answerTurn() {
             const conversation = yield* conversations.read(conversationId);
 
-            const history = assistantTurns(
+            const history = historyTurnsOf(
               yield* messages.list(conversationId),
               input.visitorMessageId
             );

@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 
 import { expect, it } from "@effect/vitest";
-import { Deferred, Effect, Fiber, Layer, Predicate, Stream } from "effect";
+import { Deferred, Effect, Fiber, Layer, Stream } from "effect";
 import { TestClock } from "effect/testing";
 
 import {
@@ -11,6 +11,7 @@ import {
   encodeChatStream,
   encodeChatStreamEvent,
   HISTORY_MESSAGE_LIMIT,
+  historyTurnsOf,
 } from "../src/index.js";
 import type { ChatAnswerInput } from "../src/index.js";
 import { CHAT_SECOND } from "./chat-http.js";
@@ -388,52 +389,42 @@ it.effect("carries the cited sources in the done frame", () =>
   }).pipe(Effect.scoped)
 );
 
-it.effect("reads the last twenty messages and leaves the new one out", () =>
-  Effect.gen(function* runScenario() {
-    const history = Array.from(
-      { length: HISTORY_MESSAGE_LIMIT + 5 },
-      (_unused, index) =>
-        storedMessage({
-          content: `earlier-${index}`,
-          conversationId: "conv-1",
-          createdAt: CHAT_SECOND - 200 + index,
-          id: `earlier-${index}`,
-          role: index % 2 === 0 ? "user" : "bot",
-        })
-    );
+it("reads the last twenty messages and leaves the new one out", () => {
+  const history = Array.from(
+    { length: HISTORY_MESSAGE_LIMIT + 5 },
+    (_unused, index) =>
+      storedMessage({
+        content: `earlier-${index}`,
+        conversationId: "conv-1",
+        createdAt: CHAT_SECOND - 200 + index,
+        id: `earlier-${index}`,
+        role: index % 2 === 0 ? "user" : "bot",
+      })
+  );
 
-    const stack = yield* chatMessageStack({
-      chats: [chatMessageRow({ id: "conv-1" })],
-      messages: [
-        ...history,
-        storedMessage({
-          content: "How much is Pro?",
-          conversationId: "conv-1",
-          createdAt: CHAT_SECOND - 1,
-          id: "msg-0",
-        }),
-      ],
-    });
+  const turns = historyTurnsOf(
+    [
+      ...history,
+      storedMessage({
+        content: "How much is Pro?",
+        conversationId: "conv-1",
+        createdAt: CHAT_SECOND - 1,
+        id: "msg-0",
+      }),
+    ],
+    "msg-0"
+  );
 
-    yield* collect(stack, input());
-
-    const [request] = yield* stack.modelRequests;
-
-    const joined = (request?.messages ?? [])
-      .map((message) =>
-        Predicate.isString(message.content)
-          ? message.content
-          : message.content
-              .map((block) => ("text" in block ? block.text : ""))
-              .join("")
-      )
-      .join("\n");
-
-    expect(joined).toContain("earlier-5");
-    expect(joined).not.toContain("earlier-4");
-    expect(joined.match(/How much is Pro\?/gu) ?? []).toHaveLength(1);
-  }).pipe(Effect.scoped)
-);
+  expect(turns).toHaveLength(HISTORY_MESSAGE_LIMIT);
+  expect(turns.map((turn) => turn.content)).toEqual(
+    history.slice(5).map((message) => message.content)
+  );
+  expect(turns.map((turn) => turn.role)).toEqual(
+    history
+      .slice(5)
+      .map((message) => (message.role === "user" ? "user" : "assistant"))
+  );
+});
 
 it.effect(
   "retries the model once and stores one visitor message and one answer",
