@@ -39,6 +39,9 @@ The base Effect plugin owns diagnostic severity. Child configs may add exact `al
 - **`@rat-stack/flags`**:
   - Path: `packages/flags`
   - Role: Typed flags cartridge with the template's default Durable Object ledger (`src/cloudflare-ledger.ts`). Kept as the Durable Object example the live chat room follows. Not wired into the Stack yet
+- **`@rat-stack/haiku`**:
+  - Path: `packages/haiku`
+  - Role: Anthropic Messages adapter behind the `AnswerModel` port: one Haiku call over the Cloudflare AI Gateway and the stream reader for its answer. Takes `ANTHROPIC_API_KEY` through `AnthropicConfig`. Not wired into the Stack yet
 - **`@rat-stack/web`**:
   - Path: `apps/web`
   - Role: Foldkit site on Vite, deployed through Alchemy's `Cloudflare.Website.Foldkit` as `Website` (`apps/web/src/website.ts`). One home shell until the help pages move. Include it with `const website = yield* Website;`
