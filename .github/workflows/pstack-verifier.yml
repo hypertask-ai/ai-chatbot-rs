@@ -393,7 +393,6 @@ jobs:
                 --port "$port" \
                 --ip 127.0.0.1 \
                 --local \
-                --no-bundle \
                 --persist-to "$RUNNER_TEMP/$side-worker-state" \
                 --show-interactive-dev-session=false \
                 --log-level log
