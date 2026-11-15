@@ -777,12 +777,6 @@ const withSite = <A, E>(use: (client: AdminClient) => Effect.Effect<A, E>) =>
 
 const idsOf = (answer: Answered) => Inbox(answer.body).map((item) => item.id);
 
-const filledPath = (path: string) =>
-  path
-    .split("/")
-    .map((segment) => (segment.startsWith(":") ? "conv-handoff" : segment))
-    .join("/");
-
 const adminRequests = (): readonly AdminRequest[] =>
   adminConversationCapabilities.map(({ contract }) => {
     const { http, name } = contract;
@@ -794,7 +788,7 @@ const adminRequests = (): readonly AdminRequest[] =>
     return {
       headers: {},
       method: http.method,
-      path: `${ADMIN_PREFIX}${filledPath(http.path)}`,
+      path: `${ADMIN_PREFIX}${http.path}`,
     };
   });
 
