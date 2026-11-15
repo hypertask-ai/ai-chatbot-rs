@@ -6,8 +6,8 @@ import {
   debugHelpRetrieval,
 } from "../src/help-retrieval.js";
 import { HelpRetrievalAnswer, HelpSearchArticle } from "../src/help-search.js";
-import articlesJson from "./fixtures/help-articles.json";
-import bodiesJson from "./fixtures/help-retrieval-bodies.json";
+import articlesJson from "./fixtures/help-articles.json" with { type: "json" };
+import bodiesJson from "./fixtures/help-retrieval-bodies.json" with { type: "json" };
 
 const corpus = Schema.decodeUnknownSync(Schema.Array(HelpSearchArticle))(
   articlesJson

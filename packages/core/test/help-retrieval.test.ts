@@ -8,9 +8,9 @@ import {
   rankHelpArticles,
 } from "../src/help-search.js";
 import type { HelpSearchArticleValue } from "../src/help-search.js";
-import articlesJson from "./fixtures/help-articles.json";
-import answersJson from "./fixtures/help-retrieval-answers.json";
-import typosJson from "./fixtures/help-retrieval-typos.json";
+import articlesJson from "./fixtures/help-articles.json" with { type: "json" };
+import answersJson from "./fixtures/help-retrieval-answers.json" with { type: "json" };
+import typosJson from "./fixtures/help-retrieval-typos.json" with { type: "json" };
 
 const corpus = Schema.decodeUnknownSync(Schema.Array(HelpSearchArticle))(
   articlesJson

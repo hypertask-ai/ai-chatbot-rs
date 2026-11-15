@@ -7,8 +7,8 @@ import {
   scoreHelpSearchMatches,
 } from "../src/help-search.js";
 import type { HelpSearchArticleValue } from "../src/help-search.js";
-import articlesJson from "./fixtures/help-articles.json";
-import answersJson from "./fixtures/help-search-answers.json";
+import articlesJson from "./fixtures/help-articles.json" with { type: "json" };
+import answersJson from "./fixtures/help-search-answers.json" with { type: "json" };
 
 const corpus = Schema.decodeUnknownSync(Schema.Array(HelpSearchArticle))(
   articlesJson
