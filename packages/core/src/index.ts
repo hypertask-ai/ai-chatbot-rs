@@ -52,6 +52,33 @@ export {
 } from "./inspect-machine.js";
 
 export {
+  ConversationEmailSchema,
+  ConversationEventsSchema,
+  ConversationInputSchema,
+  ConversationRefusalSchema,
+  ConversationStateSchema,
+  ConversationStatusSchema,
+  HANDOFF_REPEAT_WINDOW_SECONDS,
+  MissingProfileFieldSchema,
+  VisitorAccountSchema,
+  VisitorProfileSchema,
+  conversationMachine,
+  conversationStep,
+  startConversation,
+  stepConversation,
+  type ConversationEvent,
+  type ConversationInput,
+  type ConversationRefusal,
+  type ConversationSnapshot,
+  type ConversationState,
+  type ConversationStatus,
+  type ConversationStep,
+  type MissingProfileField,
+  type VisitorAccount,
+  type VisitorProfile,
+} from "./conversation-machine.js";
+
+export {
   FileStatsError,
   FileStatsSchema,
   formatFileStats,
