@@ -16,7 +16,7 @@ class HelpArticleUnavailable extends Schema.TaggedError<
 
 const HelpArticleAnswer = Schema.Struct({
   body: HelpArticlePage,
-  status: Schema.Number,
+  status: Schema.Finite,
 });
 
 const readAnswer = HttpClientResponse.schemaJson(HelpArticleAnswer);
