@@ -54,6 +54,16 @@ const unsupportedMethod = () => {
   );
 };
 
+const withWidgetChatHeaders = (): Headers => {
+  const headers = noindexHeaders();
+
+  for (const [name, value] of Object.entries(widgetChatHeaders)) {
+    headers.set(name, value);
+  }
+
+  return headers;
+};
+
 const routePath = (pathname: string): string | undefined =>
   pathname === "/" ? "/" : stripBasePath(pathname);
 
@@ -95,7 +105,10 @@ const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
     { flags }
   );
 
-  return Rendered(application, { headers: widgetChatHeaders, status: 200 });
+  return Rendered(application, {
+    headers: withWidgetChatHeaders(),
+    status: 200,
+  });
 });
 
 const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
