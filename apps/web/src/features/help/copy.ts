@@ -82,6 +82,10 @@ export const copyright = "\u00A9 2026 Hypertask Lab Ltd.";
 
 export const readerBackLabel = "Back to articles";
 
+export const readerLoadFailedLabel = "That article could not be opened.";
+
+export const readerLoadingLabel = "Loading article\u2026";
+
 export const articleHeaderNav = [
   { href: `${appOrigin}/pricing/`, label: "Pricing" },
   { href: `${appOrigin}/blog/`, label: "Blog" },

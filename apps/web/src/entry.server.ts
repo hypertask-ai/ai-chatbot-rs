@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import {
   Rendered,
   Responded,
@@ -9,6 +9,7 @@ import {
 import { Flags, initialModel } from "./client/help/index.js";
 import { view } from "./features/help/index.js";
 import { helpPageFlags, helpRouteOf } from "./server/help-pages.js";
+import { helpReaderResponse, helpReaderSlugOf } from "./server/help-reader.js";
 import { recordedHelpArticles } from "./server/recorded-help-articles.js";
 
 const headMarkup = [
@@ -63,6 +64,16 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   }
 
   const { pathname } = new URL(request.url);
+  const readerSlug = helpReaderSlugOf(pathname);
+
+  if (Option.isSome(readerSlug)) {
+    return Responded(
+      yield* helpReaderResponse(readerSlug.value).pipe(
+        Effect.provide(recordedHelpArticles)
+      )
+    );
+  }
+
   const route = helpRouteOf(pathname);
 
   if (route === null) {
