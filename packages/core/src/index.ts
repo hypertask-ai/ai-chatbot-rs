@@ -63,6 +63,7 @@ export {
 export {
   formatHelpArticleContent,
   isHtmlHelpArticle,
+  plainTextOf,
 } from "./help-article-html.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
@@ -101,6 +102,33 @@ export {
 } from "./inspect-machine.js";
 
 export {
+  ConversationEmailSchema,
+  ConversationEventsSchema,
+  ConversationInputSchema,
+  ConversationRefusalSchema,
+  ConversationStateSchema,
+  ConversationStatusSchema,
+  HANDOFF_REPEAT_WINDOW_SECONDS,
+  MissingProfileFieldSchema,
+  VisitorAccountSchema,
+  VisitorProfileSchema,
+  conversationMachine,
+  conversationStep,
+  startConversation,
+  stepConversation,
+  type ConversationEvent,
+  type ConversationInput,
+  type ConversationRefusal,
+  type ConversationSnapshot,
+  type ConversationState,
+  type ConversationStatus,
+  type ConversationStep,
+  type MissingProfileField,
+  type VisitorAccount,
+  type VisitorProfile,
+} from "./conversation-machine.js";
+
+export {
   FileStatsError,
   FileStatsSchema,
   formatFileStats,
@@ -108,3 +136,41 @@ export {
   summarizeText,
   type FileStats,
 } from "./stats.js";
+
+export {
+  answerMachine,
+  answerOutcome,
+  runAnswer,
+  type AnswerOutcome,
+} from "./answer-machine.js";
+
+export {
+  addTokenUsage,
+  ANSWER_FAILURE_MESSAGE,
+  AnswerContentSchema,
+  AnswerImageBlockSchema,
+  AnswerMessageSchema,
+  AnswerModel,
+  AnswerRequestSchema,
+  AnswerTextBlockSchema,
+  EMPTY_ANSWER_MESSAGE,
+  emptyUsage,
+  fallbackAnswer,
+  HAIKU_BUSY_MESSAGE,
+  HAIKU_MODEL,
+  HAIKU_RETRY,
+  HAIKU_RETRY_LIMIT,
+  HAIKU_RETRY_WAIT,
+  answerModelFailure,
+  settleAnswer,
+  TokenUsageSchema,
+  TRUNCATED_ANSWER_CLOSE,
+  type AnswerImageBlock,
+  type AnswerMessage,
+  type AnswerModelFailure,
+  type AnswerRequest,
+  type AnswerStreamRead,
+  type AnswerTextBlock,
+  type SettledAnswer,
+  type TokenUsage,
+} from "./answer-model.js";
