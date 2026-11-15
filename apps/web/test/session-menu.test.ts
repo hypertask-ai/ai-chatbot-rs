@@ -63,6 +63,7 @@ describe("chat session rows match the old menu", () => {
       const stamp = sessionMenuNow - millisAgo;
 
       expect(sessionTime(stamp, sessionMenuNow)).toBe(expected);
+
       const iso = DateTime.formatIso(DateTime.makeUnsafe(stamp));
 
       expect(sessionTime(iso, sessionMenuNow)).toBe(expected);
@@ -71,6 +72,7 @@ describe("chat session rows match the old menu", () => {
 
   it("falls back to the visitor's calendar date from seven days on", () => {
     const stamp = sessionMenuNow - 604_800_000;
+
     const calendar = new Intl.DateTimeFormat(undefined, {
       day: "numeric",
       month: "short",

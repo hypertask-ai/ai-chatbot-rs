@@ -206,21 +206,6 @@ export const styles = stylex.create({
     opacity: 0.5,
     width: "48px",
   },
-  menuSessionsEmpty: {
-    alignItems: "center",
-    color: widget.muted,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    justifyContent: "center",
-    padding: "40px 20px",
-    textAlign: "center",
-  },
-  menuSessionsList: {
-    flex: 1,
-    overflowY: "auto",
-    padding: { "@media (max-width: 900px)": "16px", default: "12px" },
-  },
   menuSessionItem: {
     alignItems: "center",
     background: { ":hover": widget.surfaceHover, default: widget.surfaceBg },
@@ -262,6 +247,21 @@ export const styles = stylex.create({
     textAlign: "left",
     transition: "all 0.15s",
     width: "100%",
+  },
+  menuSessionsEmpty: {
+    alignItems: "center",
+    color: widget.muted,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    justifyContent: "center",
+    padding: "40px 20px",
+    textAlign: "center",
+  },
+  menuSessionsList: {
+    flex: 1,
+    overflowY: "auto",
+    padding: { "@media (max-width: 900px)": "16px", default: "12px" },
   },
   menuView: {
     display: "flex",

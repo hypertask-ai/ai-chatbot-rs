@@ -19,11 +19,7 @@ const flags: WidgetFlags = {
 
 const home = initialModel(flags);
 
-const built = fakePastChats(20, sessionMenuNow);
-
-const loaded = built.loadedMenu;
-
-const lines = built.lines;
+const { lines, loadedMenu } = fakePastChats(20, sessionMenuNow);
 
 describe("chat widget menu state", () => {
   it("marks the menu open and loading when the page asks for it", () => {
@@ -44,12 +40,12 @@ describe("chat widget menu state", () => {
       update,
       given(home),
       message(Message.OpenedMenu()),
-      message(loaded),
+      message(loadedMenu),
       model((next) => {
         expect(next.menu.kind).toBe("ready");
         expect(next.menu.now).toBe(sessionMenuNow);
         expect(next.menu.rows.map((session) => session.id)).toEqual(
-          built.sessions.map((session) => session.id)
+          sessions.map((session) => session.id)
         );
       }),
       Command.expectNone()
@@ -60,7 +56,7 @@ describe("chat widget menu state", () => {
     story(
       update,
       given(home),
-      message(loaded),
+      message(loadedMenu),
       model((next) => {
         expect(next.menu.kind).toBe("closed");
         expect(next.menu.rows).toHaveLength(20);
@@ -75,7 +71,7 @@ describe("chat widget menu state", () => {
       update,
       given(home),
       message(Message.OpenedMenu()),
-      message(loaded),
+      message(loadedMenu),
       message(Message.RejectedMenuSessions()),
       model((next) => {
         expect(next.menu.kind).toBe("failed");
@@ -90,7 +86,7 @@ describe("chat widget menu state", () => {
     story(
       update,
       given(home),
-      message(loaded),
+      message(loadedMenu),
       message(
         Message.PickedMenuSession({ sessionId: "conv-2", status: "bot" })
       ),

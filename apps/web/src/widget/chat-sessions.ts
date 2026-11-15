@@ -21,11 +21,9 @@ export const ChatLine = Schema.Struct({
 
 export type ChatLineValue = typeof ChatLine.Type;
 
-const previewLimit = 50;
+const millis = { day: 86_400_000, hour: 3_600_000, minute: 60_000 } as const;
 
-const millisPerMinute = 60_000;
-const millisPerHour = 3_600_000;
-const millisPerDay = 86_400_000;
+const previewLimit = 50;
 
 export const sessionStamp = (
   session: ChatSessionValue
@@ -56,9 +54,9 @@ export const sessionTime = (
   }
 
   const diffMillis = nowMillis - DateTime.toEpochMillis(parsed.value);
-  const minutes = Math.floor(diffMillis / millisPerMinute);
-  const hours = Math.floor(diffMillis / millisPerHour);
-  const days = Math.floor(diffMillis / millisPerDay);
+  const minutes = Math.floor(diffMillis / millis.minute);
+  const hours = Math.floor(diffMillis / millis.hour);
+  const days = Math.floor(diffMillis / millis.day);
 
   if (minutes < 1) {
     return widgetCopy.sessionJustNow;
