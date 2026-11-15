@@ -62,7 +62,7 @@ const tagStrippingLines = (source: string): readonly number[] => {
         continue;
       }
 
-      const names = target.match(IDENTIFIER) ?? [];
+      const names: readonly string[] = target.match(IDENTIFIER) ?? [];
 
       for (const binding of bindings) {
         if (names.includes(binding.name)) {
