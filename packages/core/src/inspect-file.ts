@@ -7,8 +7,8 @@ import {
 } from "./cafe-directory.js";
 import { inspectFileContract } from "./contracts.js";
 import { flagCapabilities } from "./flag-capabilities.js";
-import { helpArticleCapabilities } from "./help-articles.js";
 import { health } from "./health.js";
+import { helpArticleCapabilities } from "./help-articles.js";
 import { runInspectMachine } from "./inspect-machine.js";
 import { joinInterest } from "./join-interest.js";
 import { getPrompt, listPrompts } from "./prompts.js";
