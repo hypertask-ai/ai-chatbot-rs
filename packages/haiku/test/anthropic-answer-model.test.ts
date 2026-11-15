@@ -1,3 +1,4 @@
+// @effect-diagnostics nodeBuiltinImport:off -- This test reads the recorded prompt and stream fixtures from disk.
 import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "@effect/vitest";
