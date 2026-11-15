@@ -108,11 +108,15 @@ it.effect(
 
       const plan = planOf(response.answer);
       const secret = plan.visitorSecret ?? "";
-      const rows = yield* stack.conversations;
       const expectedHash = yield* hashVisitorSecret(secret);
 
+      const owned = yield* stack.answer.conversations.readAsVisitor({
+        id: plan.conversationId,
+        secretHash: expectedHash,
+      });
+
       expect(secret).toMatch(/^[A-Za-z0-9_-]{43}$/u);
-      expect(rows[0]?.visitorSecretHash).toBe(expectedHash);
+      expect(owned?.id).toBe(plan.conversationId);
     }).pipe(Effect.scoped)
 );
 
@@ -136,10 +140,14 @@ it.effect("keeps a presented secret that already belongs to the visitor", () =>
     });
 
     const plan = planOf(response.answer);
-    const rows = yield* stack.conversations;
+
+    const owned = yield* stack.answer.conversations.readAsVisitor({
+      id: plan.conversationId,
+      secretHash: presented,
+    });
 
     expect(plan.visitorSecret).toBeUndefined();
-    expect(rows[1]?.visitorSecretHash).toBe(presented);
+    expect(owned?.id).toBe(plan.conversationId);
   }).pipe(Effect.scoped)
 );
 
@@ -165,10 +173,14 @@ it.effect(
       });
 
       const plan = planOf(response.answer);
-      const rows = yield* stack.conversations;
+
+      const owned = yield* stack.answer.conversations.readAsVisitor({
+        id: plan.conversationId,
+        secretHash: other,
+      });
 
       expect(plan.visitorSecret).toMatch(/^[A-Za-z0-9_-]{43}$/u);
-      expect(rows[1]?.visitorSecretHash).not.toBe(other);
+      expect(owned).toBeUndefined();
     }).pipe(Effect.scoped)
 );
 

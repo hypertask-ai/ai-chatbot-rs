@@ -457,6 +457,18 @@ export const postChatMessage = (
     return { answer, body: decoded, status: response.status };
   });
 
+export const answerLayer = (stack: ChatMessageStack) =>
+  Layer.mergeAll(
+    Layer.succeed(ChatConversationStore, stack.answer.conversations),
+    Layer.succeed(ChatMessageStore, stack.answer.messages),
+    Layer.succeed(FirstAnswerCache, stack.answer.cache),
+    Layer.succeed(ChatArticleContext, stack.answer.articles),
+    Layer.succeed(ChatAnswerCleanup, stack.answer.cleanup),
+    Layer.succeed(ChatCitations, stack.answer.citations),
+    Layer.succeed(ChatClock, stack.answer.clock),
+    Layer.succeed(AnswerModel, stack.answer.model)
+  );
+
 export const chatMessageRow = (
   overrides: Partial<ChatConversationSeed> & { readonly id: string }
 ): ChatConversationSeed => {

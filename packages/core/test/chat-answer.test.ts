@@ -2,18 +2,10 @@
 import { readFileSync } from "node:fs";
 
 import { expect, it } from "@effect/vitest";
-import { Context, Deferred, Effect, Fiber, Predicate, Stream } from "effect";
+import { Deferred, Effect, Fiber, Layer, Predicate, Stream } from "effect";
 import { TestClock } from "effect/testing";
 
 import {
-  AnswerModel,
-  ChatAnswerCleanup,
-  ChatArticleContext,
-  ChatCitations,
-  ChatClock,
-  ChatConversationStore,
-  ChatMessageStore,
-  FirstAnswerCache,
   chatAnswerFrames,
   connectedEvent,
   encodeChatStream,
@@ -24,6 +16,7 @@ import type { ChatAnswerInput } from "../src/index.js";
 import { CHAT_SECOND } from "./chat-http.js";
 import {
   CITATION,
+  answerLayer,
   chatMessageRow,
   chatMessageStack,
   storedMessage,
@@ -33,31 +26,10 @@ import type { ChatMessageStack } from "./chat-message-stack.js";
 const recorded = (name: string): string =>
   readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf-8");
 
-const withAnswer = <A, E, R>(
-  effect: Effect.Effect<A, E, R>,
-  stack: ChatMessageStack
-) =>
-  effect.pipe(
-    Effect.provideService(ChatConversationStore, stack.answer.conversations),
-    Effect.provideService(ChatMessageStore, stack.answer.messages),
-    Effect.provideService(FirstAnswerCache, stack.answer.cache),
-    Effect.provideService(ChatArticleContext, stack.answer.articles),
-    Effect.provideService(ChatAnswerCleanup, stack.answer.cleanup),
-    Effect.provideService(ChatCitations, stack.answer.citations),
-    Effect.provideService(ChatClock, stack.answer.clock),
-    Effect.provideService(AnswerModel, stack.answer.model)
-  );
-
-const answerContext = (stack: ChatMessageStack) =>
-  Context.empty().pipe(
-    Context.add(ChatConversationStore, stack.answer.conversations),
-    Context.add(ChatMessageStore, stack.answer.messages),
-    Context.add(FirstAnswerCache, stack.answer.cache),
-    Context.add(ChatArticleContext, stack.answer.articles),
-    Context.add(ChatAnswerCleanup, stack.answer.cleanup),
-    Context.add(ChatCitations, stack.answer.citations),
-    Context.add(ChatClock, stack.answer.clock),
-    Context.add(AnswerModel, stack.answer.model)
+const collect = (stack: ChatMessageStack, asked: ChatAnswerInput) =>
+  Effect.provide(
+    Stream.runCollect(chatAnswerFrames(asked)),
+    answerLayer(stack)
   );
 
 const input = (overrides: Partial<ChatAnswerInput> = {}): ChatAnswerInput => ({
@@ -79,9 +51,6 @@ const seeded = () => ({
     }),
   ],
 });
-
-const collect = (stack: ChatMessageStack, asked: ChatAnswerInput) =>
-  withAnswer(Stream.runCollect(chatAnswerFrames(asked)), stack);
 
 const readParts = (readable: ReadableStream<Uint8Array>) =>
   Effect.gen(function* readStreamParts() {
@@ -122,13 +91,13 @@ it.effect("streams the recorded answer to the client in several parts", () =>
       answers: [{ pieces: ["Pro is ", "$16 per ", "user."] }],
     });
 
+    const context = yield* Layer.build(answerLayer(stack));
+
     const readable = Stream.toReadableStreamWith(
-      answerContext(stack),
-      {}
-    )(
       Stream.map(chatAnswerFrames(input()), (event) =>
         new TextEncoder().encode(encodeChatStreamEvent(event))
-      )
+      ),
+      context
     );
 
     const parts = yield* readParts(readable);
@@ -268,9 +237,9 @@ it.effect("stores the partial answer when the visitor disconnects", () =>
       visitorMessageId: "msg-0f",
     });
 
-    const frames = yield* withAnswer(
+    const frames = yield* Effect.provide(
       Stream.runCollect(Stream.take(chatAnswerFrames(asked), 2)),
-      stack
+      answerLayer(stack)
     );
 
     expect(frames).toHaveLength(2);
