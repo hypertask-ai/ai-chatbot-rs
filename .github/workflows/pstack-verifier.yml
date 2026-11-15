@@ -178,6 +178,7 @@ jobs:
           "$RUNNER_TEMP/browser/node_modules/.bin/playwright" install --with-deps chromium
           mkdir -p "$RUNNER_TEMP/browser/screens"
           ln -sfn "$RUNNER_TEMP/browser/node_modules" "$GITHUB_WORKSPACE/verify/node_modules"
+          printf 'SCREENS_DIR=%s\n' "$RUNNER_TEMP/browser/screens" >> "$GITHUB_ENV"
 
       - name: Serve the built sites and any local Worker on the runner
         if: steps.target.outputs.go == 'yes'
@@ -547,7 +548,6 @@ jobs:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
           CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           SHA: ${{ steps.target.outputs.sha }}
-          SCREENS_DIR: ${{ runner.temp }}/browser/screens
         run: |
           set -euo pipefail
           npm install --global --no-fund --no-audit @openai/codex@0.169.0
@@ -625,7 +625,6 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           SHA: ${{ steps.target.outputs.sha }}
-          SCREENS_DIR: ${{ runner.temp }}/browser/screens
         run: |
           set -euo pipefail
           npm install --global --no-fund --no-audit @anthropic-ai/claude-code@2.1.325
