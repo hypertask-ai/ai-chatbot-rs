@@ -309,6 +309,64 @@ export {
   type ChatRoomOperations,
 } from "./chat-room.js";
 
+export { ChatRoomClock, type ChatRoomClockValue } from "./chat-room-clock.js";
+
+export {
+  CHAT_ROOM_CLOSE_CODE,
+  CHAT_ROOM_CLOSE_REASON,
+  CHAT_ROOM_PING_INTERVAL_MS,
+  CHAT_ROOM_PONG,
+  CHAT_ROOM_QUEUE_SIZE,
+  CHAT_ROOM_REPLAY_MS,
+  CHAT_ROOM_RETENTION_MS,
+  ChatRoomEventsSchema,
+  ChatRoomFrameSchema,
+  ChatRoomHealthSchema,
+  ChatRoomSessionSchema,
+  ChatRoomStateSchema,
+  ChatRoomStatusSchema,
+  adminRoomFrame,
+  chatRoomEffect,
+  chatRoomHealth,
+  chatRoomMachine,
+  chatRoomPingFrame,
+  startChatRoom,
+  stepChatRoom,
+  visitorRoomFrame,
+  type ChatRoomEffect,
+  type ChatRoomEvent,
+  type ChatRoomFrame,
+  type ChatRoomHealth,
+  type ChatRoomSession,
+  type ChatRoomSnapshot,
+  type ChatRoomState,
+  type ChatRoomStatus,
+  type ChatRoomStep,
+} from "./chat-room-machine.js";
+
+export {
+  CHAT_ROOM_BROADCAST_URL,
+  CHAT_ROOM_PATH_PATTERN,
+  ChatRoomNamespace,
+  broadcastChatRoom,
+  chatRoomLayer,
+  chatRoomNameFromPath,
+  chatRoomNotFound,
+  connectChatRoom,
+  type ChatRoomNamespaceOperations,
+  type ChatRoomStubOperations,
+} from "./chat-room-route.js";
+
+export {
+  ChatRoomBroadcastAnswerSchema,
+  broadcastAnswerResponse,
+  healthAnswerResponse,
+  makeChatRoom,
+  type ChatRoomBroadcastAnswer,
+  type ChatRoomLive,
+  type RoomSocket,
+} from "./chat-room-socket.js";
+
 export {
   FirstAnswerCache,
   type FirstAnswerCacheOperations,
