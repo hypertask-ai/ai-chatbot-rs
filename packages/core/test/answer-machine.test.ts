@@ -1,6 +1,7 @@
 import { expect, it } from "@effect/vitest";
 import { createEffectActor, join } from "@xstate/effect";
 import { Effect, Fiber, Ref } from "effect";
+import type { Duration } from "effect";
 import { TestClock } from "effect/testing";
 
 import {
@@ -131,7 +132,7 @@ const answerInto = (model: AnswerModel["Service"], asked: AnswerRequest) =>
     return { chunks: yield* Ref.get(chunks), outcome };
   });
 
-const advance = <A, E>(effect: Effect.Effect<A, E>, wait: string) =>
+const advance = <A, E>(effect: Effect.Effect<A, E>, wait: Duration.Input) =>
   Effect.gen(function* clocked() {
     const fiber = yield* Effect.forkChild(effect);
 
