@@ -5,6 +5,8 @@ import {
   listCafeProjects,
   peopleCapabilities,
 } from "./cafe-directory.js";
+import { leaveHandoffEmail, requestHandoff } from "./chat-handoff.js";
+import { saveVisitorProfile } from "./chat-profile.js";
 import { inspectFileContract } from "./contracts.js";
 import { flagCapabilities } from "./flag-capabilities.js";
 import { helpArticleCapabilities } from "./help-articles.js";
@@ -21,6 +23,7 @@ export const capabilities = [
   inspectFile,
   ...flagCapabilities,
   joinInterest,
+  leaveHandoffEmail,
   listPrompts,
   getPrompt,
   listCafeNews,
@@ -28,4 +31,6 @@ export const capabilities = [
   ...peopleCapabilities,
   ...helpArticleCapabilities,
   ...helpRetrievalCapabilities,
+  requestHandoff,
+  saveVisitorProfile,
 ] as const;
