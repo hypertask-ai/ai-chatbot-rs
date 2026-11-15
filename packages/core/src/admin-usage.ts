@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-export const HAIKU_MODEL = "claude-haiku-5-5";
+import { HAIKU_MODEL, type TokenUsage } from "./answer-model.js";
 
 const NANO_PER_MTOK_UNIT = 1000;
 
@@ -89,13 +89,6 @@ export const AdminUsageReport = Schema.Struct({
 });
 
 export type AdminUsageReportValue = typeof AdminUsageReport.Type;
-
-interface TokenUsage {
-  readonly cache_creation_input_tokens: number;
-  readonly cache_read_input_tokens: number;
-  readonly input_tokens: number;
-  readonly output_tokens: number;
-}
 
 interface NanoRates {
   readonly cacheRead: number;

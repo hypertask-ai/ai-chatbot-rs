@@ -109,7 +109,6 @@ export {
 
 export {
   AdminUsageReport,
-  HAIKU_MODEL,
   HAIKU_PRICES_PER_MTOK,
   UsageDayReport,
   UsageDayRow,

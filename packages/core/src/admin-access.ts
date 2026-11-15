@@ -42,7 +42,7 @@ export const AccessLogin = Context.Reference<AccessLoginValue>(
   }
 );
 
-export class Admin extends Context.Service<AdminGrant, AdminGrant>()(
+export class Admin extends Context.Service<Admin, AdminGrant>()(
   "@rat-stack/core/Admin"
 ) {}
 
