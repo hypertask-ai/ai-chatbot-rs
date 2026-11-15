@@ -7,14 +7,63 @@ export { ConfigService } from "./config-service.js";
 export { FileInspector } from "./file-inspector.js";
 
 export {
+  HelpArticle,
+  HelpArticleMatch,
+  HelpArticleNotFound,
+  HelpArticlePane,
+  HelpArticleSummary,
+  HelpArticleTimestamp,
   ReadOutput,
   ResourceNotFound,
   SearchMatch,
   SearchOutput,
   inspectFileContract,
+  listHelpArticlesContract,
   readContract,
+  readHelpArticleContract,
+  readHelpArticlePaneContract,
   searchContract,
+  searchHelpArticlesContract,
 } from "./contracts.js";
+
+export {
+  HelpArticleStore,
+  type HelpArticleMatchValue,
+  type HelpArticleMemory,
+  type HelpArticleSearch,
+  type HelpArticleSummaryValue,
+  type HelpArticleValue,
+} from "./help-article-store.js";
+
+export {
+  helpArticleCapabilities,
+  helpSearchKeywords,
+  listHelpArticles,
+  readHelpArticle,
+  readHelpArticlePane,
+  searchHelpArticles,
+} from "./help-articles.js";
+
+export {
+  FREE_BOARD_CAP,
+  PAID_SEAT_CAP,
+  PRICING_ARTICLE_SLUG,
+  SALES_EMAIL,
+  SIGNUP_URL,
+  TRIAL_DAYS,
+  YEARLY_SAVE_PERCENT,
+  helpPlans,
+  helpPlansHtml,
+  helpSeatRate,
+  type HelpPlan,
+  type HelpPlanId,
+  type HelpSeatRate,
+} from "./help-plans.js";
+
+export {
+  formatHelpArticleContent,
+  isHtmlHelpArticle,
+} from "./help-article-html.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
 
