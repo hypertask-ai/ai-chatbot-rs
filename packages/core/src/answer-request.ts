@@ -181,6 +181,10 @@ export const pageContextBlock = (
   return `The visitor is reading this page right now:\nTitle: ${title}\nURL: ${page.url}\nUse this when it helps the answer. Do not invent other pages.`;
 };
 
+const chatTurn = (role: ChatTurn["role"], content: string): ChatTurn =>
+  // oxlint-disable-next-line sort-keys -- The old request sends role before content and the recorded body compares the encoded JSON.
+  ({ role, content });
+
 export const trimConversation = (
   history: readonly ChatTurn[],
   limit = HISTORY_TURN_LIMIT
@@ -194,12 +198,12 @@ export const trimConversation = (
     const previous = merged.at(-1);
 
     if (previous !== undefined && previous.role === turn.role) {
-      merged[merged.length - 1] = {
-        content: `${previous.content}\n${turn.content}`,
-        role: turn.role,
-      };
+      merged[merged.length - 1] = chatTurn(
+        turn.role,
+        `${previous.content}\n${turn.content}`
+      );
     } else {
-      merged.push({ content: turn.content, role: turn.role });
+      merged.push(chatTurn(turn.role, turn.content));
     }
   }
 
