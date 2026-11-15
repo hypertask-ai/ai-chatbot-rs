@@ -104,6 +104,16 @@
       "import": "./dist/help-articles.js",
       "default": "./dist/help-articles.js"
     },
+    "./help-search": {
+      "types": "./src/help-search.ts",
+      "import": "./dist/help-search.js",
+      "default": "./dist/help-search.js"
+    },
+    "./help-retrieval": {
+      "types": "./src/help-retrieval.ts",
+      "import": "./dist/help-retrieval.js",
+      "default": "./dist/help-retrieval.js"
+    },
     "./intake": {
       "types": "./src/intake.ts",
       "import": "./dist/intake.js",
