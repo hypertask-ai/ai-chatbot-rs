@@ -1,12 +1,12 @@
 ---
 title: "Database"
-description: "One interface records action runs and their outcomes in either Cloudflare D1 or Postgres through Hyperdrive."
-plain: "RunLog records action runs and their outcomes through one service, stored in D1 or Postgres through Hyperdrive."
+description: "Two services record action runs and answer the help articles, stored in either Cloudflare D1 or Postgres through Hyperdrive."
+plain: "RunLog records action runs and HelpArticleStore answers the help articles, stored in D1 or Postgres through Hyperdrive."
 diagram: |-
   caller
-    │ RunLog
-    │ record, listRecent
-    ▼
+    │ RunLog                     HelpArticleStore
+    │ record, listRecent         list, read, search
+    ▼                            ▼
   DatabaseVendor
   ├ D1
   └ Postgres + Hyperdrive
@@ -14,6 +14,7 @@ diagram: |-
 group: system
 terms:
   - "run log"
+  - "help article store"
   - "database vendor"
 sources:
   - url: https://github.com/joelhooks/rat-stack/blob/main/packages/database/src/run-log.ts
@@ -41,10 +42,15 @@ sources:
 ## What it does
 
 The database [cartridge](/lore/cartridges), `packages/database`, is a package for one job, with its implementation and required infrastructure.
-It gives callers one service, `RunLog`. A service is a named interface for one job.
+It gives callers two services. A service is a named interface for one job.
 
 `RunLog` records a capability run with its outcome and lists a person's recent runs.
 A capability is one named action with shared value definitions and a server-side implementation.
+
+`HelpArticleStore` answers the help article list, one article by slug, and the keyword search.
+The port lives in `packages/core`, so the handlers never see SQL; the D1 adapter lives here and runs the queries the old help site runs today.
+The list keeps `ORDER BY category, title`, one slug reads one row, and a search weighs a title hit 3 and a content hit 1 per keyword, keeps 30 candidates per query, and returns the top 10 with ties in store order.
+The four tables are `articles`, `conversations`, `messages` and `chat_response_cache`; the last three hold what visitors wrote and who they said they were.
 
 `DatabaseVendor` chooses where rows are stored: Cloudflare D1, or Postgres through Hyperdrive.
 
@@ -61,7 +67,8 @@ See `apps/site/src/auth/foundation.ts` and `apps/site/src/auth/private-worker.ts
 
 ## The standard
 
-- Callers use `RunLog` and never see SQL, Drizzle, or the chosen implementation.
+- Callers use `RunLog` or `HelpArticleStore` and never see SQL, Drizzle, or the chosen implementation.
+- The article adapter keeps the old site's SQL shapes, row limits and search ranking, so an answer does not change with the rewrite.
 - Choosing an implementation is one `DatabaseVendor` value.
 - Every input passes its Schema check before it reaches storage. Bad input fails as `InvalidDatabaseInput`, and a storage failure fails as `DatabaseError`.
 - Run ids use UUIDv7, a time-ordered identifier format. Times come from the Effect clock, so tests control both.
@@ -72,3 +79,5 @@ See `apps/site/src/auth/foundation.ts` and `apps/site/src/auth/private-worker.ts
 ## How to check
 
 `pnpm --filter @rat-stack/database test` runs the `RunLog` tests twice, against D1 on local SQLite and against Postgres on PGlite. They cover both outcome variants, filtering by person, limits, ordering by time then id, and rejected limits. A second test loads the migrations from outside the package.
+
+`packages/database/test/help-articles.test.ts` seeds local SQLite from the answers recorded from the old site, reaches the adapter through the same HTTP handlers, and compares the article list, each recorded article, the reading panes and both refusals byte for byte. The two recorded searches whose rows carry text the recording does not hold are compared against a reference ranking of the old SQL over the recorded rows.

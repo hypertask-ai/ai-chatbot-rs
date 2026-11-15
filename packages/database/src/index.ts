@@ -17,6 +17,8 @@ export {
 
 export { InvalidDatabaseInput } from "./invalid-database-input.js";
 
+export { HelpArticleStoreLayer } from "./help-article-vendor.js";
+
 export type {
   DatabaseOperation,
   ListRecentRunsInput,
