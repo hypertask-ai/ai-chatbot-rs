@@ -1,5 +1,4 @@
 import { Effect } from "effect";
-import type { Cause } from "effect/Cause";
 import {
   Rendered,
   Responded,
@@ -42,17 +41,6 @@ const unsupportedMethod = () => {
   );
 };
 
-const renderFailure = (cause: Cause.Cause<never>) =>
-  Effect.succeed(
-    Responded(
-      new Response("The page could not be rendered", {
-        headers: noindexHeaders(),
-        status: 500,
-        statusText: cause.toString(),
-      })
-    )
-  );
-
 const routePath = (pathname: string): string | undefined =>
   pathname === "/" ? "/" : stripBasePath(pathname);
 
@@ -91,5 +79,17 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
 
 export const renderPage = (request: Request) =>
   Effect.runPromise(
-    renderRoute(request).pipe(Effect.catchCause(renderFailure))
+    renderRoute(request).pipe(
+      Effect.catchCause((cause) =>
+        Effect.succeed(
+          Responded(
+            new Response("The page could not be rendered", {
+              headers: noindexHeaders(),
+              status: 500,
+              statusText: cause.toString(),
+            })
+          )
+        )
+      )
+    )
   );
