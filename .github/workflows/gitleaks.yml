@@ -56,9 +56,10 @@ jobs:
           # --json keeps values out of the plain log; only the key type and place are printed.
           set +e
           # help site repo (HTPR-9150): these files hold 40-character commit SHAs, GitHub URLs
-          # and lockfile integrity hashes that trufflehog reads as keys. gitleaks still scans them.
+          # and lockfile integrity hashes that trufflehog reads as keys, and the allowlist names
+          # its fingerprints by commit SHA. gitleaks still scans all of them.
           ./trufflehog git "file://$PWD" --branch "$SCAN_HEAD" ${SCAN_BASE:+--since-commit "$SCAN_BASE"} \
-            --exclude-globs "pnpm-lock.yaml,PROVENANCE.md,skills/security-audit/UPSTREAM.md,.brain/data/**,.brain/resources/**" \
+            --exclude-globs "pnpm-lock.yaml,PROVENANCE.md,skills/security-audit/UPSTREAM.md,.github/trufflehog-allowlist.json,.brain/data/**,.brain/resources/**" \
             --fail --no-update --json > found.json 2> trufflehog.err
           code=$?
           set -e
