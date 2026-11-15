@@ -2,6 +2,8 @@ import { foldkit } from "@foldkit/vite-plugin";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 
+import { widgetScriptPath } from "./src/widget/embed.js";
+import { widgetLoaderScript } from "./src/widget/loader.js";
 import { stylexPlugin } from "./stylex.js";
 
 const outputLayout = (): Plugin => ({
@@ -28,12 +30,31 @@ const outputLayout = (): Plugin => ({
   name: "site-output-layout",
 });
 
+const widgetAssetFileName = widgetScriptPath.replace(/^\//u, "");
+
+const widgetLoaderAsset = (): Plugin => ({
+  apply: "build",
+  generateBundle() {
+    if (this.environment.name !== "client") {
+      return;
+    }
+
+    this.emitFile({
+      fileName: widgetAssetFileName,
+      source: widgetLoaderScript(""),
+      type: "asset",
+    });
+  },
+  name: "site-widget-loader-asset",
+});
+
 export default defineConfig({
   build: {
     rolldownOptions: { external: [/^cloudflare:/u] },
   },
   plugins: [
     stylexPlugin(),
+    widgetLoaderAsset(),
     foldkit({
       ssr: {
         build: { prerender: true },

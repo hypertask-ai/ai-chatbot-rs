@@ -33,12 +33,12 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   var HOST_CONV_KEY = ${json(hostStorageKeys.conversation)};
   var HOST_VISITOR_KEY = ${json(hostStorageKeys.visitor)};
   var HOST_SECRET_KEY = ${json(hostStorageKeys.visitorSecret)};
-  var CHAT_ORIGIN = ${json(baseUrl)};
   var THEME = ${json(widgetTheme)};
 
   var isExpanded = false;
   var scriptEl = document.currentScript;
   var dockMode = !!(scriptEl && scriptEl.getAttribute('data-mode') === 'docked');
+  var CHAT_ORIGIN = ${json(baseUrl)} || (scriptEl && scriptEl.src ? new URL(scriptEl.src).origin : '');
 
   function storageGet(key) {
     try { return localStorage.getItem(key) || ''; } catch (err) { return ''; }
@@ -117,7 +117,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   function startIframe() {
     if (iframeStarted) return;
     iframeStarted = true;
-    iframe.src = ${json(baseUrl)} + '/widget/chat' + chatQuery;
+    iframe.src = CHAT_ORIGIN + '/widget/chat' + chatQuery;
   }
 
   function setDesktopStyles() {
@@ -319,7 +319,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   };
 
   window.addEventListener('message', function(e) {
-    if (e.origin !== ${json(baseUrl)} || !iframeStarted) return;
+    if (e.origin !== CHAT_ORIGIN || !iframeStarted) return;
     if (e.data && e.data.type === 'chat-widget-close') {
       if (!usePinned() && !useDock()) closeChat();
     }

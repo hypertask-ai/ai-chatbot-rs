@@ -100,6 +100,7 @@ export type LoaderOptions = Readonly<{
   dock?: boolean;
   height?: number;
   pinned?: boolean;
+  scriptSrc?: string;
   stored?: Readonly<Record<string, string>>;
   width?: number;
 }>;
@@ -271,6 +272,7 @@ export const runWidgetLoader = (
     },
     currentScript: {
       getAttribute: () => (options.dock === true ? "docked" : null),
+      src: options.scriptSrc ?? "https://chat.test/widget/widget.js",
     },
     documentElement,
     getElementById: (id: string) =>
@@ -308,6 +310,7 @@ export const runWidgetLoader = (
   runInNewContext(script, {
     document,
     encodeURIComponent,
+    URL,
     history,
     localStorage,
     location,
