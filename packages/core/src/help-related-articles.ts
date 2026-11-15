@@ -22,7 +22,7 @@ const OTHER_CATEGORY_LIMIT = 2;
 
 const KEYWORD_LIMIT = 3;
 
-const STOP_WORDS: readonly string[] = [
+const STOP_WORDS = new Set([
   "the",
   "a",
   "an",
@@ -44,9 +44,24 @@ const STOP_WORDS: readonly string[] = [
   "can",
   "this",
   "that",
-];
+]);
 
-const PATTERN_METACHARACTERS = ".*+?^${}()|[]\\";
+const PATTERN_METACHARACTERS = new Set([
+  ".",
+  "*",
+  "+",
+  "?",
+  "^",
+  "$",
+  "{",
+  "}",
+  "(",
+  ")",
+  "|",
+  "[",
+  "]",
+  "\\",
+]);
 
 const LIKE_WILDCARDS = new Map<string, string>([
   ["%", ".*"],
@@ -58,20 +73,23 @@ const asciiLower = (text: string): string =>
 
 const patternCharacterOf = (character: string): string =>
   LIKE_WILDCARDS.get(character) ??
-  (PATTERN_METACHARACTERS.includes(character) ? `\\${character}` : character);
+  (PATTERN_METACHARACTERS.has(character) ? `\\${character}` : character);
 
 const likeMatcher = (keyword: string): RegExp =>
-  new RegExp(`^${[...`%${keyword}%`].map(patternCharacterOf).join("")}$`, "su");
+  new RegExp(
+    `^${Array.from(`%${keyword}%`, patternCharacterOf).join("")}$`,
+    "su"
+  );
 
 const keywordsOf = (title: string): readonly string[] =>
   title
     .toLowerCase()
     .split(/\s+/u)
-    .filter((word) => word.length > 2 && !STOP_WORDS.includes(word))
+    .filter((word) => word.length > 2 && !STOP_WORDS.has(word))
     .slice(0, KEYWORD_LIMIT);
 
 const codePointsOf = (text: string): readonly number[] =>
-  [...text].map((character) => character.codePointAt(0) ?? 0);
+  Array.from(text, (character) => character.codePointAt(0) ?? 0);
 
 const compareByTitle = (
   left: HelpRelatedArticle,
@@ -122,6 +140,7 @@ export const relatedHelpArticles = ({
     .slice(0, SAME_CATEGORY_LIMIT);
 
   const matchers = keywordsOf(article.title).map(likeMatcher);
+
   const otherCategory =
     matchers.length === 0
       ? []

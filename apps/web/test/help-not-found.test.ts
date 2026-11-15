@@ -52,6 +52,7 @@ describe("help addresses the live site does not answer", () => {
   it.effect("answers a removed article like an unknown address", () =>
     Effect.gen(function* removed() {
       const slug = "pricing-plans";
+
       const row = recordedHelpArticleRows.find(
         (article) => article.slug === slug
       );
@@ -67,6 +68,7 @@ describe("help addresses the live site does not answer", () => {
         list: recordedHelpArticleList,
         searches: [],
       });
+
       const flags = yield* helpPageFlags({ slug }).pipe(Effect.provide(layer));
 
       expect(flags, slug).toBeNull();

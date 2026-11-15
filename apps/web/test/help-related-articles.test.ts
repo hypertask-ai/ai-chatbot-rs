@@ -57,6 +57,7 @@ describe("help related articles", () => {
     Effect.gen(function* alone() {
       const slug = "pricing-plans";
       const row = articleIn(slug);
+
       const summary = recordedHelpArticleList.find(
         (entry) => entry.slug === slug
       );
@@ -70,6 +71,7 @@ describe("help related articles", () => {
         list: [summary],
         searches: [],
       });
+
       const flags = yield* helpPageFlags({ slug }).pipe(Effect.provide(layer));
 
       if (flags === null || flags.page !== "article") {

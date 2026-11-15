@@ -23,6 +23,7 @@ const slugsOf = (
 describe("help related articles", () => {
   it("lists the current article's category by title, without the current article", () => {
     const current = article("board-settings", "Board Settings", "Boards");
+
     const list = [
       article("boards", "Boards & Sections", "Boards"),
       current,
@@ -39,6 +40,7 @@ describe("help related articles", () => {
 
   it("adds up to two articles from other categories that hold a title keyword", () => {
     const current = article("boards", "Boards & Sections", "Boards");
+
     const list = [
       current,
       article("board-visibility", "Board & Subtask Visibility", "Boards"),
@@ -60,6 +62,7 @@ describe("help related articles", () => {
 
   it("caps the same category picks at three and the keyword picks at two", () => {
     const current = article("focus", "Board Focus", "Boards");
+
     const list = [
       article("a", "A", "Boards"),
       article("b", "B", "Boards"),
@@ -82,6 +85,7 @@ describe("help related articles", () => {
       "How to Create Tasks in Hypertask Keyboard",
       "Boards"
     );
+
     const list = [
       current,
       article("create-basics", "Create Basics", "Elsewhere"),
@@ -97,6 +101,7 @@ describe("help related articles", () => {
 
   it("lists same category articles only when the title carries no keyword", () => {
     const current = article("how-do-it", "How to do it", "Boards");
+
     const list = [
       current,
       article("calendar", "Calendar", "Boards"),
@@ -111,6 +116,7 @@ describe("help related articles", () => {
 
   it("lists nothing when the current article has no category", () => {
     const current = article("loose", "Board Loose", null);
+
     const list = [
       current,
       article("calendar", "Calendar", "Boards"),
@@ -131,6 +137,7 @@ describe("help related articles", () => {
 
   it("matches a keyword the way SQL LIKE does, with the underscore wildcard", () => {
     const current = article("task-list", "Task_List Guide", "Boards");
+
     const list = [
       current,
       article("task-list-page", "Task List", "Elsewhere"),
@@ -144,6 +151,7 @@ describe("help related articles", () => {
 
   it("matches a keyword the way SQL LIKE does, with the percent wildcard", () => {
     const current = article("off", "Save 50%off today", "Boards");
+
     const list = [
       current,
       article("discount", "Save 50 percent off now", "Elsewhere"),
@@ -157,6 +165,7 @@ describe("help related articles", () => {
 
   it("orders titles the way the old database orders text, upper case first", () => {
     const current = article("focus", "Focus", "Boards");
+
     const list = [
       current,
       article("apple", "apple", "Boards"),
