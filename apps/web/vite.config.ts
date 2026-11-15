@@ -2,6 +2,7 @@ import { foldkit } from "@foldkit/vite-plugin";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 
+import { siteBasePath } from "./src/site-base-path.js";
 import { stylexPlugin } from "./stylex.js";
 
 const outputLayout = (): Plugin => ({
@@ -29,6 +30,7 @@ const outputLayout = (): Plugin => ({
 });
 
 export default defineConfig({
+  base: siteBasePath === "" ? "/" : `${siteBasePath}/`,
   build: {
     rolldownOptions: { external: [/^cloudflare:/u] },
   },
