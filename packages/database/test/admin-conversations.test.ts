@@ -1112,8 +1112,9 @@ describe("admin conversations over a local D1 database", () => {
             "/conversations/conv-archived/unarchive",
           ] as const;
 
-          const answers = yield* Effect.all(
-            paths.map((path) => client.post(`${ADMIN_PREFIX}${path}`, BEARER)),
+          const answers = yield* Effect.forEach(
+            paths,
+            (path) => client.post(`${ADMIN_PREFIX}${path}`, BEARER),
             { concurrency: 1 }
           );
 

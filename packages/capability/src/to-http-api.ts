@@ -337,15 +337,14 @@ const routedEndpoint = (
 
   const input = names.length === 0 ? contract.input : Schema.Struct(bodyFields);
 
-  const bodyIsDeclared = Object.keys(bodyFields).length > 0;
+  const bodySchema =
+    Object.keys(bodyFields).length > 0 ? { payload: input } : {};
 
   return route(http.method)(contract.name, http.path, {
     error,
     params: names.length === 0 ? undefined : Schema.Struct(params),
     success: contract.output,
-    ...(BODY_METHODS.has(http.method)
-      ? { payload: bodyIsDeclared ? input : Schema.UndefinedOr(input) }
-      : { query: input }),
+    ...(BODY_METHODS.has(http.method) ? bodySchema : { query: input }),
   });
 };
 
@@ -601,29 +600,27 @@ export const toHttpApi = <
     const paths = Object.fromEntries(
       Object.entries(document.paths).map(([path, pathItem]) => {
         const operation = pathItem.post;
-        const requestBody = operation?.requestBody;
 
         const inputSchema =
           operation === undefined
             ? undefined
             : emptyInputsByOperationId.get(operation.operationId);
 
-        if (
-          operation === undefined ||
-          requestBody === undefined ||
-          inputSchema === undefined
-        ) {
+        if (operation === undefined || inputSchema === undefined) {
           return [path, pathItem];
         }
 
-        const content = Object.fromEntries(
-          Object.entries(requestBody.content).map(
-            ([contentType, mediaType]) => [
-              contentType,
-              { ...mediaType, schema: inputSchema },
-            ]
-          )
-        );
+        const content =
+          operation.requestBody === undefined
+            ? { "application/json": { schema: inputSchema } }
+            : Object.fromEntries(
+                Object.entries(operation.requestBody.content).map(
+                  ([contentType, mediaType]) => [
+                    contentType,
+                    { ...mediaType, schema: inputSchema },
+                  ]
+                )
+              );
 
         return [
           path,
@@ -631,7 +628,7 @@ export const toHttpApi = <
             ...pathItem,
             post: {
               ...operation,
-              requestBody: { ...requestBody, content },
+              requestBody: { content, required: true },
             },
           },
         ];
