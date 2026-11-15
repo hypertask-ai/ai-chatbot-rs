@@ -93,9 +93,11 @@ export const helpSeatRate = (monthlyPerSeatUsd: number): HelpSeatRate => {
 
 const planCard = (plan: HelpPlan): string => {
   const rate = helpSeatRate(plan.monthlyPerSeatUsd);
+
   const points = plan.points
     .map((point) => `<li>${escapeHtml(point)}</li>`)
     .join("");
+
   const price =
     plan.id === "free"
       ? `<p class="plan-price"><span class="plan-amount">${dollars(0)}</span><span class="plan-unit">per seat, forever</span></p><p class="plan-detail">Free on monthly or yearly billing</p>`

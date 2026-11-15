@@ -22,6 +22,11 @@ interface InlineToken {
   readonly next: number;
 }
 
+interface HtmlBlock {
+  readonly html: string;
+  readonly next: number;
+}
+
 type RenderInline = (text: string, depth: number) => string;
 
 const characterAt = (value: string, index: number): string =>
@@ -75,13 +80,15 @@ const resolveDocsHref = (href: string, fromPath: string): string => {
   }
 
   const hashAt = raw.indexOf("#");
-  const hash = hashAt < 0 ? "" : raw.slice(hashAt);
-  const head = hashAt < 0 ? raw : raw.slice(0, hashAt);
+  const hash = hashAt === -1 ? "" : raw.slice(hashAt);
+  const head = hashAt === -1 ? raw : raw.slice(0, hashAt);
+
   const resolved = head.startsWith("/")
     ? head
     : `/${normalizeRelative(
         `${normalizeDocPath(fromPath).replace(/[^/]*$/u, "")}${head}`
       )}`;
+
   const path = resolved.length > 1 ? resolved.replace(/\/+$/u, "") : resolved;
 
   if (path === "/" || path === "") {
@@ -95,12 +102,7 @@ const safeArticleHref = (url: string): string | null => {
   const href = url.trim();
   const lower = href.toLowerCase().replaceAll(/\s/gu, "");
 
-  if (
-    lower === "" ||
-    lower.startsWith("javascript:") ||
-    lower.startsWith("data:") ||
-    lower.startsWith("vbscript:")
-  ) {
+  if (lower === "" || /^(?:data|javascript|vbscript):/u.test(lower)) {
     return null;
   }
 
@@ -305,6 +307,7 @@ const linkAt = (
 
   const href = safeArticleHref(link.groups?.href ?? "");
   const label = render(link.groups?.label ?? "", depth + 1);
+
   const html =
     href === null
       ? escapeHtml(link[0])
@@ -338,7 +341,7 @@ const bareLinkAt = (source: string, index: number): InlineToken | null => {
     return null;
   }
 
-  let url = bare[0];
+  let [url] = bare;
   let trail = "";
 
   while (url !== "" && ".,;:!?".includes(url.at(-1) ?? "")) {
@@ -347,6 +350,7 @@ const bareLinkAt = (source: string, index: number): InlineToken | null => {
   }
 
   const href = safeArticleHref(url);
+
   const html =
     href === null
       ? escapeHtml(bare[0])
@@ -443,7 +447,7 @@ const renderTable = (
   lines: readonly string[],
   index: number,
   render: RenderInline
-): { readonly html: string; readonly next: number } => {
+): HtmlBlock => {
   const header = splitRow(lineAt(lines, index));
   const rows: string[][] = [];
   let next = index + 2;
@@ -458,6 +462,7 @@ const renderTable = (
   }
 
   const head = `<thead><tr>${header.map((cell) => `<th>${render(cell, 0)}</th>`).join("")}</tr></thead>`;
+
   const body = rows
     .map(
       (row) =>
@@ -472,13 +477,14 @@ const renderList = (
   lines: readonly string[],
   index: number,
   render: RenderInline
-): { readonly html: string; readonly next: number } => {
+): HtmlBlock => {
   const ordered = /^[ \t]*\d+\.[ \t]+/u.test(lineAt(lines, index));
   const items: string[] = [];
   let next = index;
 
   while (next < lines.length && isListLine(lineAt(lines, next))) {
     const line = lineAt(lines, next);
+
     const same = ordered
       ? /^[ \t]*\d+\.[ \t]+/u.test(line)
       : /^[ \t]*[-*][ \t]+/u.test(line);
@@ -527,6 +533,29 @@ const isBlockStart = (lines: readonly string[], index: number): boolean => {
   return isTableStart(lines, index);
 };
 
+const fenceAt = (lines: readonly string[], index: number): HtmlBlock | null => {
+  if (!lineAt(lines, index).trim().startsWith("```")) {
+    return null;
+  }
+
+  const code: string[] = [];
+  let next = index + 1;
+
+  while (next < lines.length && !lineAt(lines, next).trim().startsWith("```")) {
+    code.push(lineAt(lines, next));
+    next += 1;
+  }
+
+  if (next < lines.length) {
+    next += 1;
+  }
+
+  return {
+    html: `<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`,
+    next,
+  };
+};
+
 const renderMarkdown = (source: string): string => {
   const lines = source.replaceAll("\r\n", "\n").split("\n");
   const blocks: string[] = [];
@@ -535,23 +564,11 @@ const renderMarkdown = (source: string): string => {
   while (index < lines.length) {
     const line = lineAt(lines, index);
 
-    if (line.trim().startsWith("```")) {
-      const code: string[] = [];
-      index += 1;
+    const fence = fenceAt(lines, index);
 
-      while (
-        index < lines.length &&
-        !lineAt(lines, index).trim().startsWith("```")
-      ) {
-        code.push(lineAt(lines, index));
-        index += 1;
-      }
-
-      if (index < lines.length) {
-        index += 1;
-      }
-
-      blocks.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+    if (fence !== null) {
+      blocks.push(fence.html);
+      index = fence.next;
       continue;
     }
 

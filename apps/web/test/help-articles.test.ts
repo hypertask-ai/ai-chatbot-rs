@@ -165,6 +165,7 @@ describe("help article answers recorded from the old site", () => {
       const pricing = yield* answer(
         new Request(`${site}/api/help-reader/pricing-plans`, { method: "GET" })
       );
+
       const other = yield* answer(
         new Request(`${site}/api/help-reader/docs-features-ai-features`, {
           method: "GET",
