@@ -63,6 +63,7 @@ export {
 export {
   formatHelpArticleContent,
   isHtmlHelpArticle,
+  plainTextOf,
 } from "./help-article-html.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
