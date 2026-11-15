@@ -140,7 +140,7 @@ type Card = Readonly<{
 
 const cardsOf = (html: string): readonly Card[] =>
   [...html.matchAll(patterns.anchor)].flatMap((match) => {
-    const tag = match[0];
+    const [tag] = match;
     const slug = patterns.cardSlug.exec(tag)?.groups?.slug;
     const category = patterns.cardCategory.exec(tag)?.groups?.category;
 
