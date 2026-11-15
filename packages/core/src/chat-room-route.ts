@@ -7,7 +7,7 @@ import type { ChatRoomBroadcastAnswer } from "./chat-room-socket.js";
 import { ChatRoom } from "./chat-room.js";
 import type { ChatRoomMessage } from "./chat-room.js";
 
-export const CHAT_ROOM_PATH_PATTERN = /^\/api\/chat\/ws\/([^/]+)$/u;
+export const CHAT_ROOM_PATH_PATTERN = /^\/api\/chat\/ws\/(?<room>[^/]+)$/u;
 
 export const CHAT_ROOM_BROADCAST_URL = "http://internal/broadcast";
 
@@ -15,7 +15,7 @@ export const chatRoomNotFound = (): Response =>
   new Response("404 Not Found", { status: 404 });
 
 export const chatRoomNameFromPath = (pathname: string): string | undefined => {
-  const name = CHAT_ROOM_PATH_PATTERN.exec(pathname)?.[1];
+  const name = CHAT_ROOM_PATH_PATTERN.exec(pathname)?.groups?.room;
 
   return name === undefined || name === "" ? undefined : name;
 };

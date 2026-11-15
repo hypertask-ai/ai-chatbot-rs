@@ -84,7 +84,12 @@ export const makeChatRoom = Effect.gen(function* makeChatRoomLive() {
       for (const send of sends) {
         const socket = held.get(send.sessionId);
 
-        if (socket !== undefined && !attempt(() => socket.send(send.frame))) {
+        if (
+          socket !== undefined &&
+          !attempt(() => {
+            socket.send(send.frame);
+          })
+        ) {
           failed.push(send.sessionId);
         }
       }
@@ -93,7 +98,9 @@ export const makeChatRoom = Effect.gen(function* makeChatRoomLive() {
         const socket = held.get(close.sessionId);
 
         if (socket !== undefined) {
-          attempt(() => socket.close(close.code, close.reason));
+          attempt(() => {
+            socket.close(close.code, close.reason);
+          });
         }
 
         yield* forget(close.sessionId);
