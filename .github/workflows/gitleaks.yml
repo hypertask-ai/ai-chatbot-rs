@@ -65,8 +65,16 @@ jobs:
           set -e
           if [ "$code" != 0 ] && [ "$code" != 183 ]; then tail -5 trufflehog.err; exit "$code"; fi
           # A finding is dropped only when .github/trufflehog-allowlist.json names its detector,
-          # its commit and its file, and gives a reason. Everything else fails this check.
-          jq -c 'select(.DetectorName != null)' found.json > findings.json || true
+          # its commit and its file, and gives a reason. Everything else fails this check, and an
+          # allowlist that does not parse fails it too instead of matching nothing.
+          entries="$(jq -r 'if (.entries | type) == "array" then (.entries | length) else "not-a-list" end' .github/trufflehog-allowlist.json)"
+          case "$entries" in
+            ''|*[!0-9]*)
+              echo "::error::.github/trufflehog-allowlist.json holds no readable entries list, so no finding can be matched against it."
+              exit 1
+              ;;
+          esac
+          jq -c 'select(.DetectorName != null)' found.json > findings.json
           jq -c --slurpfile allow .github/trufflehog-allowlist.json '
             . as $finding
             | select(
