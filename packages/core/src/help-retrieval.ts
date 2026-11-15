@@ -21,13 +21,17 @@ export class HelpArticleCorpus extends Context.Service<
     this,
     Effect.gen(function* readCorpusFromStore() {
       const store = yield* HelpArticleStore;
-      const summaries = yield* store.list;
 
-      const found = yield* Effect.all(
-        summaries.map((summary) => store.read(summary.slug))
-      );
-
-      return { articles: found.flatMap((option) => Option.toArray(option)) };
+      return {
+        articles: store.list.pipe(
+          Effect.flatMap((summaries) =>
+            Effect.all(summaries.map((summary) => store.read(summary.slug)))
+          ),
+          Effect.map((found): readonly HelpSearchArticleValue[] =>
+            found.flatMap((option) => Option.toArray(option))
+          )
+        ),
+      };
     })
   );
 }
