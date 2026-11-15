@@ -89,6 +89,68 @@ export {
 
 export { capabilities, inspectFile } from "./inspect-file.js";
 
+export {
+  HANDOFF_EMAIL_REPLY,
+  HANDOFF_EMAIL_USER_MESSAGE,
+  HANDOFF_REPLY,
+  chatHandoffEmailFor,
+  leaveHandoffEmail,
+  requestHandoff,
+  type ChatHandoffEmailRequest,
+} from "./chat-handoff.js";
+
+export { saveVisitorProfile } from "./chat-profile.js";
+
+export { ChatClock, type ChatClockValue } from "./chat-clock.js";
+
+export {
+  ChatConversationSchema,
+  ChatConversationSeedSchema,
+  ChatConversationStore,
+  ReturningCustomerSchema,
+  conversationStateOf,
+  memoryChatConversations,
+  type ChatConversation,
+  type ChatConversationOperations,
+  type ChatConversationSeed,
+  type ChatHandoffEmailChange,
+  type ChatHandoffEmailOutcome,
+  type ChatProfileChange,
+  type ReturningCustomer,
+} from "./chat-conversation-store.js";
+
+export {
+  ChatMessageRoleSchema,
+  ChatMessageSchema,
+  ChatMessageStore,
+  memoryChatMessages,
+  type ChatMessage,
+  type ChatMessageOperations,
+  type ChatMessageRole,
+} from "./chat-message-store.js";
+
+export {
+  ChatVisitorAuth,
+  VISITOR_SECRET_MAX_LENGTH,
+  hashVisitorSecret,
+  readBearerToken,
+  type ChatVisitorAuthValue,
+} from "./chat-visitor-auth.js";
+
+export {
+  CustomerAlerts,
+  HandoffAlertSchema,
+  type CustomerAlertOperations,
+  type HandoffAlert,
+} from "./customer-alerts.js";
+
+export {
+  HandoffEmail,
+  HandoffEmailMessageSchema,
+  type HandoffEmailMessage,
+  type HandoffEmailOperations,
+} from "./handoff-email.js";
+
 export { PromptLibrary, getPrompt, listPrompts } from "./prompts.js";
 
 export { CafeDataError } from "./cafe-data-error.js";
