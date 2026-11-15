@@ -25,30 +25,31 @@ jobs:
     timeout-minutes: 5
     outputs:
       engine: ${{ steps.pick.outputs.engine }}
+      deepseek: ${{ steps.pick.outputs.deepseek }}
       codex: ${{ steps.pick.outputs.codex }}
       claude: ${{ steps.pick.outputs.claude }}
     steps:
-      - name: Read which verifier setting exists
+      - name: Check out the engine picker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Pick the first engine that has a verifier setting
         id: pick
         env:
+          OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
           CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           set -euo pipefail
-          codex=no
-          claude=no
-          if [ -n "${CODEX_AUTH_JSON:-}" ] || [ -n "${CODEX_VERIFIER_KEY:-}" ]; then codex=yes; fi
-          if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then claude=yes; fi
-          if [ "$codex" = "no" ] && [ "$claude" = "no" ]; then
-            engine=none
-            echo "::notice title=Verifier skipped::skipped: no verifier setting. The pstack-verifier check stays neutrally skipped. Add the repository secret CODEX_AUTH_JSON with a Codex plan login file, or CODEX_VERIFIER_KEY with a Codex API key, or CLAUDE_CODE_OAUTH_TOKEN from the Claude plan."
-          elif [ "$codex" = "yes" ]; then
-            engine=codex
+          node verify/engine.mjs pick >> "$GITHUB_OUTPUT"
+          engine="$(node verify/engine.mjs pick | sed -n 's/^engine=//p')"
+          if [ "$engine" = "none" ]; then
+            echo "::notice title=Verifier skipped::skipped: no verifier setting. The pstack-verifier check stays neutrally skipped. Add the repository secret OPENCODE_GO_API_KEY for the DeepSeek plan first, or CODEX_AUTH_JSON with a Codex plan login file, or CODEX_VERIFIER_KEY with a Codex API key, or CLAUDE_CODE_OAUTH_TOKEN from the Claude plan."
           else
-            engine=claude
+            printf 'the first engine with a setting is %s\n' "$engine"
           fi
-          printf 'engine=%s\ncodex=%s\nclaude=%s\n' "$engine" "$codex" "$claude" >> "$GITHUB_OUTPUT"
           printf 'engine: %s\n' "$engine" >> "$GITHUB_STEP_SUMMARY"
 
   pstack-verifier:
@@ -62,6 +63,7 @@ jobs:
       SERVER_URL: ${{ github.server_url }}
       RUN_ID: ${{ github.run_id }}
       LIVE_URL: https://help.hypertask.ai
+      VERIFIER_MODEL: deepseek-v4.1-flash
     steps:
       - name: Resolve the pull request, its head and its base
         id: target
@@ -120,9 +122,9 @@ jobs:
         with:
           node-version: 24.18.0
 
-      - name: Check the diff reader on a fixture
+      - name: Check the diff reader and the engine picker on fixtures
         if: steps.target.outputs.go == 'yes'
-        run: node --test verify/diff.test.mjs
+        run: node --test verify/diff.test.mjs verify/engine.test.mjs
 
       - name: Enable corepack pnpm
         if: steps.target.outputs.go == 'yes'
@@ -493,7 +495,7 @@ jobs:
             - node verify/driver.mjs compare --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
             - node verify/driver.mjs widget --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
             - node verify/driver.mjs api --head "${SITE_URL}" --base "${BASE_URL:-}" --path /health --path /api/articles
-          - Save every screenshot and report in ${SCREENS_DIR}.
+          - The screenshots the driver writes are PNG files in ${SCREENS_DIR}. Open them with your read tool when your model takes images, and judge the look with your own eyes as well as by measuring the DOM and the CSS. If your model takes no image, write in the verdict that the look was checked by measurement and not by eye, and never claim to have seen a screenshot.
           - The change under review, its title, its body, the files it touches and its diff, is at the end of this prompt.
 
           ## What to do
@@ -540,9 +542,76 @@ jobs:
             printf '~~~\n'
           } > "$RUNNER_TEMP/prompt.md"
 
+      - name: Verify with DeepSeek
+        id: deepseek
+        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.deepseek == 'yes'
+        continue-on-error: true
+        env:
+          OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
+          SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          set -euo pipefail
+          npm install --global --no-fund --no-audit @earendil-works/pi-coding-agent@1.5.0
+          engine_token="$OPENCODE_GO_API_KEY"
+          agent_path="$(dirname "$(command -v pi)"):$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
+          status=0
+          env -i \
+            HOME="$HOME" \
+            PATH="$agent_path" \
+            TERM=dumb \
+            OPENCODE_API_KEY="$engine_token" \
+            GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+            RUNNER_TEMP="$RUNNER_TEMP" \
+            SCREENS_DIR="$SCREENS_DIR" \
+            SITE_URL="$SITE_URL" \
+            BASE_URL="${BASE_URL:-}" \
+            SITE_WORKER_URL="${SITE_WORKER_URL:-}" \
+            BASE_WORKER_URL="${BASE_WORKER_URL:-}" \
+            SERVE_MODE_HEAD="$SERVE_MODE_HEAD" \
+            SERVE_MODE_BASE="$SERVE_MODE_BASE" \
+            LIVE_URL="$LIVE_URL" \
+            pi -p \
+              --provider opencode-go \
+              --model "$VERIFIER_MODEL" \
+              --thinking medium \
+              --no-session \
+              --no-context-files \
+              --no-approve \
+              < "$RUNNER_TEMP/prompt.md" \
+              > "$RUNNER_TEMP/verdict.md" \
+              2> "$RUNNER_TEMP/deepseek.log" || status=$?
+          outcome="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" classify "$RUNNER_TEMP/deepseek.log" "$RUNNER_TEMP/verdict.md" "$SHA")"
+          printf 'fallback=no\n' >> "$GITHUB_OUTPUT"
+          if [ "$outcome" = "used" ]; then
+            printf 'engine: deepseek (%s via pi)\n' "$VERIFIER_MODEL" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          fallback=no
+          case "$outcome" in
+            limit|login) fallback=yes ;;
+          esac
+          printf 'fallback=%s\n' "$fallback" >> "$GITHUB_OUTPUT"
+          if [ "$fallback" = "yes" ]; then
+            echo "::warning::DeepSeek ended on a limit or a login ($outcome), read from its own log. Codex is the next engine."
+            node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/deepseek.log"
+            exit 1
+          fi
+          echo "::error::DeepSeek produced no verdict that names $SHA, and its log shows no limit and no login error (exit status $status). Another engine is not tried for that reason."
+          node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/deepseek.log"
+          sed -n '1,20p' "$RUNNER_TEMP/verdict.md" || true
+          exit 1
+
+      - name: Stop when DeepSeek failed for a reason other than a limit or a login
+        if: steps.target.outputs.go == 'yes' && steps.deepseek.outcome == 'failure' && steps.deepseek.outputs.fallback != 'yes'
+        env:
+          SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          echo "::error::The DeepSeek engine failed at $SHA for a reason that is not a limit and not a login, so this run stops instead of trying another engine."
+          exit 1
+
       - name: Verify with Codex
         id: codex
-        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.codex == 'yes'
+        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.codex == 'yes' && (needs.engine.outputs.deepseek == 'no' || steps.deepseek.outputs.fallback == 'yes')
         continue-on-error: true
         env:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
@@ -586,6 +655,7 @@ jobs:
             engine_token="$CODEX_VERIFIER_KEY"
             codex_env+=("CODEX_API_KEY=$engine_token" "OPENAI_API_KEY=$engine_token")
           fi
+          status=0
           env -i "${codex_env[@]}" \
             codex exec \
               --skip-git-repo-check \
@@ -593,20 +663,26 @@ jobs:
               --sandbox danger-full-access \
               --cd "$GITHUB_WORKSPACE" \
               --output-last-message "$RUNNER_TEMP/verdict.md" \
-              - < "$RUNNER_TEMP/prompt.md"
-          first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true)"
-          case "$first" in
-            "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
-            *)
-              echo "::error::Codex produced no verdict line, so Claude stands in."
-              sed -n '1,40p' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true
-              exit 1
-              ;;
+              - < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/codex.log" 2>&1 || status=$?
+          outcome="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" classify "$RUNNER_TEMP/codex.log" "$RUNNER_TEMP/verdict.md" "$SHA")"
+          printf 'fallback=no\n' >> "$GITHUB_OUTPUT"
+          if [ "$outcome" = "used" ]; then
+            exit 0
+          fi
+          fallback=no
+          case "$outcome" in
+            limit|login) fallback=yes ;;
           esac
-          if ! grep -qi "$SHA" "$RUNNER_TEMP/verdict.md"; then
-            echo "::error::The Codex verdict does not name the head commit $SHA, so Claude stands in."
+          printf 'fallback=%s\n' "$fallback" >> "$GITHUB_OUTPUT"
+          if [ "$fallback" = "yes" ]; then
+            echo "::warning::Codex ended on a limit or a login ($outcome), read from its own log. Claude is the next engine."
+            node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/codex.log"
             exit 1
           fi
+          echo "::error::Codex produced no verdict that names $SHA, and its log shows no limit and no login error (exit status $status). Another engine is not tried for that reason."
+          node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/codex.log"
+          sed -n '1,20p' "$RUNNER_TEMP/verdict.md" || true
+          exit 1
 
       - name: Remove the Codex login file
         if: always()
@@ -619,9 +695,9 @@ jobs:
               ;;
           esac
 
-      - name: Verify with Claude when Codex is absent or refused
+      - name: Verify with Claude when the engines before it are absent or refused
         id: claude
-        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.claude == 'yes' && (needs.engine.outputs.codex == 'no' || steps.codex.outcome == 'failure')
+        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.claude == 'yes' && (needs.engine.outputs.deepseek == 'no' || steps.deepseek.outputs.fallback == 'yes') && (needs.engine.outputs.codex == 'no' || steps.codex.outputs.fallback == 'yes')
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           SHA: ${{ steps.target.outputs.sha }}
@@ -645,13 +721,14 @@ jobs:
             SERVE_MODE_HEAD="$SERVE_MODE_HEAD" \
             SERVE_MODE_BASE="$SERVE_MODE_BASE" \
             LIVE_URL="$LIVE_URL" \
-            claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md"
+            claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md" 2> "$RUNNER_TEMP/claude.log"
           first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
           case "$first" in
             "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
             *)
               echo "::error::Claude produced no verdict line."
-              sed -n '1,40p' "$RUNNER_TEMP/verdict.md"
+              node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/claude.log"
+              sed -n '1,20p' "$RUNNER_TEMP/verdict.md"
               exit 1
               ;;
           esac
@@ -670,6 +747,8 @@ jobs:
           CODEX_OUTCOME: ${{ steps.codex.outcome }}
           CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
           CODEX_CONFIGURED: ${{ needs.engine.outputs.codex }}
+          DEEPSEEK_OUTCOME: ${{ steps.deepseek.outcome }}
+          DEEPSEEK_CONFIGURED: ${{ needs.engine.outputs.deepseek }}
         run: |
           set -euo pipefail
           if [ ! -s "$RUNNER_TEMP/verdict.md" ]; then
@@ -696,14 +775,19 @@ jobs:
             echo "::notice::The pull request head moved from $SHA to $head_now while this run was verifying. A newer run posts the verdict."
             exit 0
           fi
-          if [ "${CODEX_OUTCOME:-}" = "success" ]; then
-            engine_note="codex"
-          elif [ "${CLAUDE_OUTCOME:-}" = "success" ] && [ "${CODEX_CONFIGURED:-no}" = "no" ]; then
-            engine_note="claude, because no Codex setting exists"
-          elif [ "${CLAUDE_OUTCOME:-}" = "success" ]; then
-            engine_note="claude, after Codex was refused"
+          if [ "${DEEPSEEK_OUTCOME:-}" = "success" ]; then
+            engine_note="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" note deepseek "$VERIFIER_MODEL")"
           else
-            engine_note="unknown"
+            before=""
+            if [ "${DEEPSEEK_CONFIGURED:-no}" = "yes" ]; then before="deepseek"; fi
+            if [ "${CODEX_OUTCOME:-}" = "success" ] && [ "${CODEX_CONFIGURED:-no}" = "yes" ]; then
+              engine_note="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" note codex "$VERIFIER_MODEL" $before)"
+            elif [ "${CLAUDE_OUTCOME:-}" = "success" ]; then
+              if [ "${CODEX_CONFIGURED:-no}" = "yes" ]; then before="${before:+$before }codex"; fi
+              engine_note="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" note claude "$VERIFIER_MODEL" $before)"
+            else
+              engine_note="unknown"
+            fi
           fi
           {
             printf 'pstack-verifier: %s @ %s\n' "$verdict" "$SHA"
