@@ -35,8 +35,11 @@ export const ListRecentRunsInputSchema = Schema.Struct({
 export type ListRecentRunsInput = typeof ListRecentRunsInputSchema.Type;
 
 export const DatabaseOperationSchema = Schema.Literals([
+  "listHelpArticles",
   "listRecent",
+  "readHelpArticle",
   "record",
+  "searchHelpArticles",
 ]);
 
 export type DatabaseOperation = typeof DatabaseOperationSchema.Type;

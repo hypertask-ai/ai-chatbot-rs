@@ -35,7 +35,7 @@ The base Effect plugin owns diagnostic severity. Child configs may add exact `al
   - Role: Shared contracts, handlers, and lifecycle machines kept for the help site
 - **`@rat-stack/database`**:
   - Path: `packages/database`
-  - Role: Database cartridge: the `RunLog` service and the `DatabaseVendor` choice (D1 or Hyperdrive Postgres), with each vendor's schema, migrations, and resources. Kept for the help site's chat and article data. Not wired into the Stack yet
+  - Role: Database cartridge: the `RunLog` service, the `HelpArticleStore` adapter, and the `DatabaseVendor` choice (D1 or Hyperdrive Postgres), with each vendor's schema, migrations, and resources. D1 holds the help site's `articles`, `conversations`, `messages`, and `chat_response_cache` tables. Kept for the help site's chat and article data. Not wired into the Stack yet
 - **`@rat-stack/flags`**:
   - Path: `packages/flags`
   - Role: Typed flags cartridge with the template's default Durable Object ledger (`src/cloudflare-ledger.ts`). Kept as the Durable Object example the live chat room follows. Not wired into the Stack yet
