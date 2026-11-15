@@ -159,7 +159,7 @@ describe("help answer model over the Cloudflare AI Gateway", () => {
       expect(request?.header["cf-aig-metadata"]).toBe(
         '{"worker":"ai-chatbot","client":"hypertask"}'
       );
-      expect(request?.body).toBe(fixtureText("answer-request.json"));
+      expect(request?.body).toBe(fixtureText("answer-request-body.txt"));
     })
   );
 
