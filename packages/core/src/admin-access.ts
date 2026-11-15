@@ -11,9 +11,7 @@ export interface AdminRequestFacts {
   readonly authorization: string | undefined;
 }
 
-export interface AdminHeaderSource {
-  readonly [header: string]: string | undefined;
-}
+export type AdminHeaderSource = Readonly<Record<string, string | undefined>>;
 
 export interface AdminRequestSource {
   readonly headers: AdminHeaderSource;
