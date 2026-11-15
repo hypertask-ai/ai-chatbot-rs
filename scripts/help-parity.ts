@@ -164,10 +164,10 @@ const decodeHistory = Schema.decodeUnknownSync(
 
 const decodeJsonDocument = Schema.decodeUnknownSync(
   Schema.fromJsonString(
-    Schema.Union(
+    Schema.Union([
       Schema.Array(Schema.Unknown),
-      Schema.Record(Schema.String, Schema.Unknown)
-    )
+      Schema.Record(Schema.String, Schema.Unknown),
+    ])
   )
 );
 
