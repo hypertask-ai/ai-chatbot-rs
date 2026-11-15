@@ -167,7 +167,7 @@ const interruptedAnswer = (
         );
 
 export const chatAnswerFrames = (input: ChatAnswerInput) =>
-  Stream.callback<ChatStreamEvent>(
+  Stream.callback<ChatStreamEvent, never, ChatAnswerRequirements>(
     (queue) =>
       Effect.gen(function* produceChatAnswer() {
         const { conversationId } = input;
