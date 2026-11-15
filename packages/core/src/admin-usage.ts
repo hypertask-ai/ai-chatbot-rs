@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 
-import { HAIKU_MODEL, type TokenUsage } from "./answer-model.js";
+import { HAIKU_MODEL } from "./answer-model.js";
+import type { TokenUsage } from "./answer-model.js";
 
 const NANO_PER_MTOK_UNIT = 1000;
 
