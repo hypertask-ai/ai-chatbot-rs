@@ -3,9 +3,9 @@
     "lib": ["ES2023"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "strict": true,
     "noEmit": true,
+    "strict": true,
     "types": ["node"]
   },
-  "include": ["*.mjs"]
+  "include": ["*.mjs", "*.d.ts"]
 }
