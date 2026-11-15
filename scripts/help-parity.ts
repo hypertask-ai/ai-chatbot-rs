@@ -775,7 +775,6 @@ const answerActionLabels = async (base: string): Promise<readonly string[]> => {
   return ANSWER_ACTION_LABELS.filter((label) => html.includes(label));
 };
 
-// @effect-diagnostics-next-line asyncFunction:off -- This Node CLI runs the optional behaviour comparison outside an Effect runtime.
 const skippedBehaviour = (reason: string): BehaviourResult => ({
   failure: null,
   newChat: null,
