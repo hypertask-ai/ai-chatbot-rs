@@ -19,7 +19,7 @@ const flags: WidgetFlags = {
 
 const home = initialModel(flags);
 
-const { lines, loadedMenu } = fakePastChats(20, sessionMenuNow);
+const { lines, loadedMenu, sessions } = fakePastChats(20, sessionMenuNow);
 
 describe("chat widget menu state", () => {
   it("marks the menu open and loading when the page asks for it", () => {
