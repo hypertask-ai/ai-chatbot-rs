@@ -11,14 +11,64 @@ export {
 export { FileInspector } from "./file-inspector.js";
 
 export {
+  HelpArticle,
+  HelpArticleMatch,
+  HelpArticleNotFound,
+  HelpArticlePane,
+  HelpArticleSummary,
+  HelpArticleTimestamp,
   ReadOutput,
   ResourceNotFound,
   SearchMatch,
   SearchOutput,
   inspectFileContract,
+  listHelpArticlesContract,
   readContract,
+  readHelpArticleContract,
+  readHelpArticlePaneContract,
   searchContract,
+  searchHelpArticlesContract,
 } from "./contracts.js";
+
+export {
+  HelpArticleStore,
+  type HelpArticleMatchValue,
+  type HelpArticleMemory,
+  type HelpArticleSearch,
+  type HelpArticleSummaryValue,
+  type HelpArticleValue,
+} from "./help-article-store.js";
+
+export {
+  helpArticleCapabilities,
+  helpSearchKeywords,
+  listHelpArticles,
+  readHelpArticle,
+  readHelpArticlePane,
+  searchHelpArticles,
+} from "./help-articles.js";
+
+export {
+  FREE_BOARD_CAP,
+  PAID_SEAT_CAP,
+  PRICING_ARTICLE_SLUG,
+  SALES_EMAIL,
+  SIGNUP_URL,
+  TRIAL_DAYS,
+  YEARLY_SAVE_PERCENT,
+  helpPlans,
+  helpPlansHtml,
+  helpSeatRate,
+  type HelpPlan,
+  type HelpPlanId,
+  type HelpSeatRate,
+} from "./help-plans.js";
+
+export {
+  formatHelpArticleContent,
+  isHtmlHelpArticle,
+  plainTextOf,
+} from "./help-article-html.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
 
@@ -54,6 +104,33 @@ export {
   runInspectMachine,
   type InspectOutcome,
 } from "./inspect-machine.js";
+
+export {
+  ConversationEmailSchema,
+  ConversationEventsSchema,
+  ConversationInputSchema,
+  ConversationRefusalSchema,
+  ConversationStateSchema,
+  ConversationStatusSchema,
+  HANDOFF_REPEAT_WINDOW_SECONDS,
+  MissingProfileFieldSchema,
+  VisitorAccountSchema,
+  VisitorProfileSchema,
+  conversationMachine,
+  conversationStep,
+  startConversation,
+  stepConversation,
+  type ConversationEvent,
+  type ConversationInput,
+  type ConversationRefusal,
+  type ConversationSnapshot,
+  type ConversationState,
+  type ConversationStatus,
+  type ConversationStep,
+  type MissingProfileField,
+  type VisitorAccount,
+  type VisitorProfile,
+} from "./conversation-machine.js";
 
 export {
   FileStatsError,
