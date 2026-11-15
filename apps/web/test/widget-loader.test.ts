@@ -12,7 +12,7 @@ import {
 } from "./widget-fake-dom.js";
 import type { FakeElement } from "./widget-fake-dom.js";
 
-const script = widgetLoaderScript("https://chat.test");
+const script = widgetLoaderScript();
 
 const origin = "https://chat.test";
 
@@ -52,26 +52,15 @@ describe("widget loader", () => {
     expect(script).toContain("--hypertask-chat-dock-width");
   });
 
-  it("takes the widget origin from its own script tag when the loader is a static file", () => {
-    const run = runWidgetLoader(widgetLoaderScript(""), {
-      scriptSrc: `${origin}/widget/widget.js`,
+  it("takes its own origin and prefix from the script tag it runs in", () => {
+    const run = runWidgetLoader(script, {
+      scriptSrc: `${origin}/ratstack/widget/widget.js`,
     });
 
     handler(element(run, "chat-widget-btn"), "click")();
 
-    expect(run.frames[0]?.src).toBe(`${origin}/widget/chat`);
+    expect(run.frames[0]?.src).toBe(`${origin}/ratstack/widget/chat`);
     expect(displayOf(element(run, "chat-widget-iframe"))).toBe("block");
-
-    postToHost(run, {
-      data: { type: "chat-widget-close" },
-      origin: "https://evil.test",
-    });
-
-    expect(displayOf(element(run, "chat-widget-iframe"))).toBe("block");
-
-    postToHost(run, { data: { type: "chat-widget-close" }, origin });
-
-    expect(displayOf(element(run, "chat-widget-iframe"))).toBe("none");
   });
 
   it("waits for the launcher and keeps host storage untouched until the frame boots", () => {

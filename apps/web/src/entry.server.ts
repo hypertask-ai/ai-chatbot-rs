@@ -2,6 +2,7 @@ import { Effect } from "effect";
 import {
   Rendered,
   Responded,
+  renderDocument as renderFoldkitDocument,
   renderToString,
 } from "foldkit/experimental/server";
 
@@ -13,6 +14,11 @@ import {
 import { view } from "./features/home/index.js";
 import { view as widgetView } from "./features/widget/index.js";
 import {
+  siteNoindexValue,
+  siteRobotsMeta,
+  stripBasePath,
+} from "./site-base-path.js";
+import {
   widgetChatHeaders,
   widgetChatPath,
   widgetScriptHeaders,
@@ -21,25 +27,60 @@ import {
 import { widgetLoaderScript } from "./widget/loader.js";
 import { widgetPageFlags } from "./widget/params.js";
 
-export { renderDocument } from "foldkit/experimental/server";
-
 export const prerenderPaths = ["/"];
+
+const noindexHeaders = (): Headers => {
+  const headers = new Headers();
+  const value = siteNoindexValue();
+
+  if (value !== undefined) {
+    headers.set("X-Robots-Tag", value);
+  }
+
+  return headers;
+};
+
+const notFound = () =>
+  Responded(
+    new Response("Not found", { headers: noindexHeaders(), status: 404 })
+  );
+
+const unsupportedMethod = () => {
+  const headers = noindexHeaders();
+  headers.set("Allow", "GET, HEAD");
+
+  return Responded(
+    new Response("Unsupported method", { headers, status: 405 })
+  );
+};
+
+const routePath = (pathname: string): string | undefined =>
+  pathname === "/" ? "/" : stripBasePath(pathname);
+
+export const renderDocument: typeof renderFoldkitDocument = (
+  application,
+  assets,
+  options = {}
+) =>
+  renderFoldkitDocument(application, assets, {
+    ...options,
+    head: `${options.head ?? ""}${siteRobotsMeta()}`,
+  });
 
 const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
   request: Request,
-  origin: string
+  pathname: string
 ) {
-  const { pathname } = new URL(request.url);
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return unsupportedMethod();
+  }
 
   if (pathname === widgetScriptPath) {
     return Responded(
-      new Response(
-        request.method === "HEAD" ? null : widgetLoaderScript(origin),
-        {
-          headers: widgetScriptHeaders,
-          status: 200,
-        }
-      )
+      new Response(request.method === "HEAD" ? null : widgetLoaderScript(), {
+        headers: widgetScriptHeaders,
+        status: 200,
+      })
     );
   }
 
@@ -60,23 +101,19 @@ const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
 const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   request: Request
 ) {
-  const { origin, pathname } = new URL(request.url);
+  const { pathname } = new URL(request.url);
+  const route = routePath(pathname);
+
+  if (route === widgetScriptPath || route === widgetChatPath) {
+    return yield* widgetRoutes(request, route);
+  }
+
+  if (route !== "/") {
+    return notFound();
+  }
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    return Responded(
-      new Response("Unsupported method", {
-        headers: { Allow: "GET, HEAD" },
-        status: 405,
-      })
-    );
-  }
-
-  if (pathname === widgetScriptPath || pathname === widgetChatPath) {
-    return yield* widgetRoutes(request, origin);
-  }
-
-  if (pathname !== "/") {
-    return Responded(new Response("Not found", { status: 404 }));
+    return unsupportedMethod();
   }
 
   const application = yield* renderToString({
@@ -84,7 +121,9 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
     view,
   });
 
-  return Rendered(application);
+  return pathname === "/"
+    ? Rendered(application)
+    : Rendered(application, { headers: noindexHeaders() });
 });
 
 export const renderPage = (request: Request) =>
@@ -94,6 +133,7 @@ export const renderPage = (request: Request) =>
         Effect.succeed(
           Responded(
             new Response("The page could not be rendered", {
+              headers: noindexHeaders(),
               status: 500,
               statusText: cause.toString(),
             })

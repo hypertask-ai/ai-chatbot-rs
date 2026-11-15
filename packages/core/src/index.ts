@@ -91,6 +91,77 @@ export {
   plainTextOf,
 } from "./help-article-html.js";
 
+export {
+  Admin,
+  AccessLogin,
+  AdminPassword,
+  Unauthorized,
+  adminFactsOf,
+  adminFromRequest,
+  adminIdentity,
+  sameText,
+} from "./admin-access.js";
+
+export {
+  AdminConversationStore,
+  AdminConversationDetail,
+  AdminConversationRow,
+  AdminCustomerConversation,
+  AdminInboxItem,
+  AdminInboxRow,
+  AdminMessageRow,
+} from "./admin-conversation-store.js";
+
+export {
+  AdminClock,
+  adminConversationCapabilities,
+  adminConversationStateOf,
+  acceptAdminConversation,
+  archiveAdminConversation,
+  archiveAdminConversations,
+  archiveIdsOf,
+  closeAdminConversation,
+  inboxQueryOf,
+  lastSeenOf,
+  listAdminConversations,
+  listCustomerConversations,
+  readAdminConversation,
+  readAdminUsage,
+  replyToAdminConversation,
+  takeoverAdminConversation,
+  unarchiveAdminConversation,
+  unreadOf,
+} from "./admin-conversations.js";
+
+export {
+  AdminUsageReport,
+  HAIKU_PRICES_PER_MTOK,
+  UsageDayReport,
+  UsageDayRow,
+  UsageTotals,
+  buildUsageReport,
+  nanosToUsd,
+  usageCostNanos,
+  usageSince,
+  usageWindowDays,
+} from "./admin-usage.js";
+
+export {
+  NoConversationIds,
+  NoCustomerEmail,
+  acceptAdminConversationContract,
+  archiveAdminConversationContract,
+  archiveAdminConversationsContract,
+  closeAdminConversationContract,
+  listAdminConversationsContract,
+  listCustomerConversationsContract,
+  readAdminConversationContract,
+  readAdminUsageContract,
+  replyToAdminConversationContract,
+  takeoverAdminConversationContract,
+  unarchiveAdminConversationContract,
+} from "./admin-contracts.js";
+
 export { capabilities, inspectFile } from "./inspect-file.js";
 
 export {
@@ -249,6 +320,30 @@ export {
   summarizeText,
   type FileStats,
 } from "./stats.js";
+
+export { PERSON_FOLLOWUP, SYSTEM_PROMPT } from "./answer-prompt.js";
+
+export {
+  buildAnswerRequest,
+  HISTORY_TURN_LIMIT,
+  MAX_OUTPUT_TOKENS,
+  pageContextBlock,
+  profileContextBlock,
+  textFromUserContent,
+  toAnswerUserContent,
+  trimConversation,
+  visitorAsksForPerson,
+  type AnswerPageContext,
+  type AnswerRequestInput,
+  type AnswerUserContent,
+  type ChatTurn,
+} from "./answer-request.js";
+
+export {
+  VisitorProfileRowSchema,
+  visitorProfileFromRow,
+  type VisitorProfileRow,
+} from "./visitor-profile-row.js";
 
 export {
   answerMachine,

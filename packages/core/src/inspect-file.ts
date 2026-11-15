@@ -1,5 +1,6 @@
 import { implement } from "@rat-stack/capability/implement";
 
+import { adminConversationCapabilities } from "./admin-conversations.js";
 import {
   listCafeNews,
   listCafeProjects,
@@ -33,4 +34,5 @@ export const capabilities = [
   ...helpRetrievalCapabilities,
   requestHandoff,
   saveVisitorProfile,
+  ...adminConversationCapabilities,
 ] as const;
