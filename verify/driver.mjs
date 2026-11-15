@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 
 const SCREENS = process.env.SCREENS_DIR ?? "verify-screens";
 
 const TIMEOUT = 45_000;
+
+/** @typedef {{ height: number; name: string; width: number }} Viewport */
+/** @typedef {{ consoleErrors: string[]; failedRequests: string[]; pageErrors: string[] }} Watch */
+/** @typedef {{ blocked: string[]; context: import("playwright").BrowserContext; page: import("playwright").Page; watched: Watch }} Session */
+/** @typedef {{ blocked: string[]; watched: Watch }} Runtime */
+/** @typedef {{ count: number; selector: string }} Match */
+/** @typedef {{ blockedChatSends: string[]; consoleErrors: string[]; error?: string; failedRequests: string[]; finalUrl?: string; fonts?: string[]; headings?: { level: string; text: string }[]; label: string; links?: { href: string; text: string }[]; pageErrors: string[]; screenshotFull?: string; screenshotViewport?: string; status?: number; textFile?: string; title?: string; url: string; viewport: string; words?: number }} PageReport */
+/** @typedef {{ addedInHead: string[]; baseStatus: number; headStatus: number; missingFromHead: string[]; path: string }} CompareReport */
+/** @typedef {{ buttons: { label: string; type: string }[]; found: boolean; inputs?: { name: string; placeholder: string; tag: string }[]; textExcerpt?: string; words?: number }} FrameState */
 
 const VIEWPORTS = [
   { height: 900, name: "1440", width: 1440 },
@@ -44,13 +52,14 @@ Commands:
   api      --head <url> [--base <url>] [--path /health ...]
 
 Flags:
-  PLAYWRIGHT_MODULE points at the playwright package when it is installed outside this repo.
   SCREENS_DIR points at the screenshot and report directory.`;
 
 const argv = process.argv.slice(2);
 
 const [command, ...rest] = argv;
 
+/** @param {string} name
+ * @returns {string} */
 const flag = (name) => {
   const at = rest.indexOf(`--${name}`);
 
@@ -61,6 +70,8 @@ const flag = (name) => {
   return rest[at + 1] ?? "";
 };
 
+/** @param {string} name
+ * @returns {string[]} */
 const flagAll = (name) => {
   const indexes = rest
     .map((value, index) => (value === `--${name}` ? index : -1))
@@ -75,30 +86,33 @@ const flagAll = (name) => {
   return found;
 };
 
+/** @returns {string[]} */
 const paths = () => {
   const given = flagAll("path").filter((value) => value.length > 0);
 
   return given.length > 0 ? given : ["/"];
 };
 
+/** @param {string} name
+ * @returns {string} */
 const origin = (name) => flag(name).replace(/\/+$/u, "");
 
+/** @param {string} value
+ * @returns {string} */
 const slug = (value) => value.replaceAll(SLUG, "-");
 
+/** @returns {Promise<import("playwright").Browser>} */
 const launch = async () => {
-  const specifier = process.env.PLAYWRIGHT_MODULE ?? "playwright";
+  const { chromium } = await import("playwright");
 
-  const resolved = specifier.startsWith("/")
-    ? pathToFileURL(specifier).href
-    : specifier;
-
-  const playwright = await import(resolved);
-
-  return playwright.chromium.launch();
+  return await chromium.launch();
 };
 
+/** @param {import("playwright").Page} page
+ * @returns {Promise<string[]>} */
 const blockChatSends = async (page) => {
   const blocked = [];
+
   await page.route("**/api/chat/**", async (route) => {
     if (route.request().method() === "POST") {
       blocked.push(route.request().url());
@@ -113,10 +127,13 @@ const blockChatSends = async (page) => {
   return blocked;
 };
 
+/** @param {import("playwright").Page} page
+ * @returns {Watch} */
 const listen = (page) => {
   const consoleErrors = [];
   const failedRequests = [];
   const pageErrors = [];
+
   page.on("console", (message) => {
     if (message.type() === "error") {
       consoleErrors.push(message.text());
@@ -135,6 +152,9 @@ const listen = (page) => {
   return { consoleErrors, failedRequests, pageErrors };
 };
 
+/** @param {import("playwright").Browser} browser
+ * @param {Viewport} viewport
+ * @returns {Promise<Session>} */
 const open = async (browser, viewport) => {
   const context = await browser.newContext({ deviceScaleFactor: 1, viewport });
   const page = await context.newPage();
@@ -144,6 +164,8 @@ const open = async (browser, viewport) => {
   return { blocked, context, page, watched };
 };
 
+/** @param {import("playwright").Page} page
+ * @returns {Promise<void>} */
 const settle = async (page) => {
   await page.evaluate(async () => {
     await document.fonts.ready;
@@ -151,22 +173,33 @@ const settle = async (page) => {
   await page.waitForTimeout(700);
 };
 
+/** @param {string} file
+ * @param {string} text
+ * @returns {Promise<void>} */
 const writeText = async (file, text) => {
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, text, "utf-8");
 };
 
+/** @param {import("playwright").Page} page
+ * @param {string} file
+ * @param {boolean} fullPage
+ * @returns {Promise<void>} */
 const shoot = async (page, file, fullPage) => {
   await mkdir(path.dirname(file), { recursive: true });
   await page.screenshot({ fullPage, path: file });
 };
 
+/** @param {string} text
+ * @returns {string[]} */
 const linesOf = (text) =>
   text
     .split("\n")
     .map((line) => line.replaceAll(WHITESPACE, " ").trim())
     .filter((line) => line.length > 0);
 
+/** @param {string | undefined} file
+ * @returns {Promise<string[]>} */
 const readText = async (file) => {
   if (file === undefined) {
     return [];
@@ -177,28 +210,10 @@ const readText = async (file) => {
   return [...new Set(linesOf(loaded))];
 };
 
-const readPage = async (page, url, label, viewport, runtime) => {
-  const stem = `${label}-${viewport.name}`;
-  let response = null;
-
-  try {
-    response = await page.goto(url, { timeout: TIMEOUT, waitUntil: "load" });
-  } catch (error) {
-    return {
-      blockedChatSends: runtime.blocked,
-      consoleErrors: runtime.watched.consoleErrors,
-      error: String(error),
-      failedRequests: runtime.watched.failedRequests,
-      label,
-      pageErrors: runtime.watched.pageErrors,
-      url,
-      viewport: viewport.name,
-    };
-  }
-
-  await settle(page);
-
-  const text = await page.evaluate(() => {
+/** @param {import("playwright").Page} page
+ * @returns {Promise<string>} */
+const visibleText = async (page) =>
+  await page.evaluate(() => {
     const { body } = document;
 
     if (body === null) {
@@ -222,6 +237,33 @@ const readPage = async (page, url, label, viewport, runtime) => {
       .join("\n");
   });
 
+/** @param {import("playwright").Page} page
+ * @param {string} url
+ * @param {string} label
+ * @param {Viewport} viewport
+ * @param {Runtime} runtime
+ * @returns {Promise<PageReport>} */
+const readPage = async (page, url, label, viewport, runtime) => {
+  const stem = `${label}-${viewport.name}`;
+  let response = null;
+
+  try {
+    response = await page.goto(url, { timeout: TIMEOUT, waitUntil: "load" });
+  } catch (error) {
+    return {
+      blockedChatSends: runtime.blocked,
+      consoleErrors: runtime.watched.consoleErrors,
+      error: String(error),
+      failedRequests: runtime.watched.failedRequests,
+      label,
+      pageErrors: runtime.watched.pageErrors,
+      url,
+      viewport: viewport.name,
+    };
+  }
+
+  await settle(page);
+  const text = await visibleText(page);
   const title = await page.title();
 
   const headings = await page.evaluate(() =>
@@ -276,6 +318,11 @@ const readPage = async (page, url, label, viewport, runtime) => {
   };
 };
 
+/** @param {import("playwright").Browser} browser
+ * @param {string} url
+ * @param {string} label
+ * @param {Viewport} viewport
+ * @returns {Promise<PageReport>} */
 const visitOne = async (browser, url, label, viewport) => {
   const session = await open(browser, viewport);
 
@@ -289,6 +336,11 @@ const visitOne = async (browser, url, label, viewport) => {
   return report;
 };
 
+/** @param {import("playwright").Browser} browser
+ * @param {string} base
+ * @param {string} label
+ * @param {string} routePath
+ * @returns {Promise<PageReport[]>} */
 const visit = (browser, base, label, routePath) => {
   const url = `${base}${routePath}`;
 
@@ -300,6 +352,10 @@ const visit = (browser, base, label, routePath) => {
   );
 };
 
+/** @param {import("playwright").Browser} browser
+ * @param {string} base
+ * @param {string} namePrefix
+ * @returns {Promise<{ pages: PageReport[]; path: string }[]>} */
 const visitAll = (browser, base, namePrefix) =>
   Promise.all(
     paths().map(async (routePath) => ({
@@ -308,6 +364,9 @@ const visitAll = (browser, base, namePrefix) =>
     }))
   );
 
+/** @param {import("playwright").Browser} browser
+ * @param {string} routePath
+ * @returns {Promise<CompareReport>} */
 const compareOne = async (browser, routePath) => {
   const headSession = await open(browser, VIEWPORTS[0]);
   const baseSession = await open(browser, VIEWPORTS[0]);
@@ -349,11 +408,15 @@ const compareOne = async (browser, routePath) => {
   };
 };
 
+/** @param {import("playwright").Browser} browser
+ * @returns {Promise<CompareReport[]>} */
 const compareAll = (browser) =>
   Promise.all(
     paths().map(async (routePath) => await compareOne(browser, routePath))
   );
 
+/** @param {import("playwright").Page} page
+ * @returns {Promise<Match[]>} */
 const findSelectors = async (page) => {
   const counts = await Promise.all(
     WIDGET_TARGETS.map(async (selector) => ({
@@ -365,6 +428,9 @@ const findSelectors = async (page) => {
   return counts.filter((entry) => entry.count > 0);
 };
 
+/** @param {import("playwright").Page} page
+ * @param {string} selector
+ * @returns {Promise<boolean>} */
 const isVisible = async (page, selector) => {
   try {
     return await page.locator(selector).first().isVisible();
@@ -373,14 +439,9 @@ const isVisible = async (page, selector) => {
   }
 };
 
-const frameState = async (page) => {
-  const handle = await page.locator("iframe").first().elementHandle();
-  const frame = await handle?.contentFrame();
-
-  if (frame === null || frame === undefined) {
-    return { found: false };
-  }
-
+/** @param {import("playwright").Frame} frame
+ * @returns {Promise<FrameState>} */
+const readFrame = async (frame) => {
   const text = await frame.evaluate(() => {
     const { body } = document;
 
@@ -429,6 +490,22 @@ const frameState = async (page) => {
   };
 };
 
+/** @param {import("playwright").Page} page
+ * @returns {Promise<FrameState>} */
+const frameState = async (page) => {
+  const handle = await page.locator("iframe").first().elementHandle();
+  const frame = await handle?.contentFrame();
+
+  if (frame === null || frame === undefined) {
+    return { buttons: [], found: false, inputs: [] };
+  }
+
+  return await readFrame(frame);
+};
+
+/** @param {import("playwright").Page} page
+ * @param {Match[]} matches
+ * @returns {Promise<string>} */
 const clickLauncher = async (page, matches) => {
   const checked = await Promise.all(
     matches
@@ -457,6 +534,11 @@ const clickLauncher = async (page, matches) => {
   }
 };
 
+/** @param {import("playwright").Browser} browser
+ * @param {string} base
+ * @param {string} routePath
+ * @param {string} namePrefix
+ * @returns {Promise<Record<string, unknown>>} */
 const widgetOne = async (browser, base, routePath, namePrefix) => {
   const session = await open(browser, VIEWPORTS[0]);
   const { page } = session;
@@ -518,6 +600,8 @@ const widgetOne = async (browser, base, routePath, namePrefix) => {
   return report;
 };
 
+/** @param {import("playwright").Browser} browser
+ * @returns {Promise<Record<string, unknown>>} */
 const widgetAll = async (browser) => {
   const head = origin("head");
   const base = origin("base");
@@ -539,6 +623,9 @@ const widgetAll = async (browser) => {
   return { base, head, onBase, onHead };
 };
 
+/** @param {string} base
+ * @param {string} routePath
+ * @returns {Promise<Record<string, unknown>>} */
 const probe = async (base, routePath) => {
   const { href } = new URL(routePath, base);
 
@@ -566,6 +653,7 @@ const probe = async (base, routePath) => {
   }
 };
 
+/** @returns {Promise<Record<string, unknown>>} */
 const apiAll = async () => {
   const head = origin("head");
   const base = origin("base");
@@ -585,6 +673,7 @@ const apiAll = async () => {
   return { base, baseProbes, head, headProbes };
 };
 
+/** @returns {Promise<void>} */
 const run = async () => {
   if (command === undefined || command === "help" || command === "--help") {
     process.stdout.write(`${USAGE}\n`);
@@ -594,6 +683,7 @@ const run = async () => {
 
   if (command === "api") {
     const report = await apiAll();
+
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 
     return;
@@ -628,6 +718,7 @@ const run = async () => {
     if (command === "compare") {
       const report = await compareAll(browser);
       const payload = { base: origin("base"), head: origin("head"), report };
+
       await writeText(
         path.join(SCREENS, "report-compare.json"),
         JSON.stringify(payload, null, 2)
@@ -639,6 +730,7 @@ const run = async () => {
 
     if (command === "widget") {
       const report = await widgetAll(browser);
+
       await writeText(
         path.join(SCREENS, "report-widget.json"),
         JSON.stringify(report, null, 2)

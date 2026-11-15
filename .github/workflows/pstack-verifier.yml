@@ -157,6 +157,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/browser" --no-fund --no-audit playwright@1.65.1
           "$RUNNER_TEMP/browser/node_modules/.bin/playwright" install --with-deps chromium
           mkdir -p "$RUNNER_TEMP/browser/screens"
+          ln -sfn "$RUNNER_TEMP/browser/node_modules" "$GITHUB_WORKSPACE/verify/node_modules"
 
       - name: Serve the head and the base on the runner
         if: steps.target.outputs.go == 'yes'
@@ -337,7 +338,7 @@ jobs:
           - The built base site, when the base builds, is running at ${BASE_URL:-none}. Use it to see what the same page looked like before the change.
           - The live old site is at https://help.hypertask.ai. Read it, screenshot it, compare it with the head. Never send it a chat message.
           - The feature map for the help site is verify/feature-map.md. It lists every user-visible feature, the address to try, and what to look for.
-          - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the head with the base, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright is installed outside the repository and PLAYWRIGHT_MODULE points at it. SCREENS_DIR points at ${SCREENS_DIR}.
+          - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the head with the base, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright 1.65.1 with Chromium is installed outside the repository and linked at verify/node_modules, so the driver resolves it. SCREENS_DIR points at ${SCREENS_DIR}.
             - node verify/driver.mjs page --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help --path /help/<slug>
             - node verify/driver.mjs compare --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
             - node verify/driver.mjs widget --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
@@ -384,7 +385,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           CODEX_API_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           SHA: ${{ steps.target.outputs.sha }}
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/browser/node_modules/playwright/index.mjs
           SCREENS_DIR: ${{ runner.temp }}/browser/screens
         run: |
           set -euo pipefail
@@ -416,7 +416,6 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           SHA: ${{ steps.target.outputs.sha }}
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/browser/node_modules/playwright/index.mjs
           SCREENS_DIR: ${{ runner.temp }}/browser/screens
         run: |
           set -euo pipefail
