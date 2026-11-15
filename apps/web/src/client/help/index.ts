@@ -18,6 +18,7 @@ export {
 
 export type {
   AppModel,
+  HelpArticleCardValue,
   HelpBrowserValue,
   HelpPageValue,
   HelpSearchValue,

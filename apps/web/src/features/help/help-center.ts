@@ -4,7 +4,7 @@ import type { Html, HtmlBuilder } from "foldkit/html";
 import type { AppMessage } from "../../client/help/message.js";
 import { Message } from "../../client/help/message.js";
 import type {
-  HelpArticleCard,
+  HelpArticleCardValue,
   HelpBrowserValue,
   HelpPageValue,
   HelpSearchValue,
@@ -70,7 +70,7 @@ const topicList = (h: Builder): readonly Html[] =>
     )
   );
 
-const allArticlesLink = (h: Builder): Html =>
+const allArticlesLink = (h: HtmlBuilder<AppMessage>): Html =>
   h.a(
     [
       h.Class(styleClass(helpCenter.topicsHeadingLink)),
@@ -112,7 +112,7 @@ const suggestionButtons = (h: Builder): readonly Html[] =>
 
 const articleCards = (
   h: Builder,
-  articles: readonly HelpArticleCard[]
+  articles: readonly HelpArticleCardValue[]
 ): readonly Html[] =>
   articles.map((article) =>
     h.a(
@@ -276,7 +276,7 @@ const topicSection = (h: Builder): Html =>
 
 const highlightedTitle = (
   h: Builder,
-  article: HelpArticleCard,
+  article: HelpArticleCardValue,
   query: string
 ): readonly (Html | string)[] => {
   const pieces: (Html | string)[] = [];
@@ -305,7 +305,7 @@ const highlightedTitle = (
 
 const searchResult = (
   h: Builder,
-  article: HelpArticleCard,
+  article: HelpArticleCardValue,
   query: string
 ): Html =>
   h.a(
@@ -342,7 +342,7 @@ const searchResult = (
 
 const searchResults = (
   h: Builder,
-  articles: readonly HelpArticleCard[],
+  articles: readonly HelpArticleCardValue[],
   query: string
 ): readonly Html[] => [
   h.div(
@@ -421,7 +421,7 @@ const liveResults = (
 const cardsIn = (
   page: HelpCenterPage,
   browser: HelpBrowserValue
-): readonly HelpArticleCard[] =>
+): readonly HelpArticleCardValue[] =>
   Option.isNone(browser.category)
     ? page.articles
     : page.articles.filter(
@@ -429,7 +429,7 @@ const cardsIn = (
       );
 
 const articleBrowser = (
-  h: Builder,
+  h: HtmlBuilder<AppMessage>,
   page: HelpCenterPage,
   browser: HelpBrowserValue,
   search: HelpSearchValue

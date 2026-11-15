@@ -192,11 +192,11 @@ describe("help center search controls", () => {
     scene(
       { update, view },
       given(openList),
-      sceneExpect(role("link", { name: /^Agents/ })).toHaveAttr(
+      sceneExpect(role("link", { name: /^Agents/u })).toHaveAttr(
         "href",
         "?category=Agents#all"
       ),
-      sceneExpect(role("link", { name: /^Boards & tickets/ })).toHaveAttr(
+      sceneExpect(role("link", { name: /^Boards & tickets/u })).toHaveAttr(
         "href",
         "?category=Boards%20%26%20tickets#all"
       )

@@ -57,6 +57,8 @@ export const Model = Schema.Struct({
 
 export type AppModel = typeof Model.Type;
 
+export type HelpArticleCardValue = typeof HelpArticleCard.Type;
+
 export type HelpPageValue = typeof HelpPage.Type;
 
 export type HelpBrowserValue = typeof HelpBrowser.Type;

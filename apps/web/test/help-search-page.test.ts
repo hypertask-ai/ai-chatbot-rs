@@ -33,8 +33,8 @@ const patterns = {
   description: /<meta name="description" content="(?<content>[^"]*)">/u,
   href: /\bhref="(?<href>[^"]*)"/u,
   mark: /<mark\b[^>]*>[\s\S]*?<\/mark>/gu,
-  markOpen: /<mark\b[^>]*>/gu,
   markClose: /<\/mark>/gu,
+  markOpen: /<mark\b[^>]*>/gu,
   space: /\s+/gu,
   tag: /<[^>]*>/gu,
   topic: /<a\b(?=[^>]*\bhref="\?category=)[^>]*>[\s\S]*?<\/a>/gu,
@@ -257,6 +257,7 @@ describe("help center search box", () => {
     Effect.gen(function* resultRows() {
       for (const expected of searchRowsJson.rows) {
         const served = yield* helpCenterAt(searchAddressOf(expected.query));
+
         const row = resultRowsOf(resultsRegionOf(served)).find(
           (candidate) => candidate.href === `/help/${expected.slug}`
         );
@@ -279,6 +280,7 @@ describe("help center search box", () => {
   it.effect("marks only the title, at every place the query appears", () =>
     Effect.gen(function* markedExcerpt() {
       const served = yield* helpCenterAt(searchAddressOf("board"));
+
       const row = resultRowsOf(resultsRegionOf(served)).find(
         (candidate) =>
           candidate.href === "/help/docs-features-chat-board-filter"
@@ -337,6 +339,7 @@ describe("help center topics", () => {
         hash: "#all",
         search: "?category=Nothing%20Here",
       });
+
       const region = resultsRegionOf(served);
 
       expect(browserTitleOf(served)).toBe("Nothing Here");
@@ -351,6 +354,7 @@ describe("help center topics", () => {
       const closed = yield* helpCenterAt({ hash: "", search: "" });
       const hash = yield* helpCenterAt({ hash: "#all", search: "" });
       const query = yield* helpCenterAt(searchAddressOf("board"));
+
       const category = yield* helpCenterAt({
         hash: "#all",
         search: "?category=Agents",
