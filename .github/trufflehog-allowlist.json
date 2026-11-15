@@ -1,0 +1,29 @@
+{
+  "about": "Findings that trufflehog reports for values that are not keys. Each entry names one fingerprint: the detector, the commit and the file. Any finding this list does not name fails the secret scan. gitleaks scans every one of these commits without an entry.",
+  "entries": [
+    {
+      "detector": "CloudflareApiToken",
+      "commit": "5ddc8a7a0ea17c4e9de654737fb6ce349da981c8",
+      "file": "apps/site/scripts/security-audit-content.ts",
+      "reason": "The value is the upstream commit SHA that credits Cloudflare's security-audit skill, inside a github.com URL, and trufflehog reads 40 hexadecimal characters as a Cloudflare API token. The file came from the Rat Stack template and is deleted from this repository."
+    },
+    {
+      "detector": "CloudflareApiToken",
+      "commit": "f4c93a79953bac0ba6fc2cf03f0da29ea6a50e03",
+      "file": "packages/turbo-cache/README.md",
+      "reason": "The value is a commit SHA written into a sentence about upstream credit, and trufflehog reads 40 hexadecimal characters as a Cloudflare API token. The file came from the Rat Stack template and is deleted from this repository."
+    },
+    {
+      "detector": "URI",
+      "commit": "def581ccc9196450b90ccdd42d9ead3fe7e53b9a",
+      "file": "apps/cli/test/intake-erase.test.ts",
+      "reason": "The value is a fake operator address on the reserved example.test host, with a placeholder user and password, in a test for the template's command line package. The file is deleted from this repository."
+    },
+    {
+      "detector": "URI",
+      "commit": "8135db866fd494b1cdd3e12a959a583fd336eded",
+      "file": "apps/cli/test/intake.test.ts",
+      "reason": "The value is a fake operator address on the reserved example.test host, with a placeholder user and password, in a test for the template's command line package. The file is deleted from this repository."
+    }
+  ]
+}

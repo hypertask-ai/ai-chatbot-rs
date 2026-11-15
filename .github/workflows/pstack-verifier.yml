@@ -182,18 +182,20 @@ jobs:
           ln -sfn "$RUNNER_TEMP/browser/node_modules" "$GITHUB_WORKSPACE/verify/node_modules"
           printf 'SCREENS_DIR=%s\n' "$RUNNER_TEMP/browser/screens" >> "$GITHUB_ENV"
 
-      - name: Serve the built sites and any local Worker on the runner
+      - name: Serve the built sites and the Workers they build
         if: steps.target.outputs.go == 'yes'
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/serve.mjs" <<'SERVER'
           import { createReadStream } from "node:fs";
           import { stat } from "node:fs/promises";
-          import { createServer } from "node:http";
+          import { createServer, request as forward } from "node:http";
           import path from "node:path";
 
-          const root = path.resolve(process.argv[2]);
-          const port = Number(process.argv[3]);
+          const [rootArgument, portArgument, workerArgument] = process.argv.slice(2);
+          const root = rootArgument === "none" ? undefined : path.resolve(rootArgument);
+          const port = Number(portArgument);
+          const worker = workerArgument === "" ? undefined : new URL(workerArgument);
 
           const types = {
             ".avif": "image/avif",
@@ -219,6 +221,10 @@ jobs:
           };
 
           const candidatesFor = (urlPath) => {
+            if (root === undefined) {
+              return [];
+            }
+
             const base = path.resolve(
               root,
               decodeURIComponent(urlPath).replace(/^\/+/u, "").replace(/\/+$/u, "")
@@ -245,28 +251,10 @@ jobs:
             return undefined;
           };
 
-          createServer(async (request, response) => {
-            const url = new URL(request.url ?? "/", "http://127.0.0.1");
-            const found = await fileAt(candidatesFor(url.pathname));
-
-            if (found === undefined) {
-              const fallback = await fileAt([path.join(root, "404.html")]);
-              response.writeHead(404, {
-                "content-type":
-                  fallback === undefined ? types[".txt"] : types[".html"]
-              });
-
-              if (request.method === "HEAD" || fallback === undefined) {
-                response.end(fallback === undefined ? `404 ${url.pathname}\n` : undefined);
-                return;
-              }
-
-              createReadStream(fallback).pipe(response);
-              return;
-            }
-
-            response.writeHead(200, {
-              "content-type": types[path.extname(found)] ?? "application/octet-stream"
+          const sendFile = (request, response, found, status) => {
+            response.writeHead(status, {
+              "content-type":
+                types[path.extname(found)] ?? "application/octet-stream"
             });
 
             if (request.method === "HEAD") {
@@ -275,15 +263,91 @@ jobs:
             }
 
             createReadStream(found).pipe(response);
+          };
+
+          const sendToWorker = (request, response) => {
+            const sent = forward(
+              {
+                headers: { ...request.headers, host: worker.host },
+                host: worker.hostname,
+                method: request.method,
+                path: request.url,
+                port: worker.port
+              },
+              (answer) => {
+                response.writeHead(answer.statusCode ?? 502, answer.headers);
+                answer.pipe(response);
+              }
+            );
+
+            sent.on("error", () => {
+              response.writeHead(502, { "content-type": types[".txt"] });
+              response.end("502 the built Worker did not answer\n");
+            });
+
+            request.pipe(sent);
+          };
+
+          createServer(async (request, response) => {
+            const url = new URL(request.url ?? "/", "http://127.0.0.1");
+            const found = await fileAt(candidatesFor(url.pathname));
+
+            if (found !== undefined) {
+              sendFile(request, response, found, 200);
+              return;
+            }
+
+            if (worker !== undefined) {
+              sendToWorker(request, response);
+              return;
+            }
+
+            const fallback = await fileAt([path.join(root ?? ".", "404.html")]);
+
+            if (fallback === undefined) {
+              response.writeHead(404, { "content-type": types[".txt"] });
+              response.end(`404 ${url.pathname}\n`);
+              return;
+            }
+
+            sendFile(request, response, fallback, 404);
           }).listen(port, "127.0.0.1", () => {
-            console.log(`serving ${root} on http://127.0.0.1:${port}`);
+            console.log(
+              `serving ${root ?? "no files"}${worker === undefined ? "" : ` in front of ${worker.origin}`} on http://127.0.0.1:${port}`
+            );
           });
           SERVER
 
-          site_root() {
-            for candidate in "$1/apps/web/dist/client" "$1"/apps/*/dist/client; do
-              if [ -f "$candidate/index.html" ]; then
-                printf '%s\n' "$candidate"
+          dist_dir() {
+            local tree="$1" dist
+            for dist in "$tree"/apps/*/dist; do
+              [ -d "$dist" ] || continue
+              if [ -d "$dist/client" ] || [ -d "$dist/server" ]; then
+                printf '%s\n' "$dist"
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          static_root() {
+            local dist="$1"
+            [ -d "$dist/client" ] || return 1
+            printf '%s\n' "$dist/client"
+          }
+
+          server_entry() {
+            local dist="$1" entry=""
+            if [ -f "$dist/server/foldkit.build.json" ]; then
+              entry="$(jq -r '.serverEntry // ""' "$dist/server/foldkit.build.json")"
+            fi
+            if [ -n "$entry" ] && [ -f "$dist/server/$entry" ]; then
+              printf '%s\n' "$dist/server/$entry"
+              return 0
+            fi
+            for entry in "$dist/server/index.js" "$dist/server/fetch.js" "$dist"/server/*.js; do
+              if [ -f "$entry" ]; then
+                printf '%s\n' "$entry"
                 return 0
               fi
             done
@@ -298,7 +362,7 @@ jobs:
               fi
               code="$(curl --silent --output /dev/null --max-time 2 --write-out '%{http_code}' "$url" || true)"
               if [ -n "$code" ] && [ "$code" != "000" ]; then
-                echo "the site answered $code at $url on attempt $attempt"
+                echo "$url answered $code on attempt $attempt"
                 return 0
               fi
               sleep 2
@@ -306,119 +370,154 @@ jobs:
             return 1
           }
 
-          local_worker() {
-            local tree="$1" app command
-            for app in "$tree"/apps/*; do
-              [ -f "$app/package.json" ] || continue
-              for command in preview dev; do
-                case "$(jq -r --arg name "$command" '.scripts[$name] // ""' "$app/package.json")" in
-                  *"wrangler dev"*) printf '%s\n' "$app"; return 0 ;;
-                esac
-              done
-            done
-            return 1
+          wrangler_bin() {
+            local bin="$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" install="$RUNNER_TEMP/wrangler-install.log"
+            if [ ! -x "$bin" ]; then
+              if ! npm install --prefix "$RUNNER_TEMP/wrangler" --no-fund --no-audit --loglevel=error wrangler@4.162.0 > "$install" 2>&1; then
+                tail -20 "$install"
+                return 1
+              fi
+            fi
+            printf '%s\n' "$bin"
           }
 
           start_worker() {
-            local tree="$1" port="$2" side="$3" app wrangler
-            app="$(local_worker "$tree")" || return 1
-            wrangler="$app/node_modules/.bin/wrangler"
-            if [ ! -x "$wrangler" ]; then
-              echo "::notice::$side declares a local Worker dev or preview script, but $wrangler is missing. Only the built files are served for that side."
-              return 2
-            fi
+            local tree="$1" dist="$2" port="$3" side="$4" entry bin pid
+            entry="$(server_entry "$dist")" || return 1
+            bin="$(wrangler_bin)" || return 2
             (
-              cd "$app"
-              exec "$wrangler" dev --ip 127.0.0.1 --port "$port" --local
+              cd "$tree"
+              exec "$bin" dev "$entry" \
+                --name "$side-site" \
+                --compatibility-date 2026-08-31 \
+                --port "$port" \
+                --ip 127.0.0.1 \
+                --local \
+                --no-bundle \
+                --persist-to "$RUNNER_TEMP/$side-worker-state" \
+                --show-interactive-dev-session=false \
+                --log-level log
             ) > "$RUNNER_TEMP/$side-worker.log" 2>&1 &
-            printf '%s\n' "$!" > "$RUNNER_TEMP/$side-worker.pid"
-            if ! wait_for "http://127.0.0.1:$port/" "$(cat "$RUNNER_TEMP/$side-worker.pid")" 60; then
-              echo "::notice::$side declares a local Worker dev or preview script in $app, but it did not answer on http://127.0.0.1:$port within 120 seconds. Only the built files are served for that side."
-              return 2
+            pid="$!"
+            printf '%s\n' "$pid" > "$RUNNER_TEMP/$side-worker.pid"
+            if wait_for "http://127.0.0.1:$port/" "$pid" 90; then
+              printf 'the %s Worker runs the built module %s\n' "$side" "$entry"
+              return 0
             fi
-            return 0
+            tail -20 "$RUNNER_TEMP/$side-worker.log" || true
+            return 2
           }
 
-          head_root="$(site_root "$GITHUB_WORKSPACE" || true)"
-          if [ -z "$head_root" ]; then
-            echo "::error::The head build left no apps/*/dist/client/index.html, so there is nothing to serve."
+          start_front() {
+            local root="$1" port="$2" side="$3" worker="$4" pid
+            node "$RUNNER_TEMP/serve.mjs" "${root:-none}" "$port" "$worker" > "$RUNNER_TEMP/$side.log" 2>&1 &
+            pid="$!"
+            printf '%s\n' "$pid" > "$RUNNER_TEMP/$side.pid"
+            wait_for "http://127.0.0.1:$port/" "$pid" 60
+          }
+
+          head_dist="$(dist_dir "$GITHUB_WORKSPACE" || true)"
+          if [ -z "$head_dist" ]; then
+            echo "::error::The head build left no apps/*/dist/client and no apps/*/dist/server. Looked for built static files at apps/*/dist/client and a built Worker at apps/*/dist/server."
             find apps -maxdepth 3 -type d -name dist -print
             exit 1
           fi
-          node "$RUNNER_TEMP/serve.mjs" "$head_root" 4173 > "$RUNNER_TEMP/head.log" 2>&1 &
-          echo "$!" > "$RUNNER_TEMP/head.pid"
-          if ! wait_for "http://127.0.0.1:4173/" "$(cat "$RUNNER_TEMP/head.pid")" 60; then
+          head_root="$(static_root "$head_dist" || true)"
+          head_worker=""
+          if start_worker "$GITHUB_WORKSPACE" "$head_dist" 4175 head; then
+            head_worker="http://127.0.0.1:4175"
+          fi
+          if [ -z "$head_worker" ] && [ -z "$head_root" ]; then
+            echo "::error::The head build has no apps/*/dist/client and apps/*/dist/server holds no Worker module, so there is nothing to serve. Looked for built static files at apps/*/dist/client/index.html and a Worker module named by apps/*/dist/server/foldkit.build.json or any .js file in apps/*/dist/server."
+            find "$head_dist" -maxdepth 2 -print
+            exit 1
+          fi
+          if [ -z "$head_worker" ] && [ ! -f "$head_root/index.html" ]; then
+            echo "::error::The head build has no apps/*/dist/client/index.html and its Worker module did not answer, so no page can be served. Looked for a prerendered apps/*/dist/client/index.html and for a Worker module in apps/*/dist/server started with wrangler dev in local mode."
+            find "$head_dist" -maxdepth 2 -print
+            exit 1
+          fi
+          if ! start_front "$head_root" 4173 head "$head_worker"; then
             cat "$RUNNER_TEMP/head.log"
             echo "::error::The head site did not answer on http://127.0.0.1:4173 within 120 seconds."
             exit 1
           fi
 
           base_root=""
-          if [ "${{ steps.basebuild.outcome }}" = "success" ]; then
-            base_root="$(site_root "$RUNNER_TEMP/base" || true)"
-          fi
-          if [ -z "$base_root" ]; then
-            echo "::notice::The base has no built site, so this run compares the head with the live old site only."
-          else
-            node "$RUNNER_TEMP/serve.mjs" "$base_root" 4174 > "$RUNNER_TEMP/base.log" 2>&1 &
-            echo "$!" > "$RUNNER_TEMP/base.pid"
-            if ! wait_for "http://127.0.0.1:4174/" "$(cat "$RUNNER_TEMP/base.pid")" 60; then
-              cat "$RUNNER_TEMP/base.log"
-              echo "::notice::The base site did not answer on http://127.0.0.1:4174, so this run compares the head with the live old site only."
-              base_root=""
-            fi
-          fi
-
-          head_worker=""
           base_worker=""
-          head_status=0
-          base_status=0
-          start_worker "$GITHUB_WORKSPACE" 4175 head || head_status=$?
-          if [ "$head_status" -eq 0 ]; then
-            head_worker="http://127.0.0.1:4175"
+          if [ "${{ steps.basebuild.outcome }}" = "success" ]; then
+            base_dist="$(dist_dir "$RUNNER_TEMP/base" || true)"
           fi
-          if [ -n "$base_root" ]; then
-            start_worker "$RUNNER_TEMP/base" 4176 base || base_status=$?
-            if [ "$base_status" -eq 0 ]; then
+          if [ -n "${base_dist:-}" ]; then
+            base_root="$(static_root "$base_dist" || true)"
+            if start_worker "$RUNNER_TEMP/base" "$base_dist" 4176 base; then
               base_worker="http://127.0.0.1:4176"
             fi
-          else
-            base_status=3
+            if [ -z "$base_worker" ] && [ -n "$base_root" ] && [ ! -f "$base_root/index.html" ]; then
+              base_root=""
+            fi
+            if [ -n "$base_root" ] || [ -n "$base_worker" ]; then
+              if ! start_front "$base_root" 4174 base "$base_worker"; then
+                cat "$RUNNER_TEMP/base.log"
+                echo "::notice::The base site did not answer on http://127.0.0.1:4174, so this run compares the head with the live old site only."
+                base_root=""
+                base_worker=""
+              fi
+            fi
+          fi
+          if [ -z "$base_root" ] && [ -z "$base_worker" ]; then
+            echo "::notice::The base has no served site, so this run compares the head with the live old site only."
           fi
 
           head_mode="built files"
-          base_mode="not served"
-          if [ -n "$head_worker" ]; then
-            head_mode="built files and the app's own local Worker"
-          elif [ "$head_status" -eq 1 ]; then
-            echo "::notice::The head declares no local Worker dev or preview script that runs without a Cloudflare login, so only the built files are served there. A redirect, /health, a CORS answer or an unknown address is unproven in this run."
+          if [ -n "$head_worker" ] && [ -n "$head_root" ]; then
+            head_mode="the built Worker for every request no built file matches, and the built files for the rest"
+          elif [ -n "$head_worker" ]; then
+            head_mode="the built Worker"
           fi
-          if [ -n "$base_worker" ]; then
-            base_mode="built files and the app's own local Worker"
+          base_mode="not served"
+          if [ -n "$base_worker" ] && [ -n "$base_root" ]; then
+            base_mode="the built Worker for every request no built file matches, and the built files for the rest"
+          elif [ -n "$base_worker" ]; then
+            base_mode="the built Worker"
           elif [ -n "$base_root" ]; then
             base_mode="built files"
-            if [ "$base_status" -eq 1 ]; then
-              echo "::notice::The base declares no local Worker dev or preview script that runs without a Cloudflare login, so only the built files are served there."
-            fi
           fi
 
           {
-            printf 'SITE_ROOT=%s\nSITE_URL=http://127.0.0.1:4173\n' "$head_root"
-            printf 'BASE_ROOT=%s\n' "$base_root"
-            if [ -n "$base_root" ]; then printf 'BASE_URL=http://127.0.0.1:4174\n'; fi
+            printf 'SITE_ROOT=%s\nSITE_URL=http://127.0.0.1:4173\n' "${head_root:-$head_dist}"
+            printf 'BASE_ROOT=%s\n' "${base_root:-none}"
+            if [ -n "$base_root" ] || [ -n "$base_worker" ]; then printf 'BASE_URL=http://127.0.0.1:4174\n'; fi
             printf 'SITE_WORKER_URL=%s\nBASE_WORKER_URL=%s\n' "$head_worker" "$base_worker"
             printf 'SERVE_MODE_HEAD=%s\nSERVE_MODE_BASE=%s\n' "$head_mode" "$base_mode"
           } >> "$GITHUB_ENV"
           {
-            printf 'head: %s on http://127.0.0.1:4173, %s\n' "$head_root" "$head_mode"
-            if [ -n "$head_worker" ]; then printf 'head local Worker: %s\n' "$head_worker"; fi
-            if [ -n "$base_root" ]; then
-              printf 'base: %s on http://127.0.0.1:4174, %s\n' "$base_root" "$base_mode"
-              if [ -n "$base_worker" ]; then printf 'base local Worker: %s\n' "$base_worker"; fi
+            printf 'head: %s on http://127.0.0.1:4173, %s\n' "${head_root:-$head_dist}" "$head_mode"
+            if [ -n "$head_worker" ]; then printf 'head Worker: %s\n' "$head_worker"; fi
+            if [ -n "$base_root" ] || [ -n "$base_worker" ]; then
+              printf 'base: %s on http://127.0.0.1:4174, %s\n' "${base_root:-the built Worker}" "$base_mode"
+              if [ -n "$base_worker" ]; then printf 'base Worker: %s\n' "$base_worker"; fi
             else
               printf 'base: not served, the live old site is the reference\n'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prove the served root answers before the verifier starts
+        if: steps.target.outputs.go == 'yes'
+        run: |
+          set -euo pipefail
+          for address in "$SITE_URL" ${BASE_URL:-}; do
+            body="$RUNNER_TEMP/served-root.html"
+            rm -f "$body"
+            code="$(curl --silent --show-error --max-time 20 --output "$body" --write-out '%{http_code}' "$address/" || true)"
+            bytes="$(wc -c < "$body" 2>/dev/null || printf '0')"
+            printf '%s/ answered %s with %s bytes\n' "$address" "$code" "$bytes"
+            printf '%s/ answered %s with %s bytes\n' "$address" "$code" "$bytes" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$code" != "200" ] || [ "$bytes" -lt 1 ]; then
+              echo "::error::The served root at $address/ answered $code with $bytes bytes, so the verifier would judge a site that is not there."
+              exit 1
+            fi
+          done
 
       - name: Read the change under review from the checkout
         if: steps.target.outputs.go == 'yes'
@@ -460,11 +559,11 @@ jobs:
           diff_capped_bytes="$(jq -r '.cappedBytes' "$RUNNER_TEMP/diff.json")"
           diff_limit="$(jq -r '.limit' "$RUNNER_TEMP/diff.json")"
           if [ -n "${SITE_WORKER_URL:-}" ] && [ -n "${BASE_WORKER_URL:-}" ]; then
-            worker_note="- The app's own local Worker also answers, in place of the Cloudflare layer. The head is at $SITE_WORKER_URL and the base is at $BASE_WORKER_URL. Use it for what a file server cannot answer: the status code of an unknown address, a trailing-slash request, /health, a CORS answer, and a redirect."
+            worker_note="- Both sides run the Worker their own build produces, started on this runner with wrangler dev in local mode and no Cloudflare account. The head Worker answers at $SITE_WORKER_URL and the base Worker at $BASE_WORKER_URL, and a request that matches no built file already reaches that Worker through the served address. Use it for the status code of an unknown address, a trailing-slash request, /health, a CORS answer and a redirect."
           elif [ -n "${SITE_WORKER_URL:-}" ] || [ -n "${BASE_WORKER_URL:-}" ]; then
-            worker_note="- Only one side answered on its own local Worker this run: head ${SITE_WORKER_URL:-none}, base ${BASE_WORKER_URL:-none}. A behaviour comparison between the two sides is therefore not possible. Use the side that answered, and say plainly which side you could not compare."
+            worker_note="- Only one side runs the Worker its build produces this run: head ${SITE_WORKER_URL:-none}, base ${BASE_WORKER_URL:-none}. The other side answers from built files only, so a status code, a redirect or a CORS answer cannot be compared between the two sides. Say plainly which side you could not compare."
           else
-            worker_note="- No local Worker dev or preview script answered on this run, so only the built files are served. A redirect, a /health status, a CORS answer or an unknown address therefore cannot be judged from what is running. Say plainly that it is unproven here, and read the checkout for what the code would do."
+            worker_note="- Neither side's build produces a Worker on this run, so built files answer every request. A redirect, a /health status, a CORS answer or an unknown address therefore comes from the file server, not from the app. Say plainly that it is unproven here, and read the checkout for what the code would do."
           fi
           {
             cat <<PROMPT
@@ -484,10 +583,10 @@ jobs:
           ## What you have
           - The pull request head commit $SHA is checked out at the repository root, at $GITHUB_WORKSPACE. That is the change under review.
           - The base commit, the commit this change targets, is checked out at ${RUNNER_TEMP}/base when it could be added. That is what a visitor sees today.
-          - The built head site is running at ${SITE_URL}, from the built files in ${SITE_ROOT}. Serve mode for the head: ${SERVE_MODE_HEAD}.
-          - The built base site, when the base builds, is running at ${BASE_URL:-none}, from the built files in ${BASE_ROOT:-none}. Serve mode for the base: ${SERVE_MODE_BASE}.
+          - The built head site is running at ${SITE_URL}, from ${SITE_ROOT}. Serve mode for the head: ${SERVE_MODE_HEAD}.
+          - The built base site, when the base builds, is running at ${BASE_URL:-none}, from ${BASE_ROOT:-none}. Serve mode for the base: ${SERVE_MODE_BASE}.
           $worker_note
-          - The built files are what a deploy uploads, so a page, an asset, a font and a stylesheet can all be fetched there.
+          - The built output is what a deploy uploads, so a page, an asset, a font and a stylesheet can all be fetched at the served address.
           - The live old site is at $LIVE_URL. Read it for look and content, and compare it with the head. Fetch it with GET only, never post to it, and never send it a chat message.
           - The feature map for the help site is verify/feature-map.md. It lists every user-visible feature, the address to try, and what to look for.
           - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the head with the base, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright 1.65.1 with Chromium is installed outside the repository and linked at verify/node_modules, so the driver resolves it. SCREENS_DIR points at ${SCREENS_DIR}.

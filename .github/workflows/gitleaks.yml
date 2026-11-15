@@ -30,13 +30,15 @@ jobs:
             # A pull request scans only the commits it adds.
             base="$PR_BASE_SHA"; head="$PR_HEAD_SHA"
           else
-            # A push scans only the commits it adds. A new branch (or an unknown previous tip
-            # after a force push) scans everything not already on the default branch; on the
-            # default branch itself that means its whole history (empty base).
+            # A push scans only the commits it adds to the default branch. A branch is
+            # scanned from where it left that branch, so merging the default branch back
+            # into it does not rescan commits that already landed there.
             head="$PUSH_HEAD_SHA"
-            base=$(git rev-parse "origin/$DEFAULT_BRANCH")
-            [ "$GITHUB_REF_NAME" = "$DEFAULT_BRANCH" ] && base=""
-            if [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ] \
+            base=""
+            if [ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]; then
+              base=$(git merge-base "$head" "origin/$DEFAULT_BRANCH" || true)
+            fi
+            if [ -z "$base" ] && [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ] \
               && git cat-file -e "$PUSH_BEFORE_SHA^{commit}" 2>/dev/null; then
               base="$PUSH_BEFORE_SHA"
             fi
@@ -60,11 +62,37 @@ jobs:
             --fail --no-update --json > found.json 2> trufflehog.err
           code=$?
           set -e
-          grep -o '"DetectorName":"[^"]*"\|"file":"[^"]*"\|"commit":"[^"]*"' found.json || true
+          if [ "$code" != 0 ] && [ "$code" != 183 ]; then tail -5 trufflehog.err; exit "$code"; fi
+          # A finding is dropped only when .github/trufflehog-allowlist.json names its detector,
+          # its commit and its file, and gives a reason. Everything else fails this check.
+          jq -c 'select(.DetectorName != null)' found.json > findings.json || true
+          jq -c --slurpfile allow .github/trufflehog-allowlist.json '
+            . as $finding
+            | select(
+                ($allow[0].entries | map(select(
+                  .detector == $finding.DetectorName
+                  and .commit == $finding.SourceMetadata.Data.Git.commit
+                  and .file == $finding.SourceMetadata.Data.Git.file
+                )) | length) == 0
+              )
+          ' findings.json > remaining.json
+          findings="$(wc -l < findings.json)"
+          remaining="$(wc -l < remaining.json)"
+          jq -r --slurpfile allow .github/trufflehog-allowlist.json '
+            . as $finding
+            | $allow[0].entries[]
+            | select(
+                .detector == $finding.DetectorName
+                and .commit == $finding.SourceMetadata.Data.Git.commit
+                and .file == $finding.SourceMetadata.Data.Git.file
+              )
+            | "allowlisted: \(.detector) in \(.file) at \(.commit) because \(.reason)"
+          ' findings.json | sort -u
           grep -o '"chunks":[0-9]*\|"bytes":[0-9]*\|"verified_secrets":[0-9]*\|"unverified_secrets":[0-9]*' trufflehog.err | tr '\n' ' ' || true
-          rm -f found.json
-          if [ "$code" = 183 ]; then
-            echo "::error::trufflehog found a key. Remove it, and roll it if it was ever real."
+          printf '\ntrufflehog reported %s findings; %s are named in the allowlist and %s are not.\n' "$findings" "$((findings - remaining))" "$remaining"
+          if [ "$remaining" -ne 0 ]; then
+            jq -r '"\(.DetectorName) in \(.SourceMetadata.Data.Git.file) line \(.SourceMetadata.Data.Git.line) at \(.SourceMetadata.Data.Git.commit)"' remaining.json
+            echo "::error::trufflehog found $remaining values that no allowlist entry names. Remove the value, and roll it if it was ever real."
             exit 1
           fi
-          if [ "$code" != 0 ]; then tail -5 trufflehog.err; exit "$code"; fi
+          rm -f found.json findings.json remaining.json
