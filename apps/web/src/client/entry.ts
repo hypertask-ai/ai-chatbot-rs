@@ -17,7 +17,7 @@ import {
 import "../features/widget/widget.css";
 import "./site.css";
 
-const container = document.querySelector("#root");
+const container = document.querySelector<HTMLElement>("#root");
 
 const siteApplication = Runtime.makeApplication({
   Model,

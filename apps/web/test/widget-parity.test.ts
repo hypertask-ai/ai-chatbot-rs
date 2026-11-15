@@ -1,7 +1,4 @@
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "@effect/vitest";
-import { Schema } from "effect";
 
 import { widgetCopy } from "../src/widget/copy.js";
 import {
@@ -25,92 +22,47 @@ import {
   starterSuggestions,
 } from "../src/widget/suggestions.js";
 import { widgetLayout, widgetTheme } from "../src/widget/theme.js";
-
-const Line = Schema.Struct({ content: Schema.String, role: Schema.String });
-
-const Fixture = Schema.Struct({
-  copy: Schema.Struct({
-    headerSubtitle: Schema.String,
-    headerTitle: Schema.String,
-    inputPlaceholder: Schema.String,
-    privacyLong: Schema.String,
-    privacyShort: Schema.String,
-    takeoverNote: Schema.String,
-    welcomeBody: Schema.String,
-    welcomeHeading: Schema.String,
-  }),
-  historyMerge: Schema.Array(
-    Schema.Struct({
-      expected: Schema.Struct({
-        keptLocal: Schema.Finite,
-        messages: Schema.Array(Line),
-      }),
-      onScreen: Schema.Array(Line),
-      server: Schema.Array(Line),
-    })
-  ),
-  markdown: Schema.Array(
-    Schema.Struct({ html: Schema.String, input: Schema.String })
-  ),
-  storage: Schema.Struct({
-    dockCollapsed: Schema.String,
-    frame: Schema.Struct({
-      conversation: Schema.String,
-      visitor: Schema.String,
-      visitorSecret: Schema.String,
-    }),
-    host: Schema.Struct({
-      conversation: Schema.String,
-      visitor: Schema.String,
-      visitorSecret: Schema.String,
-    }),
-    proactiveDismissPrefix: Schema.String,
-  }),
-  suggestions: Schema.Struct({
-    article: Schema.Record(
-      Schema.String,
-      Schema.Struct({ bubble: Schema.String, prompt: Schema.String })
-    ),
-    starter: Schema.Array(Schema.String),
-  }),
-});
-
-const fixture = Schema.decodeUnknownSync(Fixture)(
-  JSON.parse(
-    readFileSync(
-      new URL("fixtures/widget-parity.json", import.meta.url),
-      "utf-8"
-    )
-  )
-);
+import { widgetParityFixture } from "./widget-parity-fixture.js";
 
 describe("chat widget parity with the old help site", () => {
   it("keeps every visible string word for word", () => {
-    expect(widgetCopy.headerTitle).toBe(fixture.copy.headerTitle);
-    expect(widgetCopy.headerSubtitle).toBe(fixture.copy.headerSubtitle);
-    expect(widgetCopy.welcomeHeading).toBe(fixture.copy.welcomeHeading);
-    expect(widgetCopy.welcomeBody).toBe(fixture.copy.welcomeBody);
-    expect(widgetCopy.inputPlaceholder).toBe(fixture.copy.inputPlaceholder);
-    expect(widgetCopy.takeoverNote).toBe(fixture.copy.takeoverNote);
-    expect(widgetCopy.privacyShort).toBe(fixture.copy.privacyShort);
-    expect(widgetCopy.privacyLong).toBe(fixture.copy.privacyLong);
+    expect(widgetCopy.headerTitle).toBe(widgetParityFixture.copy.headerTitle);
+    expect(widgetCopy.headerSubtitle).toBe(
+      widgetParityFixture.copy.headerSubtitle
+    );
+    expect(widgetCopy.welcomeHeading).toBe(
+      widgetParityFixture.copy.welcomeHeading
+    );
+    expect(widgetCopy.welcomeBody).toBe(widgetParityFixture.copy.welcomeBody);
+    expect(widgetCopy.inputPlaceholder).toBe(
+      widgetParityFixture.copy.inputPlaceholder
+    );
+    expect(widgetCopy.takeoverNote).toBe(widgetParityFixture.copy.takeoverNote);
+    expect(widgetCopy.privacyShort).toBe(widgetParityFixture.copy.privacyShort);
+    expect(widgetCopy.privacyLong).toBe(widgetParityFixture.copy.privacyLong);
     expect(widgetCopy.privacyPolicyUrl).toBe("https://hypertask.ai/privacy/");
     expect(widgetCopy.logoUrl).toBe("https://hypertask.ai/glyph-white.png");
   });
 
   it("keeps the storage keys and the dock collapse value byte for byte", () => {
-    expect(hostStorageKeys).toEqual(fixture.storage.host);
-    expect(frameStorageKeys).toEqual(fixture.storage.frame);
-    expect(hostStorageKeys.dockCollapsed).toBe(fixture.storage.dockCollapsed);
+    expect(hostStorageKeys).toEqual(widgetParityFixture.storage.host);
+    expect(frameStorageKeys).toEqual(widgetParityFixture.storage.frame);
+    expect(hostStorageKeys.dockCollapsed).toBe(
+      widgetParityFixture.storage.dockCollapsed
+    );
     expect(dockCollapsedValue(true)).toBe("1");
     expect(dockCollapsedValue(false)).toBe("0");
-    expect(proactiveDismissPrefix).toBe(fixture.storage.proactiveDismissPrefix);
+    expect(proactiveDismissPrefix).toBe(
+      widgetParityFixture.storage.proactiveDismissPrefix
+    );
   });
 
   it("keeps the starter questions and the article bubbles", () => {
-    expect([...starterSuggestions]).toEqual(fixture.suggestions.starter);
+    expect([...starterSuggestions]).toEqual(
+      widgetParityFixture.suggestions.starter
+    );
     expect(Object.fromEntries(articleBubbles)).toEqual(
-      fixture.suggestions.article
+      widgetParityFixture.suggestions.article
     );
     expect(articleBubbleFor("troubleshooting-google-workspace-login")).toEqual({
       bubble: "Google login not working?",
@@ -131,7 +83,7 @@ describe("chat widget parity with the old help site", () => {
     expect(widgetLayout.helpBreakpoint).toBe(900);
     expect(widgetLayout.dockWidth).toBe(400);
     expect(widgetTheme.chatBg).toBe("#262626");
-    expect(widgetTheme.ink).toBe("#f4f4f7");
+    expect(widgetTheme.htInk).toBe("#f4f4f7");
     expect(widgetTheme.btnBg).toBe("#ffffff");
     expect(widgetTheme.btnFg).toBe("#000000");
   });
@@ -180,13 +132,13 @@ describe("chat widget parity with the old help site", () => {
   });
 
   it("renders the same HTML for the same markdown as the old renderer", () => {
-    for (const row of fixture.markdown) {
+    for (const row of widgetParityFixture.markdown) {
       expect(renderChatMarkdown(row.input)).toBe(row.html);
     }
   });
 
   it("merges loaded history the way the old widget did", () => {
-    for (const row of fixture.historyMerge) {
+    for (const row of widgetParityFixture.historyMerge) {
       const merged = mergeLoadedHistory(row.server, row.onScreen);
 
       expect(merged.keptLocal).toBe(row.expected.keptLocal);

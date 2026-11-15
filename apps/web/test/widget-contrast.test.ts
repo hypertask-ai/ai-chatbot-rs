@@ -1,13 +1,8 @@
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "@effect/vitest";
 
 import { widgetTheme } from "../src/widget/theme.js";
 
-const css = readFileSync(
-  new URL("../src/features/widget/widget.css", import.meta.url),
-  "utf-8"
-);
+import css from "../src/features/widget/widget.css?raw";
 
 const rule = (selector: string): string => {
   const escaped = selector.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
@@ -33,7 +28,7 @@ describe("settled chat bubbles", () => {
     expect(user).not.toMatch(/opacity/u);
     expect(answer).toMatch(/color:\s*#a1a1aa/u);
     expect(answer).not.toMatch(/opacity/u);
-    expect(widgetTheme.ink).toBe("#f4f4f7");
+    expect(widgetTheme.htInk).toBe("#f4f4f7");
   });
 
   it("animate only position, never opacity", () => {

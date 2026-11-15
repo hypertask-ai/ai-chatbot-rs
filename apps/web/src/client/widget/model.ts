@@ -50,6 +50,7 @@ export const initialModel = (flags: WidgetFlags): AppModel => ({
   messages: [],
   pageTitle: flags.pageTitle,
   pageUrl: flags.pageUrl,
+  pendingQuestion: Option.none(),
   pinned: flags.pinned,
   sheet: false,
   suggestions: [...starterSuggestions],

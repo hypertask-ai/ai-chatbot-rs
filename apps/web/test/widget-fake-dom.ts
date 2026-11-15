@@ -92,7 +92,6 @@ export type LoaderRun = Readonly<{
   storage: Map<string, string>;
   storageCalls: [string, string][];
   timers: (() => void)[];
-  window: { HypertaskHelp?: unknown };
 }>;
 
 export type LoaderOptions = Readonly<{
@@ -324,7 +323,6 @@ export const runWidgetLoader = (
     storage,
     storageCalls,
     timers,
-    window,
   };
 };
 

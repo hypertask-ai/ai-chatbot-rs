@@ -29,6 +29,16 @@ const element = (
   return found;
 };
 
+const frame = (run: ReturnType<typeof runWidgetLoader>): FakeElement => {
+  const found = run.frames.at(0);
+
+  if (found === undefined) {
+    throw new Error("the loader did not create the chat frame");
+  }
+
+  return found;
+};
+
 const hostKeysTouched = (run: ReturnType<typeof runWidgetLoader>) =>
   run.storageCalls.filter(([, key]) => key.startsWith("hypertask_chat_"));
 
@@ -62,7 +72,7 @@ describe("widget loader", () => {
     expect(run.frames[0]?.src).toBe(`${origin}/widget/chat`);
     expect(run.frames[0]?.parentElement).toBe(run.document.body);
 
-    handler(run.frames[0], "load")();
+    handler(frame(run), "load")();
     postToHost(run, {
       data: {
         conversationId: "conv-1",
@@ -206,7 +216,7 @@ describe("widget loader", () => {
       )
     ).toBe(false);
 
-    handler(run.frames[0], "load")();
+    handler(frame(run), "load")();
 
     expect(
       run.frames[0]?.messages.find(
