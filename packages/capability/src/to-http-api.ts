@@ -598,41 +598,43 @@ export const toHttpApi = <
     }
 
     const paths = Object.fromEntries(
-      Object.entries(document.paths).map(([path, pathItem]) => {
-        const operation = pathItem.post;
+      Object.entries(document.paths).map(
+        ([path, pathItem]): [string, OpenApi.OpenAPISpecPathItem] => {
+          const operation = pathItem.post;
 
-        const inputSchema =
-          operation === undefined
-            ? undefined
-            : emptyInputsByOperationId.get(operation.operationId);
+          const inputSchema =
+            operation === undefined
+              ? undefined
+              : emptyInputsByOperationId.get(operation.operationId);
 
-        if (operation === undefined || inputSchema === undefined) {
-          return [path, pathItem];
-        }
+          if (operation === undefined || inputSchema === undefined) {
+            return [path, pathItem];
+          }
 
-        const content =
-          operation.requestBody === undefined
-            ? { "application/json": { schema: inputSchema } }
-            : Object.fromEntries(
-                Object.entries(operation.requestBody.content).map(
-                  ([contentType, mediaType]) => [
-                    contentType,
-                    { ...mediaType, schema: inputSchema },
-                  ]
-                )
-              );
+          const content: OpenApi.OpenApiSpecContent =
+            operation.requestBody === undefined
+              ? { "application/json": { schema: inputSchema } }
+              : Object.fromEntries(
+                  Object.entries(operation.requestBody.content).map(
+                    ([contentType, mediaType]) => [
+                      contentType,
+                      { ...mediaType, schema: inputSchema },
+                    ]
+                  )
+                );
 
-        return [
-          path,
-          {
-            ...pathItem,
-            post: {
-              ...operation,
-              requestBody: { content, required: true },
+          return [
+            path,
+            {
+              ...pathItem,
+              post: {
+                ...operation,
+                requestBody: { content, required: true },
+              },
             },
-          },
-        ];
-      })
+          ];
+        }
+      )
     );
 
     return { ...document, paths };
