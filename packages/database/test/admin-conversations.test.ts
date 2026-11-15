@@ -760,7 +760,7 @@ const withSite = <A, E>(use: (client: AdminClient) => Effect.Effect<A, E>) =>
         answer(
           new Request(`${SITE}${requestPath}`, {
             body: "{}",
-            headers: { "content-type": "application/json", ...(headers ?? {}) },
+            headers: { "content-type": "application/json", ...headers },
             method: "POST",
           })
         ),
@@ -768,7 +768,7 @@ const withSite = <A, E>(use: (client: AdminClient) => Effect.Effect<A, E>) =>
         answer(
           new Request(`${SITE}${requestPath}`, {
             body,
-            headers: { "content-type": "application/json", ...(headers ?? {}) },
+            headers: { "content-type": "application/json", ...headers },
             method: "POST",
           })
         ),
