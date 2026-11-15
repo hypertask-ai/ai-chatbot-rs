@@ -13,13 +13,13 @@ const TIMEOUT = 45_000;
 /** @typedef {{ request: () => VerifierRequest }} VerifierRouteRequest */
 /** @typedef {{ abort: () => Promise<void>; continue: () => Promise<void>; request: () => VerifierRequest }} VerifierRoute */
 /** @typedef {{ status: () => number }} VerifierResponse */
-/** @typedef {{ evaluate: (expression: string) => Promise<string> }} VerifierFrame */
+/** @typedef {{ evaluate: <Result>(expression: string) => Promise<Result> }} VerifierFrame */
 /** @typedef {{ contentFrame: () => Promise<VerifierFrame | null> }} VerifierElementHandle */
 /** @typedef {{ click: (options?: { timeout?: number }) => Promise<void>; count: () => Promise<number>; elementHandle: () => Promise<VerifierElementHandle | null>; first: () => VerifierLocator; isVisible: () => Promise<boolean> }} VerifierLocator */
 /** @typedef {{ close: () => Promise<void>; newPage: () => Promise<VerifierPage> }} VerifierContext */
 /** @typedef {{ close: () => Promise<void>; newContext: (options: { deviceScaleFactor: number; viewport: { height: number; width: number } }) => Promise<VerifierContext> }} VerifierBrowser */
-/** @typedef {{ launch: () => Promise<VerifierBrowser> }} VerifierChromium */
-/** @typedef {{ evaluate: (expression: string) => Promise<string>; goto: (url: string, options?: { timeout?: number; waitUntil?: string }) => Promise<VerifierResponse | null>; locator: (selector: string) => VerifierLocator; on: (event: string, handler: (value: unknown) => void) => void; route: (pattern: string, handler: (route: VerifierRoute) => Promise<void>) => Promise<void>; screenshot: (options: { fullPage: boolean; path: string }) => Promise<Uint8Array>; title: () => Promise<string>; url: () => string; waitForTimeout: (milliseconds: number) => Promise<void> }} VerifierPage */
+/** @typedef {{ chromium: { launch: () => Promise<VerifierBrowser> } }} VerifierChromium */
+/** @typedef {{ evaluate: <Result>(expression: string) => Promise<Result>; goto: (url: string, options?: { timeout?: number; waitUntil?: string }) => Promise<VerifierResponse | null>; locator: (selector: string) => VerifierLocator; on: (event: string, handler: (value: never) => void) => void; route: (pattern: string, handler: (route: VerifierRoute) => Promise<void>) => Promise<void>; screenshot: (options: { fullPage: boolean; path: string }) => Promise<Uint8Array>; title: () => Promise<string>; url: () => string; waitForTimeout: (milliseconds: number) => Promise<void> }} VerifierPage */
 /** @typedef {{ height: number; name: string; width: number }} Viewport */
 /** @typedef {{ consoleErrors: string[]; failedRequests: string[]; pageErrors: string[] }} Watch */
 /** @typedef {{ blocked: string[]; context: VerifierContext; page: VerifierPage; watched: Watch }} Session */
@@ -74,43 +74,33 @@ const VISIBLE_TEXT = `(() => {
     .join("\\n");
 })()`;
 
-const HEADINGS = `JSON.stringify(
-  Array.from(document.querySelectorAll("h1, h2, h3")).map((node) => ({
-    level: node.tagName.toLowerCase(),
-    text: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
-  })),
-)`;
+const HEADINGS = `Array.from(document.querySelectorAll("h1, h2, h3")).map((node) => ({
+  level: node.tagName.toLowerCase(),
+  text: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
+}))`;
 
-const LINKS = `JSON.stringify(
-  Array.from(document.querySelectorAll("a[href]")).map((node) => ({
-    href: node.href,
-    text: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
-  })),
-)`;
+const LINKS = `Array.from(document.querySelectorAll("a[href]")).map((node) => ({
+  href: node.href,
+  text: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
+}))`;
 
 const FONTS = `(async () => {
   await document.fonts.ready;
-  return JSON.stringify(
-    Array.from(document.fonts).flatMap((face) =>
-      face.status === "loaded" ? [face.family + " " + face.weight + " " + face.style] : [],
-    ),
+  return Array.from(document.fonts).flatMap((face) =>
+    face.status === "loaded" ? [face.family + " " + face.weight + " " + face.style] : [],
   );
 })()`;
 
-const BUTTONS = `JSON.stringify(
-  Array.from(document.querySelectorAll("button, [role='button']")).map((node) => ({
-    label: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
-    type: node.getAttribute("type") ?? "",
-  })),
-)`;
+const BUTTONS = `Array.from(document.querySelectorAll("button, [role='button']")).map((node) => ({
+  label: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
+  type: node.getAttribute("type") ?? "",
+}))`;
 
-const INPUTS = `JSON.stringify(
-  Array.from(document.querySelectorAll("input, textarea")).map((node) => ({
-    name: node.getAttribute("name") ?? "",
-    placeholder: node.getAttribute("placeholder") ?? "",
-    tag: node.tagName.toLowerCase(),
-  })),
-)`;
+const INPUTS = `Array.from(document.querySelectorAll("input, textarea")).map((node) => ({
+  name: node.getAttribute("name") ?? "",
+  placeholder: node.getAttribute("placeholder") ?? "",
+  tag: node.tagName.toLowerCase(),
+}))`;
 
 const USAGE = `node verify/driver.mjs <command> [flags]
 
@@ -146,6 +136,7 @@ const flagAll = (name) => {
     .map((value, index) => (value === `--${name}` ? index : -1))
     .filter((index) => index >= 0);
 
+  /** @type {string[]} */
   const found = [];
 
   for (const index of indexes) {
@@ -172,8 +163,10 @@ const slug = (value) => value.replaceAll(SLUG, "-");
 
 /** @returns {Promise<VerifierBrowser>} */
 const launch = async () => {
+  /** @type {unknown} */
+  const imported = await import("playwright");
   /** @type {VerifierChromium} */
-  const playwright = await import("playwright");
+  const playwright = imported;
 
   return await playwright.chromium.launch();
 };
@@ -181,9 +174,11 @@ const launch = async () => {
 /** @param {VerifierPage} page
  * @returns {Promise<string[]>} */
 const blockChatSends = async (page) => {
+  /** @type {string[]} */
   const blocked = [];
 
-  await page.route("**/api/chat/**", async (route) => {
+  /** @type {(route: VerifierRoute) => Promise<void>} */
+  const onRoute = async (route) => {
     if (route.request().method() === "POST") {
       blocked.push(route.request().url());
       await route.abort();
@@ -192,7 +187,9 @@ const blockChatSends = async (page) => {
     }
 
     await route.continue();
-  });
+  };
+
+  await page.route("**/api/chat/**", onRoute);
 
   return blocked;
 };
@@ -200,33 +197,37 @@ const blockChatSends = async (page) => {
 /** @param {VerifierPage} page
  * @returns {Watch} */
 const listen = (page) => {
+  /** @type {string[]} */
   const consoleErrors = [];
+  /** @type {string[]} */
   const failedRequests = [];
+  /** @type {string[]} */
   const pageErrors = [];
 
-  page.on("console", (value) => {
-    /** @type {VerifierConsoleMessage} */
-    const message = value;
-
+  /** @type {(message: VerifierConsoleMessage) => void} */
+  const onMessage = (message) => {
     if (message.type() === "error") {
       consoleErrors.push(message.text());
     }
-  });
-  page.on("pageerror", (value) => {
-    /** @type {VerifierPageError} */
-    const error = value;
+  };
 
+  /** @type {(error: VerifierPageError) => void} */
+  const onPageError = (error) => {
     pageErrors.push(error.message);
-  });
-  page.on("requestfailed", (value) => {
-    /** @type {VerifierRequest} */
-    const request = value;
+  };
+
+  /** @type {(request: VerifierRequest) => void} */
+  const onRequestFailed = (request) => {
     const failure = request.failure();
 
     failedRequests.push(
       `${request.method()} ${request.url()} ${failure?.errorText ?? ""}`
     );
-  });
+  };
+
+  page.on("console", onMessage);
+  page.on("pageerror", onPageError);
+  page.on("requestfailed", onRequestFailed);
 
   return { consoleErrors, failedRequests, pageErrors };
 };
@@ -265,51 +266,6 @@ const writeText = async (file, text) => {
 const shoot = async (page, file, fullPage) => {
   await mkdir(path.dirname(file), { recursive: true });
   await page.screenshot({ fullPage, path: file });
-};
-
-/** @param {string} json
- * @returns {Heading[]} */
-const headingsOf = (json) => {
-  /** @type {Heading[]} */
-  const parsed = JSON.parse(json);
-
-  return parsed;
-};
-
-/** @param {string} json
- * @returns {PageLink[]} */
-const linksOf = (json) => {
-  /** @type {PageLink[]} */
-  const parsed = JSON.parse(json);
-
-  return parsed;
-};
-
-/** @param {string} json
- * @returns {string[]} */
-const fontsOf = (json) => {
-  /** @type {string[]} */
-  const parsed = JSON.parse(json);
-
-  return parsed;
-};
-
-/** @param {string} json
- * @returns {PageButton[]} */
-const buttonsOf = (json) => {
-  /** @type {PageButton[]} */
-  const parsed = JSON.parse(json);
-
-  return parsed;
-};
-
-/** @param {string} json
- * @returns {PageInput[]} */
-const inputsOf = (json) => {
-  /** @type {PageInput[]} */
-  const parsed = JSON.parse(json);
-
-  return parsed;
 };
 
 /** @param {string} text
@@ -358,11 +314,15 @@ const readPage = async (page, url, label, viewport, runtime) => {
   }
 
   await settle(page);
+  /** @type {string} */
   const text = await page.evaluate(VISIBLE_TEXT);
   const title = await page.title();
-  const headings = headingsOf(await page.evaluate(HEADINGS));
-  const links = linksOf(await page.evaluate(LINKS));
-  const fonts = fontsOf(await page.evaluate(FONTS));
+  /** @type {Heading[]} */
+  const headings = await page.evaluate(HEADINGS);
+  /** @type {PageLink[]} */
+  const links = await page.evaluate(LINKS);
+  /** @type {string[]} */
+  const fonts = await page.evaluate(FONTS);
   const textFile = path.join(SCREENS, `${stem}-text.txt`);
   const viewportFile = path.join(SCREENS, `${stem}-viewport.png`);
   const fullFile = path.join(SCREENS, `${stem}-full.png`);
@@ -515,12 +475,17 @@ const isVisible = async (page, selector) => {
 /** @param {VerifierFrame} frame
  * @returns {Promise<FrameState>} */
 const readFrame = async (frame) => {
+  /** @type {string} */
   const text = await frame.evaluate(VISIBLE_TEXT);
+  /** @type {PageButton[]} */
+  const buttons = await frame.evaluate(BUTTONS);
+  /** @type {PageInput[]} */
+  const inputs = await frame.evaluate(INPUTS);
 
   return {
-    buttons: buttonsOf(await frame.evaluate(BUTTONS)),
+    buttons,
     found: true,
-    inputs: inputsOf(await frame.evaluate(INPUTS)),
+    inputs,
     textExcerpt: text.slice(0, 4000),
     words: text.split(WHITESPACE).filter((word) => word.length > 0).length,
   };
