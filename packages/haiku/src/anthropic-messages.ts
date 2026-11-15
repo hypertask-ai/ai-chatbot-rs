@@ -1,14 +1,14 @@
-import { AnswerModel, answerModelFailure } from "@rat-stack/core";
-import type {
-  AnswerModelFailure,
-  AnswerRequest,
-  AnswerStreamRead,
-} from "@rat-stack/core";
+import { AnswerModel } from "@rat-stack/core";
+import type { AnswerRequest, AnswerStreamRead } from "@rat-stack/core";
 import { Effect, Layer, Predicate, Redacted } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { AnthropicConfig } from "./anthropic-config.js";
-import { isRetryableAnthropicFailure } from "./anthropic-failure.js";
+import {
+  isRetryableAnthropicFailure,
+  refusedAnswerFailure,
+  retryableAnswerFailure,
+} from "./anthropic-failure.js";
 import { readAnthropicStream } from "./anthropic-stream.js";
 
 export const ANTHROPIC_MESSAGES_URL =
@@ -25,12 +25,6 @@ const requestHeaders = (apiKey: string) => ({
   "content-type": "application/json",
   "x-api-key": apiKey,
 });
-
-const retryableFailure = (detail: string, status: number): AnswerModelFailure =>
-  answerModelFailure.RetryableAnswerFailure({ detail, status });
-
-const refusedFailure = (detail: string, status: number): AnswerModelFailure =>
-  answerModelFailure.AnswerRefused({ detail, status });
 
 export const answerModelLayer = Layer.effect(
   AnswerModel,
@@ -53,8 +47,8 @@ export const answerModelLayer = Layer.effect(
         .pipe(
           Effect.mapError((error) =>
             Predicate.isTagged(error.reason, "TransportError")
-              ? retryableFailure(error.message, 0)
-              : refusedFailure(error.message, 0)
+              ? retryableAnswerFailure(error.message, 0)
+              : refusedAnswerFailure(error.message, 0)
           )
         );
 
@@ -67,8 +61,8 @@ export const answerModelLayer = Layer.effect(
         );
 
         const failure = isRetryableAnthropicFailure(response.status, body)
-          ? retryableFailure(detail, response.status)
-          : refusedFailure(detail, response.status);
+          ? retryableAnswerFailure(detail, response.status)
+          : refusedAnswerFailure(detail, response.status);
 
         return yield* Effect.fail(failure);
       }

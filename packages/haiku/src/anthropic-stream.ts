@@ -1,4 +1,4 @@
-import { answerModelFailure, emptyUsage } from "@rat-stack/core";
+import { emptyUsage } from "@rat-stack/core";
 import type {
   AnswerModelFailure,
   AnswerStreamRead,
@@ -129,8 +129,8 @@ const failureOf = (
   retryable: boolean
 ): AnswerModelFailure =>
   emitted || !retryable
-    ? answerModelFailure.AnswerRefused({ detail, status: 0 })
-    : answerModelFailure.RetryableAnswerFailure({ detail, status: 0 });
+    ? refusedAnswerFailure(detail, 0)
+    : retryableAnswerFailure(detail, 0);
 
 const applyEvent = (
   state: Ref.Ref<ReadState>,
@@ -154,7 +154,7 @@ const applyEvent = (
     }
 
     if (event.type === "error") {
-      yield* Effect.fail(
+      return yield* Effect.fail(
         failureOf(
           detail,
           current.emitted,
@@ -162,6 +162,8 @@ const applyEvent = (
         )
       );
     }
+
+    return yield* Effect.void;
   });
 
 const consumeLine = (
@@ -190,14 +192,11 @@ const consumeLine = (
 };
 
 const streamFailure = (
-  emitted: boolean,
   error: HttpClientError.HttpClientError
 ): AnswerModelFailure =>
-  failureOf(
-    error.message,
-    emitted,
-    !Predicate.isTagged(error.reason, "EmptyBodyError")
-  );
+  Predicate.isTagged(error.reason, "EmptyBodyError")
+    ? refusedAnswerFailure(error.message, 0)
+    : retryableAnswerFailure(error.message, 0);
 
 const toRead = (state: ReadState): AnswerStreamRead => ({
   stopReason: state.stopReason,
@@ -215,14 +214,8 @@ export const readAnthropicStream = (
     yield* body.pipe(
       Stream.decodeText(),
       Stream.splitLines(),
-      Stream.runForEach((line) => consumeLine(state, line, onText)),
-      Effect.catchTag("HttpClientError", (error) =>
-        Ref.get(state).pipe(
-          Effect.flatMap((current) =>
-            Effect.fail(streamFailure(current.emitted, error))
-          )
-        )
-      )
+      Stream.mapError(streamFailure),
+      Stream.runForEach((line) => consumeLine(state, line, onText))
     );
 
     return toRead(yield* Ref.get(state));
