@@ -11,7 +11,11 @@
           "effect/Arbitrary",
           "effect/FileSystem",
           "effect/Path",
-          "effect/crypto/SecureRandom"
+          "effect/crypto/SecureRandom",
+          "effect/http-api/HttpApiBuilder",
+          "effect/http/Etag",
+          "effect/http/HttpPlatform",
+          "effect/http/HttpRouter"
         ]
       }
     ]
