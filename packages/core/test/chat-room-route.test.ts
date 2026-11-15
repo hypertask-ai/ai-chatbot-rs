@@ -159,8 +159,7 @@ describe("chat room connection route", () => {
       const namespace = yield* fakeNamespace(() => broadcastAnswerResponse(0));
 
       const room = yield* ChatRoom.pipe(
-        Effect.provide(chatRoomLayer),
-        Effect.provideService(ChatRoomNamespace, namespace.operations),
+        Effect.provide(chatRoomLayer(namespace.operations)),
         Effect.provideService(ChatRoomClock, { now: Effect.succeed(1000) })
       );
 

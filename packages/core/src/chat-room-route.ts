@@ -70,24 +70,23 @@ export const broadcastChatRoom = (
     return yield* decodeBroadcastAnswer(body).pipe(Effect.orDie);
   });
 
-export const chatRoomLayer = Layer.unwrap(
-  Effect.gen(function* bindChatRoom() {
-    const clock = yield* ChatRoomClock;
+export const chatRoomLayer = (namespace: ChatRoomNamespaceOperations) =>
+  Layer.succeed(ChatRoom, {
+    visitorMessage: (message: ChatRoomMessage) =>
+      Effect.gen(function* broadcastVisitorMessage() {
+        const clock = yield* ChatRoomClock;
+        const at = yield* clock.now;
 
-    return Layer.succeed(ChatRoom, {
-      visitorMessage: (message: ChatRoomMessage) =>
-        Effect.gen(function* broadcastVisitorMessage() {
-          const at = yield* clock.now;
-
-          yield* broadcastChatRoom(
-            message.conversationId,
-            visitorRoomFrame({
-              at,
-              content: message.content,
-              messageId: message.messageId,
-            })
-          );
-        }),
-    });
-  })
-);
+        yield* broadcastChatRoom(
+          message.conversationId,
+          visitorRoomFrame({
+            at,
+            content: message.content,
+            messageId: message.messageId,
+          })
+        ).pipe(
+          Effect.provideService(ChatRoomNamespace, namespace),
+          Effect.asVoid
+        );
+      }),
+  });
