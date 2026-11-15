@@ -1,8 +1,14 @@
+// @effect-diagnostics-next-line nodeBuiltinImport:off -- The test reads the widget stylesheet from the repository tree, and this Vitest project provides no Effect FileSystem layer.
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "@effect/vitest";
 
 import { widgetTheme } from "../src/widget/theme.js";
 
-import css from "../src/features/widget/widget.css?raw";
+const css = readFileSync(
+  new URL("../src/features/widget/widget.css", import.meta.url),
+  "utf-8"
+);
 
 const rule = (selector: string): string => {
   const escaped = selector.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");

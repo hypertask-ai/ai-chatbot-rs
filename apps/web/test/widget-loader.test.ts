@@ -205,7 +205,9 @@ describe("widget loader", () => {
         "chat-bubble-dismissed-troubleshooting-email-login-magic-link"
       )
     ).toBe("true");
-    expect(run.frames[0]?.src).toBe(`${origin}/widget/chat`);
+    expect(run.frames[0]?.src).toBe(
+      `${origin}/widget/chat?article=troubleshooting-email-login-magic-link`
+    );
     expect(run.frames[0]?.parentElement).toBe(run.document.body);
 
     for (const timer of run.timers) {

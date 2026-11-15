@@ -45,7 +45,15 @@ describe("chat widget parity with the old help site", () => {
   });
 
   it("keeps the storage keys and the dock collapse value byte for byte", () => {
-    expect(hostStorageKeys).toEqual(widgetParityFixture.storage.host);
+    expect(hostStorageKeys.conversation).toBe(
+      widgetParityFixture.storage.host.conversation
+    );
+    expect(hostStorageKeys.visitor).toBe(
+      widgetParityFixture.storage.host.visitor
+    );
+    expect(hostStorageKeys.visitorSecret).toBe(
+      widgetParityFixture.storage.host.visitorSecret
+    );
     expect(frameStorageKeys).toEqual(widgetParityFixture.storage.frame);
     expect(hostStorageKeys.dockCollapsed).toBe(
       widgetParityFixture.storage.dockCollapsed

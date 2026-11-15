@@ -149,12 +149,12 @@ describe("chat widget page", () => {
       type(box, "What is this?"),
       keydown(box, "Enter"),
       sceneExpect(selector(".message-image")).toExist(),
+      Command.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       click(selector(".message-image")),
       sceneExpect(selector("#lightbox")).toExist(),
       sceneExpect(selector("#lightboxImg")).toHaveAttr("src", imageDataUrl),
       click(selector("#lightboxClose")),
       sceneExpect(selector("#lightbox")).toBeAbsent(),
-      Command.resolve(ScrollToLatest(), Message.CompletedScrollToLatest()),
       Command.expectNone()
     );
   });
@@ -209,6 +209,10 @@ describe("chat widget page", () => {
       ),
       Command.expectExact(
         SyncChrome({ docked: false, pinned: true, sheet: false })
+      ),
+      Command.resolve(
+        SyncChrome({ docked: false, pinned: true, sheet: false }),
+        Message.CompletedSyncChrome()
       )
     );
   });
