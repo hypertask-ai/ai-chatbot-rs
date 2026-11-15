@@ -216,7 +216,7 @@ export const readAnthropicStream = (
 
     yield* body.pipe(
       Stream.decodeText(),
-      Stream.splitLines(),
+      Stream.splitLines,
       Stream.mapError(streamFailure),
       Stream.runForEach((line) => consumeLine(state, line, onText))
     );
