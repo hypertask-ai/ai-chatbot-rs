@@ -6,14 +6,32 @@ const SCREENS = process.env.SCREENS_DIR ?? "verify-screens";
 
 const TIMEOUT = 45_000;
 
+/** @typedef {{ text: () => string; type: () => string }} VerifierConsoleMessage */
+/** @typedef {{ message: string }} VerifierPageError */
+/** @typedef {{ errorText: string }} VerifierRequestFailure */
+/** @typedef {{ failure: () => VerifierRequestFailure | null; method: () => string; url: () => string }} VerifierRequest */
+/** @typedef {{ request: () => VerifierRequest }} VerifierRouteRequest */
+/** @typedef {{ abort: () => Promise<void>; continue: () => Promise<void>; request: () => VerifierRequest }} VerifierRoute */
+/** @typedef {{ status: () => number }} VerifierResponse */
+/** @typedef {{ evaluate: (expression: string) => Promise<string> }} VerifierFrame */
+/** @typedef {{ contentFrame: () => Promise<VerifierFrame | null> }} VerifierElementHandle */
+/** @typedef {{ click: (options?: { timeout?: number }) => Promise<void>; count: () => Promise<number>; elementHandle: () => Promise<VerifierElementHandle | null>; first: () => VerifierLocator; isVisible: () => Promise<boolean> }} VerifierLocator */
+/** @typedef {{ close: () => Promise<void>; newPage: () => Promise<VerifierPage> }} VerifierContext */
+/** @typedef {{ close: () => Promise<void>; newContext: (options: { deviceScaleFactor: number; viewport: { height: number; width: number } }) => Promise<VerifierContext> }} VerifierBrowser */
+/** @typedef {{ launch: () => Promise<VerifierBrowser> }} VerifierChromium */
+/** @typedef {{ evaluate: (expression: string) => Promise<string>; goto: (url: string, options?: { timeout?: number; waitUntil?: string }) => Promise<VerifierResponse | null>; locator: (selector: string) => VerifierLocator; on: (event: string, handler: (value: unknown) => void) => void; route: (pattern: string, handler: (route: VerifierRoute) => Promise<void>) => Promise<void>; screenshot: (options: { fullPage: boolean; path: string }) => Promise<Uint8Array>; title: () => Promise<string>; url: () => string; waitForTimeout: (milliseconds: number) => Promise<void> }} VerifierPage */
 /** @typedef {{ height: number; name: string; width: number }} Viewport */
 /** @typedef {{ consoleErrors: string[]; failedRequests: string[]; pageErrors: string[] }} Watch */
-/** @typedef {{ blocked: string[]; context: import("playwright").BrowserContext; page: import("playwright").Page; watched: Watch }} Session */
+/** @typedef {{ blocked: string[]; context: VerifierContext; page: VerifierPage; watched: Watch }} Session */
 /** @typedef {{ blocked: string[]; watched: Watch }} Runtime */
 /** @typedef {{ count: number; selector: string }} Match */
-/** @typedef {{ blockedChatSends: string[]; consoleErrors: string[]; error?: string; failedRequests: string[]; finalUrl?: string; fonts?: string[]; headings?: { level: string; text: string }[]; label: string; links?: { href: string; text: string }[]; pageErrors: string[]; screenshotFull?: string; screenshotViewport?: string; status?: number; textFile?: string; title?: string; url: string; viewport: string; words?: number }} PageReport */
+/** @typedef {{ level: string; text: string }} Heading */
+/** @typedef {{ href: string; text: string }} PageLink */
+/** @typedef {{ label: string; type: string }} PageButton */
+/** @typedef {{ name: string; placeholder: string; tag: string }} PageInput */
+/** @typedef {{ blockedChatSends: string[]; consoleErrors: string[]; error?: string; failedRequests: string[]; finalUrl?: string; fonts?: string[]; headings?: Heading[]; label: string; links?: PageLink[]; pageErrors: string[]; screenshotFull?: string; screenshotViewport?: string; status?: number; textFile?: string; title?: string; url: string; viewport: string; words?: number }} PageReport */
 /** @typedef {{ addedInHead: string[]; baseStatus: number; headStatus: number; missingFromHead: string[]; path: string }} CompareReport */
-/** @typedef {{ buttons: { label: string; type: string }[]; found: boolean; inputs?: { name: string; placeholder: string; tag: string }[]; textExcerpt?: string; words?: number }} FrameState */
+/** @typedef {{ buttons: PageButton[]; found: boolean; inputs: PageInput[]; textExcerpt?: string; words?: number }} FrameState */
 
 const VIEWPORTS = [
   { height: 900, name: "1440", width: 1440 },
@@ -42,6 +60,57 @@ const HEADER_NAMES = [
 const WHITESPACE = /\s+/gu;
 
 const SLUG = /[^a-z0-9]+/giu;
+
+const VISIBLE_TEXT = `(() => {
+  const body = document.body;
+  if (body === null) return "";
+  return Array.from(body.querySelectorAll("*"))
+    .flatMap((node) => {
+      if (node.childElementCount > 0) return [];
+      const style = window.getComputedStyle(node);
+      if (style.display === "none" || style.visibility === "hidden") return [];
+      return [node.textContent ?? ""];
+    })
+    .join("\\n");
+})()`;
+
+const HEADINGS = `JSON.stringify(
+  Array.from(document.querySelectorAll("h1, h2, h3")).map((node) => ({
+    level: node.tagName.toLowerCase(),
+    text: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
+  })),
+)`;
+
+const LINKS = `JSON.stringify(
+  Array.from(document.querySelectorAll("a[href]")).map((node) => ({
+    href: node.href,
+    text: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
+  })),
+)`;
+
+const FONTS = `(async () => {
+  await document.fonts.ready;
+  return JSON.stringify(
+    Array.from(document.fonts).flatMap((face) =>
+      face.status === "loaded" ? [face.family + " " + face.weight + " " + face.style] : [],
+    ),
+  );
+})()`;
+
+const BUTTONS = `JSON.stringify(
+  Array.from(document.querySelectorAll("button, [role='button']")).map((node) => ({
+    label: (node.textContent ?? "").replace(/\\s+/gu, " ").trim(),
+    type: node.getAttribute("type") ?? "",
+  })),
+)`;
+
+const INPUTS = `JSON.stringify(
+  Array.from(document.querySelectorAll("input, textarea")).map((node) => ({
+    name: node.getAttribute("name") ?? "",
+    placeholder: node.getAttribute("placeholder") ?? "",
+    tag: node.tagName.toLowerCase(),
+  })),
+)`;
 
 const USAGE = `node verify/driver.mjs <command> [flags]
 
@@ -101,14 +170,15 @@ const origin = (name) => flag(name).replace(/\/+$/u, "");
  * @returns {string} */
 const slug = (value) => value.replaceAll(SLUG, "-");
 
-/** @returns {Promise<import("playwright").Browser>} */
+/** @returns {Promise<VerifierBrowser>} */
 const launch = async () => {
-  const { chromium } = await import("playwright");
+  /** @type {VerifierChromium} */
+  const playwright = await import("playwright");
 
-  return await chromium.launch();
+  return await playwright.chromium.launch();
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @returns {Promise<string[]>} */
 const blockChatSends = async (page) => {
   const blocked = [];
@@ -127,23 +197,32 @@ const blockChatSends = async (page) => {
   return blocked;
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @returns {Watch} */
 const listen = (page) => {
   const consoleErrors = [];
   const failedRequests = [];
   const pageErrors = [];
 
-  page.on("console", (message) => {
+  page.on("console", (value) => {
+    /** @type {VerifierConsoleMessage} */
+    const message = value;
+
     if (message.type() === "error") {
       consoleErrors.push(message.text());
     }
   });
-  page.on("pageerror", (error) => {
+  page.on("pageerror", (value) => {
+    /** @type {VerifierPageError} */
+    const error = value;
+
     pageErrors.push(error.message);
   });
-  page.on("requestfailed", (request) => {
+  page.on("requestfailed", (value) => {
+    /** @type {VerifierRequest} */
+    const request = value;
     const failure = request.failure();
+
     failedRequests.push(
       `${request.method()} ${request.url()} ${failure?.errorText ?? ""}`
     );
@@ -152,7 +231,7 @@ const listen = (page) => {
   return { consoleErrors, failedRequests, pageErrors };
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @param {Viewport} viewport
  * @returns {Promise<Session>} */
 const open = async (browser, viewport) => {
@@ -164,12 +243,10 @@ const open = async (browser, viewport) => {
   return { blocked, context, page, watched };
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @returns {Promise<void>} */
 const settle = async (page) => {
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-  });
+  await page.evaluate(`document.fonts.ready.then(() => "ready")`);
   await page.waitForTimeout(700);
 };
 
@@ -181,13 +258,58 @@ const writeText = async (file, text) => {
   await writeFile(file, text, "utf-8");
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @param {string} file
  * @param {boolean} fullPage
  * @returns {Promise<void>} */
 const shoot = async (page, file, fullPage) => {
   await mkdir(path.dirname(file), { recursive: true });
   await page.screenshot({ fullPage, path: file });
+};
+
+/** @param {string} json
+ * @returns {Heading[]} */
+const headingsOf = (json) => {
+  /** @type {Heading[]} */
+  const parsed = JSON.parse(json);
+
+  return parsed;
+};
+
+/** @param {string} json
+ * @returns {PageLink[]} */
+const linksOf = (json) => {
+  /** @type {PageLink[]} */
+  const parsed = JSON.parse(json);
+
+  return parsed;
+};
+
+/** @param {string} json
+ * @returns {string[]} */
+const fontsOf = (json) => {
+  /** @type {string[]} */
+  const parsed = JSON.parse(json);
+
+  return parsed;
+};
+
+/** @param {string} json
+ * @returns {PageButton[]} */
+const buttonsOf = (json) => {
+  /** @type {PageButton[]} */
+  const parsed = JSON.parse(json);
+
+  return parsed;
+};
+
+/** @param {string} json
+ * @returns {PageInput[]} */
+const inputsOf = (json) => {
+  /** @type {PageInput[]} */
+  const parsed = JSON.parse(json);
+
+  return parsed;
 };
 
 /** @param {string} text
@@ -210,34 +332,7 @@ const readText = async (file) => {
   return [...new Set(linesOf(loaded))];
 };
 
-/** @param {import("playwright").Page} page
- * @returns {Promise<string>} */
-const visibleText = async (page) =>
-  await page.evaluate(() => {
-    const { body } = document;
-
-    if (body === null) {
-      return "";
-    }
-
-    return [...body.querySelectorAll("*")]
-      .flatMap((node) => {
-        if (node.childElementCount > 0) {
-          return [];
-        }
-
-        const style = window.getComputedStyle(node);
-
-        if (style.display === "none" || style.visibility === "hidden") {
-          return [];
-        }
-
-        return [node.textContent ?? ""];
-      })
-      .join("\n");
-  });
-
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @param {string} url
  * @param {string} label
  * @param {Viewport} viewport
@@ -263,33 +358,11 @@ const readPage = async (page, url, label, viewport, runtime) => {
   }
 
   await settle(page);
-  const text = await visibleText(page);
+  const text = await page.evaluate(VISIBLE_TEXT);
   const title = await page.title();
-
-  const headings = await page.evaluate(() =>
-    [...document.querySelectorAll("h1, h2, h3")].map((node) => ({
-      level: node.tagName.toLowerCase(),
-      text: (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim(),
-    }))
-  );
-
-  const links = await page.evaluate(() =>
-    [...document.querySelectorAll("a[href]")].map((node) => ({
-      href: node.href,
-      text: (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim(),
-    }))
-  );
-
-  const fonts = await page.evaluate(async () => {
-    await document.fonts.ready;
-
-    return [...document.fonts].flatMap((face) =>
-      face.status === "loaded"
-        ? [`${face.family} ${face.weight} ${face.style}`]
-        : []
-    );
-  });
-
+  const headings = headingsOf(await page.evaluate(HEADINGS));
+  const links = linksOf(await page.evaluate(LINKS));
+  const fonts = fontsOf(await page.evaluate(FONTS));
   const textFile = path.join(SCREENS, `${stem}-text.txt`);
   const viewportFile = path.join(SCREENS, `${stem}-viewport.png`);
   const fullFile = path.join(SCREENS, `${stem}-full.png`);
@@ -318,7 +391,7 @@ const readPage = async (page, url, label, viewport, runtime) => {
   };
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @param {string} url
  * @param {string} label
  * @param {Viewport} viewport
@@ -336,7 +409,7 @@ const visitOne = async (browser, url, label, viewport) => {
   return report;
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @param {string} base
  * @param {string} label
  * @param {string} routePath
@@ -352,7 +425,7 @@ const visit = (browser, base, label, routePath) => {
   );
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @param {string} base
  * @param {string} namePrefix
  * @returns {Promise<{ pages: PageReport[]; path: string }[]>} */
@@ -364,7 +437,7 @@ const visitAll = (browser, base, namePrefix) =>
     }))
   );
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @param {string} routePath
  * @returns {Promise<CompareReport>} */
 const compareOne = async (browser, routePath) => {
@@ -408,14 +481,14 @@ const compareOne = async (browser, routePath) => {
   };
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @returns {Promise<CompareReport[]>} */
 const compareAll = (browser) =>
   Promise.all(
     paths().map(async (routePath) => await compareOne(browser, routePath))
   );
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @returns {Promise<Match[]>} */
 const findSelectors = async (page) => {
   const counts = await Promise.all(
@@ -428,7 +501,7 @@ const findSelectors = async (page) => {
   return counts.filter((entry) => entry.count > 0);
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @param {string} selector
  * @returns {Promise<boolean>} */
 const isVisible = async (page, selector) => {
@@ -439,58 +512,21 @@ const isVisible = async (page, selector) => {
   }
 };
 
-/** @param {import("playwright").Frame} frame
+/** @param {VerifierFrame} frame
  * @returns {Promise<FrameState>} */
 const readFrame = async (frame) => {
-  const text = await frame.evaluate(() => {
-    const { body } = document;
-
-    if (body === null) {
-      return "";
-    }
-
-    return [...body.querySelectorAll("*")]
-      .flatMap((node) => {
-        if (node.childElementCount > 0) {
-          return [];
-        }
-
-        const style = window.getComputedStyle(node);
-
-        if (style.display === "none" || style.visibility === "hidden") {
-          return [];
-        }
-
-        return [node.textContent ?? ""];
-      })
-      .join("\n");
-  });
-
-  const buttons = await frame.evaluate(() =>
-    [...document.querySelectorAll("button, [role='button']")].map((node) => ({
-      label: (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim(),
-      type: node.getAttribute("type") ?? "",
-    }))
-  );
-
-  const inputs = await frame.evaluate(() =>
-    [...document.querySelectorAll("input, textarea")].map((node) => ({
-      name: node.getAttribute("name") ?? "",
-      placeholder: node.getAttribute("placeholder") ?? "",
-      tag: node.tagName.toLowerCase(),
-    }))
-  );
+  const text = await frame.evaluate(VISIBLE_TEXT);
 
   return {
-    buttons,
+    buttons: buttonsOf(await frame.evaluate(BUTTONS)),
     found: true,
-    inputs,
+    inputs: inputsOf(await frame.evaluate(INPUTS)),
     textExcerpt: text.slice(0, 4000),
     words: text.split(WHITESPACE).filter((word) => word.length > 0).length,
   };
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @returns {Promise<FrameState>} */
 const frameState = async (page) => {
   const handle = await page.locator("iframe").first().elementHandle();
@@ -503,7 +539,7 @@ const frameState = async (page) => {
   return await readFrame(frame);
 };
 
-/** @param {import("playwright").Page} page
+/** @param {VerifierPage} page
  * @param {Match[]} matches
  * @returns {Promise<string>} */
 const clickLauncher = async (page, matches) => {
@@ -534,7 +570,7 @@ const clickLauncher = async (page, matches) => {
   }
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @param {string} base
  * @param {string} routePath
  * @param {string} namePrefix
@@ -600,7 +636,7 @@ const widgetOne = async (browser, base, routePath, namePrefix) => {
   return report;
 };
 
-/** @param {import("playwright").Browser} browser
+/** @param {VerifierBrowser} browser
  * @returns {Promise<Record<string, unknown>>} */
 const widgetAll = async (browser) => {
   const head = origin("head");
