@@ -13,7 +13,7 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
 ) {
   const answered = yield* answerHelpSite(request);
 
-  if (answered !== undefined) {
+  if (answered !== null) {
     return Responded(answered);
   }
 

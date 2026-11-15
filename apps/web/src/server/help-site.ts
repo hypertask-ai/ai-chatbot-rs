@@ -58,5 +58,7 @@ export const answerHelpSite = Effect.fn("helpSite.answer")(
     if (answersPage && redirectsFrom(pathname)) {
       return answerRedirect(request);
     }
+
+    return null;
   }
 );
