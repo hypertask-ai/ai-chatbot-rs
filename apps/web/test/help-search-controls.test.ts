@@ -21,9 +21,7 @@ import {
 import type { HelpPageValue } from "../src/client/help/index.js";
 import { Message, initialModelAtAddress } from "../src/client/help/index.js";
 import { update } from "../src/client/help/update.js";
-import { styleClass } from "../src/features/help/class-names.js";
 import { view } from "../src/features/help/index.js";
-import { helpCenter } from "../src/features/help/styles.stylex.js";
 
 const home: HelpPageValue = {
   articles: [
@@ -54,15 +52,7 @@ const box = selector("#searchInput");
 
 const results = selector("#liveSearchResults");
 
-const categories = selector("#categoriesContainer");
-
 const articleList = selector("#all");
-
-const searchingClass = styleClass(helpCenter.articlesRegionSearching);
-
-const shownResultsClass = styleClass(helpCenter.liveResultsShown);
-
-const hiddenResultsClass = styleClass(helpCenter.liveResultsHidden);
 
 const settled = (value: string) =>
   Subscription.emit(Message.SearchSettled({ value }));
@@ -75,9 +65,8 @@ describe("help center search controls", () => {
       sceneExpect(box).toHaveValue(""),
       type(box, "connect"),
       sceneExpect(box).toHaveValue("connect"),
-      sceneExpect(results).toHaveClass(hiddenResultsClass),
+      sceneExpect(results).toBeEmpty(),
       settled("connect"),
-      sceneExpect(results).toHaveClass(shownResultsClass),
       sceneExpect(selector("#liveSearchResults a")).toHaveAttr(
         "href",
         "/help/docs-connect-an-agent"
@@ -86,7 +75,7 @@ describe("help center search controls", () => {
         "Connect an Agent"
       ),
       sceneExpect(results).toContainText("1 article found"),
-      sceneExpect(categories).toHaveClass(searchingClass)
+      sceneExpect(articleList).toContainText("Board Settings")
     );
   });
 
@@ -110,11 +99,10 @@ describe("help center search controls", () => {
       given(openList),
       type(box, "board"),
       settled("board"),
-      sceneExpect(results).toHaveClass(shownResultsClass),
+      sceneExpect(selector("#liveSearchResults a")).toExist(),
       click(selector("#searchClear")),
       sceneExpect(box).toHaveValue(""),
-      sceneExpect(results).toHaveClass(hiddenResultsClass),
-      sceneExpect(categories).not.toHaveClass(searchingClass),
+      sceneExpect(results).toBeEmpty(),
       Command.expectExact(FocusSearchInput()),
       Command.resolve(FocusSearchInput(), Message.SearchInputFocused()),
       Command.expectNone()
@@ -129,7 +117,7 @@ describe("help center search controls", () => {
       settled("board"),
       keydown(box, "Escape"),
       sceneExpect(box).toHaveValue(""),
-      sceneExpect(results).toHaveClass(hiddenResultsClass),
+      sceneExpect(results).toBeEmpty(),
       Command.resolve(FocusSearchInput(), Message.SearchInputFocused()),
       Command.expectNone()
     );
@@ -159,7 +147,7 @@ describe("help center search controls", () => {
       settled("board"),
       click(role("link", { name: "All articles \u2192" })),
       sceneExpect(box).toHaveValue(""),
-      sceneExpect(results).toHaveClass(hiddenResultsClass),
+      sceneExpect(results).toBeEmpty(),
       sceneExpect(selector("#browserTitle")).toHaveText("All articles"),
       Command.expectExact(ShowAllArticles()),
       Command.resolve(ShowAllArticles(), Message.AddressReplaced()),

@@ -29,7 +29,9 @@ const assets = {
 };
 
 const patterns = {
-  card: /<a\b[^>]*\bhref="\/help\/(?<slug>[^"]+)"[^>]*\bdata-category="(?<category>[^"]*)"[^>]*>/gu,
+  anchor: /<a\b[^>]*>/gu,
+  cardCategory: /data-category="(?<category>[^"]*)"/u,
+  cardSlug: /href="\/help\/(?<slug>[^"]*)"/u,
   description: /<meta name="description" content="(?<content>[^"]*)">/u,
   href: /\bhref="(?<href>[^"]*)"/u,
   mark: /<mark\b[^>]*>[\s\S]*?<\/mark>/gu,
@@ -90,15 +92,22 @@ const markedOf = (marked: string): string =>
     .trim();
 
 const between = (html: string, from: string, to: string): string => {
-  const start = html.indexOf(from);
+  const markerAt = html.indexOf(from);
 
-  if (start === -1) {
+  if (markerAt === -1) {
     return "";
   }
 
+  const start = html.indexOf(">", markerAt) + 1;
   const end = html.indexOf(to, start);
 
-  return end === -1 ? "" : html.slice(start, end);
+  if (end === -1) {
+    return "";
+  }
+
+  const closingAt = html.lastIndexOf("<", end);
+
+  return closingAt < start ? "" : html.slice(start, closingAt);
 };
 
 const resultsRegionOf = (html: string): string =>
@@ -130,10 +139,15 @@ type Card = Readonly<{
 }>;
 
 const cardsOf = (html: string): readonly Card[] =>
-  [...html.matchAll(patterns.card)].map((match) => ({
-    category: decodeEntities(match.groups?.category ?? ""),
-    slug: match.groups?.slug ?? "",
-  }));
+  [...html.matchAll(patterns.anchor)].flatMap((match) => {
+    const tag = match[0];
+    const slug = patterns.cardSlug.exec(tag)?.groups?.slug;
+    const category = patterns.cardCategory.exec(tag)?.groups?.category;
+
+    return slug === undefined || category === undefined
+      ? []
+      : [{ category: decodeEntities(category), slug }];
+  });
 
 type Topic = Readonly<{
   body: string;
