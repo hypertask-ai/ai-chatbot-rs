@@ -462,7 +462,11 @@ interface AdminClient {
   ) => Effect.Effect<Answered>;
   readonly post: (
     path: string,
-    body: string | undefined,
+    headers?: Readonly<Record<string, string>>
+  ) => Effect.Effect<Answered>;
+  readonly postJson: (
+    path: string,
+    body: string,
     headers?: Readonly<Record<string, string>>
   ) => Effect.Effect<Answered>;
 }
@@ -679,9 +683,7 @@ const routes = toHttpApi(SITE, adminConversationCapabilities, {
   provide: [adminFromRequest],
 });
 
-const withSite = <A, E, R>(
-  use: (client: AdminClient) => Effect.Effect<A, E, R>
-) =>
+const withSite = <A, E>(use: (client: AdminClient) => Effect.Effect<A, E>) =>
   Effect.gen(function* prepareAdminSite() {
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
@@ -754,7 +756,14 @@ const withSite = <A, E, R>(
             method: "GET",
           })
         ),
-      post: (requestPath, body, headers) =>
+      post: (requestPath, headers) =>
+        answer(
+          new Request(`${SITE}${requestPath}`, {
+            headers: headers ?? {},
+            method: "POST",
+          })
+        ),
+      postJson: (requestPath, body, headers) =>
         answer(
           new Request(`${SITE}${requestPath}`, {
             body,
@@ -791,7 +800,7 @@ const adminRequests = (): readonly AdminRequest[] =>
 const send = (client: AdminClient, request: AdminRequest) =>
   request.method === "GET"
     ? client.get(request.path, request.headers)
-    : client.post(request.path, undefined, request.headers);
+    : client.post(request.path, request.headers);
 
 describe("admin conversations over a local D1 database", () => {
   it.effect("lists the inbox with handoff requests first", () =>
@@ -851,7 +860,7 @@ describe("admin conversations over a local D1 database", () => {
   it.effect("bulk archives the conversations it is given", () =>
     withSite((client) =>
       Effect.gen(function* bulkArchive() {
-        const answered = yield* client.post(
+        const answered = yield* client.postJson(
           `${ADMIN_PREFIX}/conversations/bulk/archive`,
           JSON.stringify({ ids: ["conv-handoff", "conv-bot"] }),
           BEARER
@@ -883,13 +892,13 @@ describe("admin conversations over a local D1 database", () => {
   it.effect("refuses a bulk archive with no ids in the old 400 body", () =>
     withSite((client) =>
       Effect.gen(function* refuseEmptyBulkArchive() {
-        const empty = yield* client.post(
+        const empty = yield* client.postJson(
           `${ADMIN_PREFIX}/conversations/bulk/archive`,
           JSON.stringify({ ids: [] }),
           BEARER
         );
 
-        const missing = yield* client.post(
+        const missing = yield* client.postJson(
           `${ADMIN_PREFIX}/conversations/bulk/archive`,
           JSON.stringify({}),
           BEARER
@@ -992,7 +1001,6 @@ describe("admin conversations over a local D1 database", () => {
       Effect.gen(function* acceptHandoff() {
         const accepted = yield* client.post(
           `${ADMIN_PREFIX}/conversations/conv-handoff/accept`,
-          undefined,
           BEARER
         );
 
@@ -1021,7 +1029,6 @@ describe("admin conversations over a local D1 database", () => {
       Effect.gen(function* takeOver() {
         const taken = yield* client.post(
           `${ADMIN_PREFIX}/conversations/conv-bot/takeover`,
-          undefined,
           BEARER
         );
 
@@ -1045,7 +1052,6 @@ describe("admin conversations over a local D1 database", () => {
       Effect.gen(function* closeConversation() {
         const closed = yield* client.post(
           `${ADMIN_PREFIX}/conversations/conv-bot/close`,
-          undefined,
           BEARER
         );
 
@@ -1069,13 +1075,11 @@ describe("admin conversations over a local D1 database", () => {
       Effect.gen(function* archiveAndUnarchive() {
         const archived = yield* client.post(
           `${ADMIN_PREFIX}/conversations/conv-bot/archive`,
-          undefined,
           BEARER
         );
 
         const movedBack = yield* client.post(
           `${ADMIN_PREFIX}/conversations/conv-archived/unarchive`,
-          undefined,
           BEARER
         );
 
@@ -1104,7 +1108,7 @@ describe("admin conversations over a local D1 database", () => {
   it.effect("writes an admin reply and touches the conversation", () =>
     withSite((client) =>
       Effect.gen(function* writeReply() {
-        const answered = yield* client.post(
+        const answered = yield* client.postJson(
           `${ADMIN_PREFIX}/conversations/conv-bot/message`,
           JSON.stringify({ content: "On it" }),
           BEARER
