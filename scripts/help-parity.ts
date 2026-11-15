@@ -972,12 +972,17 @@ const routeFramingCell = (row: RouteResult): string => {
   const before = row.oldSnapshot;
   const after = row.newSnapshot;
 
-  if (baselineMode || before === null || after === null) {
-    return "baseline";
+  if (before === null) {
+    return "n/a";
   }
 
-  return headerOf(before, "content-security-policy") ===
-    headerOf(after, "content-security-policy")
+  const beforeFraming = headerOf(before, "content-security-policy");
+
+  if (after === null) {
+    return beforeFraming === null ? "none" : "present";
+  }
+
+  return beforeFraming === headerOf(after, "content-security-policy")
     ? "same"
     : "differs";
 };
@@ -986,14 +991,19 @@ const routeKeyCell = (row: RouteResult): string => {
   const before = row.oldSnapshot;
   const after = row.newSnapshot;
 
-  if (baselineMode || before === null || after === null) {
-    return "baseline";
+  const beforeKeys = before?.documentKeys ?? null;
+
+  if (beforeKeys === null) {
+    return "n/a";
   }
 
-  const beforeKeys = before.documentKeys;
+  if (after === null) {
+    return `${beforeKeys.length} keys`;
+  }
+
   const afterKeys = after.documentKeys;
 
-  if (beforeKeys === null || afterKeys === null) {
+  if (afterKeys === null) {
     return "n/a";
   }
 
