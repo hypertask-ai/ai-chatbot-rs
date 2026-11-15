@@ -11,7 +11,7 @@ export const prerenderPaths: readonly string[] = [];
 const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   request: Request
 ) {
-  const answered = yield* Effect.promise(() => answerHelpSite(request));
+  const answered = yield* answerHelpSite(request);
 
   if (answered !== undefined) {
     return Responded(answered);

@@ -1,10 +1,9 @@
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 import { handleRequest } from "foldkit/experimental/server";
 
 import { renderPage } from "../src/entry.server.js";
+import recordedAnswers from "./fixtures/help-site-answers.json";
 
 const RecordedRow = Schema.Struct({
   body: Schema.String,
@@ -25,14 +24,7 @@ const RecordedAnswers = Schema.Struct({
   source: Schema.String,
 });
 
-const recorded = Schema.decodeUnknownSync(
-  Schema.fromJsonString(RecordedAnswers)
-)(
-  readFileSync(
-    new URL("fixtures/help-site-answers.json", import.meta.url),
-    "utf-8"
-  )
-);
+const recorded = Schema.decodeUnknownSync(RecordedAnswers)(recordedAnswers);
 
 const site = "https://help.hypertask.ai";
 
