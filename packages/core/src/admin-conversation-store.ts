@@ -2,6 +2,7 @@ import { Context, Schema } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { UsageDayRowValue } from "./admin-usage.js";
+import type { ConversationStatus } from "./conversation-machine.js";
 
 export const AdminConversationRow = Schema.Struct({
   archived: Schema.NullOr(Schema.Finite),
@@ -74,7 +75,7 @@ export interface AdminInboxQuery {
 export interface AdminStatusChange {
   readonly at: number;
   readonly id: string;
-  readonly status: "closed" | "human";
+  readonly status: ConversationStatus;
 }
 
 export interface AdminArchivedChange {

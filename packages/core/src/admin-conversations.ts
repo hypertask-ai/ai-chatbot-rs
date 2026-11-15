@@ -18,6 +18,7 @@ import {
 import { AdminConversationStore } from "./admin-conversation-store.js";
 import type {
   AdminConversationOperations,
+  AdminConversationRowValue,
   AdminInboxQuery,
   AdminInboxRowValue,
 } from "./admin-conversation-store.js";
@@ -26,6 +27,17 @@ import {
   usageSince,
   usageWindowDays,
 } from "./admin-usage.js";
+import {
+  ConversationStatusSchema,
+  VisitorAccountSchema,
+  stepConversation,
+} from "./conversation-machine.js";
+import type {
+  ConversationEvent,
+  ConversationState,
+  ConversationStatus,
+  VisitorAccount,
+} from "./conversation-machine.js";
 
 export interface AdminClockValue {
   readonly now: Effect.Effect<number>;
@@ -95,6 +107,62 @@ const mailbox = <A, E, R>(
     return yield* use(store, clock);
   });
 
+const conversationStatusOf = (status: string | null): ConversationStatus =>
+  Option.getOrElse(
+    Schema.decodeUnknownOption(ConversationStatusSchema)(status),
+    (): ConversationStatus => "bot"
+  );
+
+const visitorAccountOf = (account: string | null): VisitorAccount =>
+  Option.getOrElse(
+    Schema.decodeUnknownOption(VisitorAccountSchema)(account),
+    (): VisitorAccount => "unknown"
+  );
+
+export const adminConversationStateOf = (
+  row: AdminConversationRowValue
+): ConversationState => ({
+  archived: row.archived !== null && row.archived !== 0,
+  profile: {
+    account: visitorAccountOf(row.has_hypertask_account),
+    email: row.visitor_email ?? undefined,
+    name: row.visitor_name ?? undefined,
+  },
+  status: conversationStatusOf(row.status),
+  updatedAt: row.updated_at ?? 0,
+});
+
+const stepAdminConversation = (
+  store: AdminConversationOperations,
+  id: string,
+  event: ConversationEvent,
+  save: (state: ConversationState) => Effect.Effect<void>
+) =>
+  Effect.gen(function* stepOneAdminConversation() {
+    const held = yield* store.readConversation(id);
+
+    if (Option.isNone(held)) {
+      return;
+    }
+
+    const { state } = stepConversation(
+      adminConversationStateOf(held.value),
+      event
+    );
+
+    yield* save(state);
+  });
+
+const saveStatus =
+  (store: AdminConversationOperations, id: string) =>
+  (state: ConversationState) =>
+    store.setStatus({ at: state.updatedAt, id, status: state.status });
+
+const saveArchived =
+  (store: AdminConversationOperations, id: string) =>
+  (state: ConversationState) =>
+    store.setArchived({ archived: state.archived, at: state.updatedAt, id });
+
 export const listAdminConversations = implement(
   listAdminConversationsContract,
   ({ archived, lastSeen }) =>
@@ -153,7 +221,12 @@ export const acceptAdminConversation = implement(
       Effect.gen(function* acceptHandoff() {
         const at = yield* clock.now;
 
-        yield* store.setStatus({ at, id, status: "human" });
+        yield* stepAdminConversation(
+          store,
+          id,
+          { at, type: "ADMIN_ACCEPTS" },
+          saveStatus(store, id)
+        );
 
         return { status: "human" as const };
       })
@@ -167,7 +240,12 @@ export const takeoverAdminConversation = implement(
       Effect.gen(function* takeOverConversation() {
         const at = yield* clock.now;
 
-        yield* store.setStatus({ at, id, status: "human" });
+        yield* stepAdminConversation(
+          store,
+          id,
+          { at, type: "ADMIN_TAKES_OVER" },
+          saveStatus(store, id)
+        );
 
         return { status: "human" as const };
       })
@@ -202,7 +280,12 @@ export const closeAdminConversation = implement(
       Effect.gen(function* closeConversation() {
         const at = yield* clock.now;
 
-        yield* store.setStatus({ at, id, status: "closed" });
+        yield* stepAdminConversation(
+          store,
+          id,
+          { at, type: "ADMIN_CLOSES" },
+          saveStatus(store, id)
+        );
 
         return { status: "closed" as const };
       })
@@ -216,7 +299,12 @@ export const archiveAdminConversation = implement(
       Effect.gen(function* archiveConversation() {
         const at = yield* clock.now;
 
-        yield* store.setArchived({ archived: true, at, id });
+        yield* stepAdminConversation(
+          store,
+          id,
+          { at, type: "ADMIN_ARCHIVES" },
+          saveArchived(store, id)
+        );
 
         return { archived: true as const };
       })
@@ -230,7 +318,12 @@ export const unarchiveAdminConversation = implement(
       Effect.gen(function* unarchiveConversation() {
         const at = yield* clock.now;
 
-        yield* store.setArchived({ archived: false, at, id });
+        yield* stepAdminConversation(
+          store,
+          id,
+          { at, type: "ADMIN_UNARCHIVES" },
+          saveArchived(store, id)
+        );
 
         return { archived: false as const };
       })

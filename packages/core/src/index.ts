@@ -115,6 +115,7 @@ export {
 export {
   AdminClock,
   adminConversationCapabilities,
+  adminConversationStateOf,
   acceptAdminConversation,
   archiveAdminConversation,
   archiveAdminConversations,
