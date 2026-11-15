@@ -12,8 +12,7 @@ export interface AdminRequestFacts {
 }
 
 export interface AdminHeaderSource {
-  readonly "cf-access-jwt-assertion"?: string | undefined;
-  readonly authorization?: string | undefined;
+  readonly [header: string]: string | undefined;
 }
 
 export interface AdminRequestSource {
