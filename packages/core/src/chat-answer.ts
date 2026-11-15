@@ -183,146 +183,106 @@ export const chatAnswerFrames = (input: ChatAnswerInput) =>
         const shown = yield* Ref.make("");
         const finished = yield* Ref.make(false);
 
-        const answer: Effect.Effect<void> = Effect.gen(function* answerTurn() {
-          const conversation = yield* conversations.read(conversationId);
+        const answer: Effect.Effect<void, never, AnswerModel> = Effect.gen(
+          function* answerTurn() {
+            const conversation = yield* conversations.read(conversationId);
 
-          const history = assistantTurns(
-            yield* messages.list(conversationId),
-            input.visitorMessageId
-          );
+            const history = assistantTurns(
+              yield* messages.list(conversationId),
+              input.visitorMessageId
+            );
 
-          const profile =
-            conversation === undefined ? null : answerProfileOf(conversation);
+            const profile =
+              conversation === undefined ? null : answerProfileOf(conversation);
 
-          const question = turn?.question ?? "";
-          const page = turn?.page ?? null;
-          const hasImage = turn?.hasImage === true;
+            const question = turn?.question ?? "";
+            const page = turn?.page ?? null;
+            const hasImage = turn?.hasImage === true;
 
-          const eligible = firstAnswerEligible({
-            hasImage,
-            historyCount: history.length,
-            page,
-            profile,
-            question,
-          });
-
-          const cached = eligible ? yield* cache.lookup(question) : undefined;
-
-          yield* Queue.offer(
-            queue,
-            connectedEvent({
-              conversationId,
-              messageId: input.answerMessageId,
-              visitorSecret: input.visitorSecret,
-            })
-          );
-
-          if (cached !== undefined) {
-            const at = yield* clock.now;
-
-            yield* Queue.offer(queue, chunkEvent(cached, conversationId));
-            yield* appendAnswer(messages, {
-              content: cached,
-              conversationId,
-              createdAt: at,
-              id: input.answerMessageId,
-              model: HAIKU_MODEL,
-              role: "bot",
-              usage: emptyUsage(),
+            const eligible = firstAnswerEligible({
+              hasImage,
+              historyCount: history.length,
+              page,
+              profile,
+              question,
             });
 
-            const sources = yield* citations.sourcesFor(cached);
+            const cached = eligible ? yield* cache.lookup(question) : undefined;
 
             yield* Queue.offer(
               queue,
-              doneEvent({
+              connectedEvent({
                 conversationId,
-                fullContent: cached,
                 messageId: input.answerMessageId,
-                sources,
+                visitorSecret: input.visitorSecret,
               })
             );
-            yield* Ref.set(finished, true);
-            yield* Queue.end(queue);
 
-            return;
-          }
+            if (cached !== undefined) {
+              const at = yield* clock.now;
 
-          const articleContext = yield* articles.forQuestion(question);
+              yield* Queue.offer(queue, chunkEvent(cached, conversationId));
+              yield* appendAnswer(messages, {
+                content: cached,
+                conversationId,
+                createdAt: at,
+                id: input.answerMessageId,
+                model: HAIKU_MODEL,
+                role: "bot",
+                usage: emptyUsage(),
+              });
 
-          const request = buildAnswerRequest({
-            articleContext,
-            history,
-            page,
-            profile,
-            userContent: toAnswerUserContent(
-              question,
-              hasImage ? turn?.imageUrl : undefined
-            ),
-          });
+              const sources = yield* citations.sourcesFor(cached);
 
-          const outcome = yield* runAnswer({
-            onText: (text) =>
-              Ref.update(shown, (held) => held + text).pipe(
-                Effect.andThen(
-                  Queue.offer(queue, chunkEvent(text, conversationId))
-                ),
-                Effect.asVoid
-              ),
-            request,
-          });
+              yield* Queue.offer(
+                queue,
+                doneEvent({
+                  conversationId,
+                  fullContent: cached,
+                  messageId: input.answerMessageId,
+                  sources,
+                })
+              );
+              yield* Ref.set(finished, true);
+              yield* Queue.end(queue);
 
-          const at = yield* clock.now;
-
-          if (answerOutcome.$is("Answered")(outcome)) {
-            const cleaned = yield* cleanup.clean({
-              conversationId,
-              text: outcome.text,
-            });
-
-            yield* appendAnswer(messages, {
-              content: cleaned,
-              conversationId,
-              createdAt: at,
-              id: input.answerMessageId,
-              model: HAIKU_MODEL,
-              role: "bot",
-              usage: outcome.usage,
-            });
-
-            if (
-              cacheableAnswer(
-                { cacheable: outcome.cacheable, text: cleaned },
-                eligible
-              )
-            ) {
-              yield* cache
-                .save(question, cleaned)
-                .pipe(
-                  Effect.catchCause(() =>
-                    Effect.logWarning("[Chat] response cache write failed")
-                  )
-                );
+              return;
             }
 
-            const sources = yield* citations.sourcesFor(cleaned);
+            const articleContext = yield* articles.forQuestion(question);
 
-            yield* Queue.offer(
-              queue,
-              doneEvent({
+            const request = buildAnswerRequest({
+              articleContext,
+              history,
+              page,
+              profile,
+              userContent: toAnswerUserContent(
+                question,
+                hasImage ? turn?.imageUrl : undefined
+              ),
+            });
+
+            const outcome = yield* runAnswer({
+              onText: (text) =>
+                Ref.update(shown, (held) => held + text).pipe(
+                  Effect.andThen(
+                    Queue.offer(queue, chunkEvent(text, conversationId))
+                  ),
+                  Effect.asVoid
+                ),
+              request,
+            });
+
+            const at = yield* clock.now;
+
+            if (answerOutcome.$is("Answered")(outcome)) {
+              const cleaned = yield* cleanup.clean({
                 conversationId,
-                fullContent: cleaned,
-                messageId: input.answerMessageId,
-                sources,
-              })
-            );
-          } else {
-            const partialText = yield* Ref.get(shown);
-            const partial = partialText !== "";
+                text: outcome.text,
+              });
 
-            if (partial) {
               yield* appendAnswer(messages, {
-                content: `${partialText} [interrupted]`,
+                content: cleaned,
                 conversationId,
                 createdAt: at,
                 id: input.answerMessageId,
@@ -330,21 +290,63 @@ export const chatAnswerFrames = (input: ChatAnswerInput) =>
                 role: "bot",
                 usage: outcome.usage,
               });
+
+              if (
+                cacheableAnswer(
+                  { cacheable: outcome.cacheable, text: cleaned },
+                  eligible
+                )
+              ) {
+                yield* cache
+                  .save(question, cleaned)
+                  .pipe(
+                    Effect.catchCause(() =>
+                      Effect.logWarning("[Chat] response cache write failed")
+                    )
+                  );
+              }
+
+              const sources = yield* citations.sourcesFor(cleaned);
+
+              yield* Queue.offer(
+                queue,
+                doneEvent({
+                  conversationId,
+                  fullContent: cleaned,
+                  messageId: input.answerMessageId,
+                  sources,
+                })
+              );
+            } else {
+              const partialText = yield* Ref.get(shown);
+              const partial = partialText !== "";
+
+              if (partial) {
+                yield* appendAnswer(messages, {
+                  content: `${partialText} [interrupted]`,
+                  conversationId,
+                  createdAt: at,
+                  id: input.answerMessageId,
+                  model: HAIKU_MODEL,
+                  role: "bot",
+                  usage: outcome.usage,
+                });
+              }
+
+              yield* Queue.offer(
+                queue,
+                errorEvent({
+                  conversationId,
+                  error: outcome.text,
+                  partial,
+                })
+              );
             }
 
-            yield* Queue.offer(
-              queue,
-              errorEvent({
-                conversationId,
-                error: outcome.text,
-                partial,
-              })
-            );
+            yield* Ref.set(finished, true);
+            yield* Queue.end(queue);
           }
-
-          yield* Ref.set(finished, true);
-          yield* Queue.end(queue);
-        });
+        );
 
         const guarded = answer.pipe(
           Effect.catchCause(() =>
