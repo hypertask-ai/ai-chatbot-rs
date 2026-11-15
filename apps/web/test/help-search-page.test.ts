@@ -218,7 +218,7 @@ describe("help center search box", () => {
           if (recorded.shown === "results") {
             const count = recorded.slugs.length;
 
-            expect(textOf(region.split("<a ")[0]), recorded.query).toBe(
+            expect(textOf(region.split("<a ")[0] ?? ""), recorded.query).toBe(
               `${count} ${count === 1 ? "article" : "articles"} found`
             );
           } else if (recorded.shown === "no-results") {

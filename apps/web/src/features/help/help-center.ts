@@ -421,12 +421,13 @@ const liveResults = (
 const cardsIn = (
   page: HelpCenterPage,
   browser: HelpBrowserValue
-): readonly HelpArticleCardValue[] =>
-  Option.isNone(browser.category)
+): readonly HelpArticleCardValue[] => {
+  const category = Option.getOrNull(browser.category);
+
+  return category === null
     ? page.articles
-    : page.articles.filter(
-        (article) => article.category === browser.category.value
-      );
+    : page.articles.filter((article) => article.category === category);
+};
 
 const articleBrowser = (
   h: HtmlBuilder<AppMessage>,
