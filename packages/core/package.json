@@ -79,6 +79,31 @@
       "import": "./dist/contracts.js",
       "default": "./dist/contracts.js"
     },
+    "./admin-access": {
+      "types": "./src/admin-access.ts",
+      "import": "./dist/admin-access.js",
+      "default": "./dist/admin-access.js"
+    },
+    "./admin-contracts": {
+      "types": "./src/admin-contracts.ts",
+      "import": "./dist/admin-contracts.js",
+      "default": "./dist/admin-contracts.js"
+    },
+    "./admin-conversation-store": {
+      "types": "./src/admin-conversation-store.ts",
+      "import": "./dist/admin-conversation-store.js",
+      "default": "./dist/admin-conversation-store.js"
+    },
+    "./admin-conversations": {
+      "types": "./src/admin-conversations.ts",
+      "import": "./dist/admin-conversations.js",
+      "default": "./dist/admin-conversations.js"
+    },
+    "./admin-usage": {
+      "types": "./src/admin-usage.ts",
+      "import": "./dist/admin-usage.js",
+      "default": "./dist/admin-usage.js"
+    },
     "./help-article-store": {
       "types": "./src/help-article-store.ts",
       "import": "./dist/help-article-store.js",
