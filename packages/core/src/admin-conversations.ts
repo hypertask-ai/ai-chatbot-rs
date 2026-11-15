@@ -50,9 +50,7 @@ const ArchiveIds = Schema.Array(Schema.Union([Schema.String, Schema.Finite]));
 
 const emptyLastSeen = (): Readonly<Record<string, number>> => ({});
 
-export const lastSeenOf = (
-  raw: string | undefined
-): Readonly<Record<string, number>> =>
+export const lastSeenOf = (raw?: string): Readonly<Record<string, number>> =>
   raw === undefined
     ? emptyLastSeen()
     : Option.getOrElse(
@@ -75,7 +73,7 @@ export const inboxQueryOf = (
 });
 
 export const archiveIdsOf = (
-  raw: Schema.Json | undefined
+  raw?: Schema.Json
 ): readonly string[] | undefined => {
   const decoded = Schema.decodeUnknownOption(ArchiveIds)(raw);
 
@@ -83,7 +81,7 @@ export const archiveIdsOf = (
     return undefined;
   }
 
-  return decoded.value.map((id) => String(id));
+  return decoded.value.map(String);
 };
 
 const mailbox = <A, E, R>(

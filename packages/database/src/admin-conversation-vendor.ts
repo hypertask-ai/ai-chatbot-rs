@@ -69,18 +69,6 @@ export const AdminConversationStoreLayer = (vendor: DatabaseVendorResource) =>
 
             return adminConversationLayer(
               Effect.succeed({
-                archiveMany: (change) =>
-                  db
-                    .update(Conversations)
-                    .set({ archived: 1, updatedAt: change.at })
-                    .where(inArray(Conversations.id, [...change.ids]))
-                    .pipe(
-                      Effect.asVoid,
-                      Effect.mapError(
-                        queryFailure("archiveAdminConversations")
-                      ),
-                      Effect.provide(RuntimeContext.RuntimeContext.phantom)
-                    ),
                 appendMessage: (message) =>
                   db
                     .insert(Messages)
@@ -93,6 +81,18 @@ export const AdminConversationStoreLayer = (vendor: DatabaseVendorResource) =>
                     .pipe(
                       Effect.asVoid,
                       Effect.mapError(queryFailure("setAdminMessage")),
+                      Effect.provide(RuntimeContext.RuntimeContext.phantom)
+                    ),
+                archiveMany: (change) =>
+                  db
+                    .update(Conversations)
+                    .set({ archived: 1, updatedAt: change.at })
+                    .where(inArray(Conversations.id, [...change.ids]))
+                    .pipe(
+                      Effect.asVoid,
+                      Effect.mapError(
+                        queryFailure("archiveAdminConversations")
+                      ),
                       Effect.provide(RuntimeContext.RuntimeContext.phantom)
                     ),
                 listCustomer: (email) =>

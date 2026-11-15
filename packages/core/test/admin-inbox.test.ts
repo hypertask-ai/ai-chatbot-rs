@@ -28,7 +28,7 @@ const BOT_ROW = {
 describe("the inbox inputs", () => {
   it("reads the last seen map the admin page sends", () => {
     expect([
-      lastSeenOf(undefined),
+      lastSeenOf(),
       lastSeenOf('{"conv-bot":6000}'),
       lastSeenOf('{"conv-bot":6000,"conv-x":1}'),
     ]).toEqual([{}, { "conv-bot": 6000 }, { "conv-bot": 6000, "conv-x": 1 }]);
@@ -57,7 +57,7 @@ describe("the inbox inputs", () => {
   it("shows the archived tab only for the archived flag", () => {
     expect([
       inboxQueryOf("true"),
-      inboxQueryOf(undefined),
+      inboxQueryOf(),
       inboxQueryOf("TRUE"),
       inboxQueryOf("false"),
     ]).toEqual([
@@ -80,7 +80,7 @@ describe("the bulk archive input", () => {
 
   it("refuses an empty list, another shape and a non scalar id", () => {
     expect([
-      archiveIdsOf(undefined),
+      archiveIdsOf(),
       archiveIdsOf([]),
       archiveIdsOf("conv-a"),
       archiveIdsOf({ ids: ["conv-a"] }),

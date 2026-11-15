@@ -131,9 +131,7 @@ export const usageCostNanos = (usage: TokenUsage, over: boolean): number => {
 export const nanosToUsd = (nanos: number): number =>
   Math.round(nanos / 1000) / 1_000_000;
 
-const underAndOver = (
-  row: UsageDayRowValue
-): { readonly over: TokenUsage; readonly under: TokenUsage } => {
+const underAndOver = (row: UsageDayRowValue) => {
   const over: TokenUsage = {
     cache_creation_input_tokens: row.cache_creation_input_tokens_over_100k,
     cache_read_input_tokens: row.cache_read_input_tokens_over_100k,
@@ -164,7 +162,7 @@ const dayCostUsd = (row: UsageDayRowValue): number | null => {
   return nanosToUsd(usageCostNanos(under, false) + usageCostNanos(over, true));
 };
 
-export const usageWindowDays = (requested: string | undefined): number => {
+export const usageWindowDays = (requested?: string): number => {
   const days = Number(requested);
 
   return Number.isFinite(days)
@@ -182,6 +180,7 @@ export const buildUsageReport = (
   let totalNanos = 0;
 
   const days: UsageDayReportValue[] = [];
+
   const totals = {
     cache_creation_input_tokens: 0,
     cache_read_input_tokens: 0,

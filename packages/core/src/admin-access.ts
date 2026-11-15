@@ -1,5 +1,4 @@
 import { Context, Effect, Schema } from "effect";
-import type { HttpServerRequest } from "effect/http";
 
 export const Unauthorized = Schema.Struct({
   error: Schema.Literal("Unauthorized"),
@@ -15,6 +14,10 @@ export interface AdminRequestFacts {
 export interface AdminHeaderSource {
   readonly "cf-access-jwt-assertion"?: string | undefined;
   readonly authorization?: string | undefined;
+}
+
+export interface AdminRequestSource {
+  readonly headers: AdminHeaderSource;
 }
 
 export interface AdminGrant {
@@ -59,13 +62,13 @@ export const sameText = (left: string | undefined, right: string): boolean => {
   const expected = new TextEncoder().encode(right);
   const length = Math.max(provided.length, expected.length);
 
-  let difference = provided.length === expected.length ? 0 : 1;
+  let mismatch = provided.length === expected.length ? 0 : 1;
 
   for (let index = 0; index < length; index += 1) {
-    difference |= (provided[index] ?? 0) ^ (expected[index] ?? 0);
+    mismatch += (provided[index] ?? 0) === (expected[index] ?? 0) ? 0 : 1;
   }
 
-  return difference === 0;
+  return mismatch === 0;
 };
 
 export const adminIdentity = (
@@ -84,7 +87,7 @@ export const adminIdentity = (
     const token = facts.accessJwt;
 
     if (token === undefined) {
-      return undefined;
+      return;
     }
 
     const login = yield* AccessLogin;
@@ -94,7 +97,7 @@ export const adminIdentity = (
 
 export const adminFromRequest = {
   failure: Unauthorized,
-  from: (request: HttpServerRequest.HttpServerRequest) =>
+  from: (request: AdminRequestSource) =>
     Effect.gen(function* grantAdmin() {
       const grant = yield* adminIdentity(adminFactsOf(request.headers));
 

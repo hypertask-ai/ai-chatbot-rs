@@ -20,11 +20,11 @@ import { DatabaseError } from "./model.js";
 import type { DatabaseOperation } from "./model.js";
 
 export interface AdminConversationQueries {
-  readonly archiveMany: (
-    change: AdminArchiveManyChange
-  ) => Effect.Effect<void, DatabaseError>;
   readonly appendMessage: (
     message: AdminMessageSeed
+  ) => Effect.Effect<void, DatabaseError>;
+  readonly archiveMany: (
+    change: AdminArchiveManyChange
   ) => Effect.Effect<void, DatabaseError>;
   readonly listCustomer: (
     email: string
@@ -102,7 +102,7 @@ const loadConversation = (source: AdminConversationQueries, id: string) =>
     const [row] = rows;
 
     if (row === undefined) {
-      return undefined;
+      return;
     }
 
     return yield* Schema.decodeUnknownEffect(AdminConversationRow)(row).pipe(
@@ -131,18 +131,18 @@ export const adminConversationLayer = <E, R>(
       const source = yield* queries;
 
       return AdminConversationStore.of({
-        archiveMany: (change) =>
-          source
-            .archiveMany(change)
-            .pipe(
-              Effect.mapError(queryFailure("archiveAdminConversations")),
-              Effect.orDie
-            ),
         appendMessage: (message) =>
           source
             .appendMessage(message)
             .pipe(
               Effect.mapError(queryFailure("setAdminMessage")),
+              Effect.orDie
+            ),
+        archiveMany: (change) =>
+          source
+            .archiveMany(change)
+            .pipe(
+              Effect.mapError(queryFailure("archiveAdminConversations")),
               Effect.orDie
             ),
         listCustomer: (email) => loadCustomers(source, email),

@@ -462,7 +462,7 @@ interface AdminClient {
   ) => Effect.Effect<Answered>;
   readonly post: (
     path: string,
-    body?: string | undefined,
+    body: string | undefined,
     headers?: Readonly<Record<string, string>>
   ) => Effect.Effect<Answered>;
 }
@@ -546,13 +546,6 @@ const queryWrite = (operation: DatabaseOperation, run: () => Promise<void>) =>
 const queriesOf = (
   db: ReturnType<typeof drizzleSqlite>
 ): AdminConversationQueries => ({
-  archiveMany: (change) =>
-    queryWrite("archiveAdminConversations", () =>
-      db
-        .update(Conversations)
-        .set({ archived: 1, updatedAt: change.at })
-        .where(inArray(Conversations.id, [...change.ids]))
-    ),
   appendMessage: (message) =>
     queryWrite("setAdminMessage", () =>
       db.insert(Messages).values({
@@ -561,6 +554,13 @@ const queriesOf = (
         id: message.id,
         role: "admin",
       })
+    ),
+  archiveMany: (change) =>
+    queryWrite("archiveAdminConversations", () =>
+      db
+        .update(Conversations)
+        .set({ archived: 1, updatedAt: change.at })
+        .where(inArray(Conversations.id, [...change.ids]))
     ),
   listCustomer: (email) =>
     queryRows("listCustomerConversations", () =>
@@ -710,13 +710,13 @@ const withSite = <A, E, R>(
       yield* Effect.sync(() => database.exec(migration));
     }
 
-    yield* Effect.sync(() =>
+    yield* Effect.sync(() => {
       seededConnection({
         run: (statement, values) => {
           database.run(statement, [...values]);
         },
-      })
-    );
+      });
+    });
 
     const db = drizzleSqlite(database);
 
@@ -775,10 +775,10 @@ const filledPath = (path: string) =>
 
 const adminRequests = (): readonly AdminRequest[] =>
   adminConversationCapabilities.map(({ contract }) => {
-    const http = contract.http;
+    const { http, name } = contract;
 
     if (http === undefined) {
-      throw new Error(`${contract.name} has no HTTP route`);
+      throw new Error(`${name} has no HTTP route`);
     }
 
     return {
@@ -866,6 +866,7 @@ describe("admin conversations over a local D1 database", () => {
           `${ADMIN_PREFIX}/conversations`,
           BEARER
         );
+
         const archived = yield* client.get(
           `${ADMIN_PREFIX}/conversations?archived=true`,
           BEARER
@@ -887,6 +888,7 @@ describe("admin conversations over a local D1 database", () => {
           JSON.stringify({ ids: [] }),
           BEARER
         );
+
         const missing = yield* client.post(
           `${ADMIN_PREFIX}/conversations/bulk/archive`,
           JSON.stringify({}),
@@ -1070,6 +1072,7 @@ describe("admin conversations over a local D1 database", () => {
           undefined,
           BEARER
         );
+
         const movedBack = yield* client.post(
           `${ADMIN_PREFIX}/conversations/conv-archived/unarchive`,
           undefined,
@@ -1084,6 +1087,7 @@ describe("admin conversations over a local D1 database", () => {
           `${ADMIN_PREFIX}/conversations`,
           BEARER
         );
+
         const tab = yield* client.get(
           `${ADMIN_PREFIX}/conversations?archived=true`,
           BEARER
@@ -1231,6 +1235,13 @@ describe("admin conversations over a local D1 database", () => {
           "GET /admin/api/usage",
           "GET /admin/api/customers/conversations",
         ]);
+
+        const answered = yield* client.get(
+          `${ADMIN_PREFIX}/conversations`,
+          BEARER
+        );
+
+        expect(answered.status).toBe(200);
       })
     )
   );

@@ -143,9 +143,7 @@ describe("the usage report", () => {
 
 describe("the usage window", () => {
   it("keeps the old default when the days are missing or not a number", () => {
-    expect([usageWindowDays(undefined), usageWindowDays("abc")]).toEqual([
-      30, 30,
-    ]);
+    expect([usageWindowDays(), usageWindowDays("abc")]).toEqual([30, 30]);
   });
 
   it("clamps the days to one day and to 366 days", () => {

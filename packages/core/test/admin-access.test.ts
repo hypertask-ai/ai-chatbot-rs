@@ -24,13 +24,17 @@ const accessLayer = (accepted: string, password: string) =>
     })
   );
 
-const factsOf = (
-  authorization: string | undefined,
-  accessJwt: string | undefined
-) => ({
-  accessJwt,
+const bearerFacts = (authorization: string) => ({
+  accessJwt: undefined,
   authorization,
 });
+
+const tokenFacts = (accessJwt: string) => ({
+  accessJwt,
+  authorization: undefined,
+});
+
+const anonymousFacts = { accessJwt: undefined, authorization: undefined };
 
 describe("the admin login rule", () => {
   it("matches two texts of the same length and refuses everything else", () => {
@@ -46,25 +50,27 @@ describe("the admin login rule", () => {
   it.effect("grants admin to the password bearer", () =>
     Effect.gen(function* grantBearer() {
       const grant = yield* adminIdentity(
-        factsOf(`Bearer ${PASSWORD}`, undefined)
+        bearerFacts(`Bearer ${PASSWORD}`)
       ).pipe(Effect.provide(accessLayer("good-token", PASSWORD)));
 
       expect(grant).toEqual({ via: "bearer" });
     })
   );
 
-  it.effect("refuses a visitor bearer and a malformed bearer", () =>
+  it.effect("refuses a visitor bearer, a bare bearer and another scheme", () =>
     Effect.gen(function* refuseVisitorBearer() {
       const layer = accessLayer("good-token", PASSWORD);
 
       const visitor = yield* adminIdentity(
-        factsOf("Bearer visitor-secret", undefined)
+        bearerFacts("Bearer visitor-secret")
       ).pipe(Effect.provide(layer));
-      const malformed = yield* adminIdentity(factsOf("Bearer", undefined)).pipe(
+
+      const malformed = yield* adminIdentity(bearerFacts("Bearer")).pipe(
         Effect.provide(layer)
       );
+
       const otherScheme = yield* adminIdentity(
-        factsOf("Basic YWRtaW46YWRtaW4=", undefined)
+        bearerFacts("Basic YWRtaW46YWRtaW4=")
       ).pipe(Effect.provide(layer));
 
       expect([visitor, malformed, otherScheme]).toEqual([
@@ -77,7 +83,7 @@ describe("the admin login rule", () => {
 
   it.effect("refuses the empty bearer when no password is configured", () =>
     Effect.gen(function* refuseEmptyBearer() {
-      const grant = yield* adminIdentity(factsOf("Bearer ", undefined)).pipe(
+      const grant = yield* adminIdentity(bearerFacts("Bearer ")).pipe(
         Effect.provide(accessLayer("good-token", ""))
       );
 
@@ -87,7 +93,7 @@ describe("the admin login rule", () => {
 
   it.effect("grants admin to an Access token the access slice accepts", () =>
     Effect.gen(function* grantAccessToken() {
-      const grant = yield* adminIdentity(factsOf(undefined, "good-token")).pipe(
+      const grant = yield* adminIdentity(tokenFacts("good-token")).pipe(
         Effect.provide(accessLayer("good-token", PASSWORD))
       );
 
@@ -97,9 +103,9 @@ describe("the admin login rule", () => {
 
   it.effect("refuses an Access token the access slice rejects", () =>
     Effect.gen(function* refuseAccessToken() {
-      const grant = yield* adminIdentity(
-        factsOf(undefined, "not-a-token")
-      ).pipe(Effect.provide(accessLayer("good-token", PASSWORD)));
+      const grant = yield* adminIdentity(tokenFacts("not-a-token")).pipe(
+        Effect.provide(accessLayer("good-token", PASSWORD))
+      );
 
       expect(grant).toBeUndefined();
     })
@@ -107,7 +113,7 @@ describe("the admin login rule", () => {
 
   it.effect("refuses a request with neither login", () =>
     Effect.gen(function* refuseAnonymous() {
-      const grant = yield* adminIdentity(factsOf(undefined, undefined)).pipe(
+      const grant = yield* adminIdentity(anonymousFacts).pipe(
         Effect.provide(accessLayer("good-token", PASSWORD))
       );
 

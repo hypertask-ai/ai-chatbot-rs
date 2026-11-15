@@ -1,4 +1,5 @@
-import { Context, Effect, Schema } from "effect";
+import { Context, Schema } from "effect";
+import type { Effect } from "effect";
 
 import type { UsageDayRowValue } from "./admin-usage.js";
 
@@ -99,8 +100,8 @@ export interface AdminMessageSeed {
 }
 
 export interface AdminConversationOperations {
-  readonly archiveMany: (change: AdminArchiveManyChange) => Effect.Effect<void>;
   readonly appendMessage: (message: AdminMessageSeed) => Effect.Effect<void>;
+  readonly archiveMany: (change: AdminArchiveManyChange) => Effect.Effect<void>;
   readonly listCustomer: (
     email: string
   ) => Effect.Effect<readonly AdminCustomerConversationValue[]>;
