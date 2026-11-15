@@ -14,6 +14,7 @@ import { update } from "../src/client/widget/update.js";
 
 const flags: WidgetFlags = {
   docked: false,
+  onHelpPage: false,
   pageTitle: "Boards & Sections",
   pageUrl: "https://hypertask.ai/help/boards-sections",
   pinned: false,
@@ -21,6 +22,7 @@ const flags: WidgetFlags = {
 
 const blankPage: WidgetFlags = {
   docked: false,
+  onHelpPage: false,
   pageTitle: "",
   pageUrl: "",
   pinned: false,

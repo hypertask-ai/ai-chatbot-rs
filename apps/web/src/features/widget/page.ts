@@ -7,8 +7,15 @@ import type {
   AppModel,
   TranscriptEntryValue,
 } from "../../client/widget/model.js";
+import {
+  answerActionsCopy,
+  answerRowShownAt,
+  answerRowVisible,
+} from "../../widget/answer-actions.js";
 import { widgetCopy } from "../../widget/copy.js";
+import { emailCardCopy } from "../../widget/email-card.js";
 import { renderChatMarkdown } from "../../widget/markdown.js";
+import type { SourceLine } from "../../widget/source-line.js";
 import { classes, styleClass } from "./class-names.js";
 import { styles } from "./styles.stylex.js";
 
@@ -202,8 +209,117 @@ const suggestionsView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
     )
   );
 
-const messagesView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
+const sourceLineView = (source: SourceLine, h: HtmlBuilder<AppMessage>): Html =>
   h.div(
+    [h.Class("source-line")],
+    [
+      h.a(
+        [
+          h.Href(source.href),
+          h.Target("_blank"),
+          h.Rel("noopener noreferrer"),
+          h.OnClick(Message.OpenedCitedArticle({ slug: source.slug }), {
+            defaultAction: "Prevent",
+          }),
+          h.Class(styleClass(styles.sourceLineLink)),
+        ],
+        [source.label]
+      ),
+    ]
+  );
+
+const answerActionsView = (h: HtmlBuilder<AppMessage>): Html =>
+  h.div(
+    [h.Class(classes("answer-actions", styleClass(styles.answerActions)))],
+    [
+      h.p(
+        [h.Class(styleClass(styles.answerQuestion))],
+        [answerActionsCopy.question]
+      ),
+      h.div(
+        [h.Class(styleClass(styles.answerActionsRow))],
+        [
+          h.button(
+            [
+              h.Type("button"),
+              h.OnClick(Message.AcceptedAnswer()),
+              h.Class(classes("answer-yes", styleClass(styles.answerButton))),
+            ],
+            [answerActionsCopy.yes]
+          ),
+          h.button(
+            [
+              h.Type("button"),
+              h.OnClick(Message.AskedForPerson()),
+              h.Class(
+                classes("answer-person", styleClass(styles.answerButton))
+              ),
+            ],
+            [answerActionsCopy.person]
+          ),
+        ]
+      ),
+    ]
+  );
+
+const emailCardView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html => {
+  const card = Option.getOrNull(model.handoffEmailCard);
+
+  return h.form(
+    [
+      h.Id("handoffEmailCard"),
+      h.Class(classes("email-card", styleClass(styles.emailCard))),
+      h.OnSubmit(Message.SubmittedHandoffEmail()),
+    ],
+    [
+      h.label(
+        [h.For("handoffEmail"), h.Class(styleClass(styles.emailLabel))],
+        [emailCardCopy.label]
+      ),
+      h.input([
+        h.Id("handoffEmail"),
+        h.Name("email"),
+        h.Type("email"),
+        h.Required(true),
+        h.Maxlength(254),
+        h.Autocomplete("email"),
+        h.Value(card?.email ?? ""),
+        h.OnInput((value) => Message.ChangedHandoffEmail({ value })),
+        h.Class(styleClass(styles.emailInput)),
+      ]),
+      h.button(
+        [
+          h.Type("submit"),
+          h.Disabled(Option.isSome(model.pendingHandoffEmail)),
+          h.Class(styleClass(styles.emailSubmit)),
+        ],
+        [emailCardCopy.submit]
+      ),
+      h.div(
+        [
+          h.Role("alert"),
+          h.Class(classes("email-error", styleClass(styles.emailError))),
+        ],
+        [Option.getOrElse(model.handoffEmailError, () => "")]
+      ),
+    ]
+  );
+};
+
+const messagesView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html => {
+  const placement = Option.getOrNull(model.answerRowAfter);
+  const answerRowShown = answerRowVisible(placement, model.messages.length);
+  const transcript = model.messages.flatMap((entry, index) => [
+    transcriptView(entry, h),
+    ...(entry.sourceLine === undefined
+      ? []
+      : [sourceLineView(entry.sourceLine, h)]),
+    ...(answerRowShown && answerRowShownAt(placement, index)
+      ? [answerActionsView(h)]
+      : []),
+  ]);
+
+  return h.div(
     [
       h.Id("messages"),
       h.Class(classes("messages", styleClass(styles.messages))),
@@ -211,10 +327,14 @@ const messagesView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
     [
       ...(model.messages.length === 0
         ? [welcomeView(h), suggestionsView(model, h)]
-        : model.messages.map((entry) => transcriptView(entry, h))),
+        : transcript),
+      ...(Option.isSome(model.handoffEmailCard)
+        ? [emailCardView(model, h)]
+        : []),
       h.div([h.Id("chat-messages-end")]),
     ]
   );
+};
 
 const attachmentView = (dataUrl: string, h: HtmlBuilder<AppMessage>): Html =>
   h.div(

@@ -1,8 +1,9 @@
-import { Effect, Schema } from "effect";
+import { Effect, Option, Schema } from "effect";
 import { uuidV4Unsafe } from "effect/crypto/SecureRandom";
 import { Command } from "foldkit";
 import { File, readAsDataUrl } from "foldkit/file";
 
+import { helpArticleUrl } from "../../widget/source-line.js";
 import { frameStorageKeys } from "../../widget/storage.js";
 import { Message } from "./message.js";
 
@@ -103,6 +104,40 @@ export const RequestHostClose = Command.define("RequestHostClose", {
     return Message.CompletedHostClose();
   }),
   messages: [Message.CompletedHostClose],
+});
+
+export const OpenCitedArticle = Command.define("OpenCitedArticle", {
+  args: { onHelpPage: Schema.Boolean, slug: Schema.String },
+  execute: ({ onHelpPage, slug }) =>
+    Effect.sync(() => {
+      if (onHelpPage) {
+        postToParent({ slug, type: "help-open-article" });
+      } else {
+        window.open(helpArticleUrl(slug), "_blank", "noopener,noreferrer");
+      }
+
+      return Message.CompletedOpenCitedArticle();
+    }),
+  messages: [Message.CompletedOpenCitedArticle],
+});
+
+export const ReportEmailValidity = Command.define("ReportEmailValidity", {
+  args: { problem: Schema.Option(Schema.String) },
+  execute: ({ problem }) =>
+    Effect.sync(() => {
+      const input = document.querySelector<HTMLInputElement>("#handoffEmail");
+
+      if (input !== null) {
+        input.setCustomValidity(Option.getOrElse(problem, () => ""));
+
+        if (Option.isSome(problem)) {
+          input.reportValidity();
+        }
+      }
+
+      return Message.CompletedEmailValidityCheck();
+    }),
+  messages: [Message.CompletedEmailValidityCheck],
 });
 
 export const ReadAttachment = Command.define("ReadAttachment", {

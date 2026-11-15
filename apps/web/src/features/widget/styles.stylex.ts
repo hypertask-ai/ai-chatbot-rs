@@ -3,6 +3,30 @@ import * as stylex from "@stylexjs/stylex";
 import { widget } from "./tokens.stylex.js";
 
 export const styles = stylex.create({
+  answerActions: {
+    color: widget.answerInk,
+    fontSize: "14px",
+  },
+  answerActionsRow: {
+    display: "flex",
+    gap: "8px",
+  },
+  answerButton: {
+    background: "transparent",
+    borderColor: widget.fieldBorder,
+    borderRadius: "999px",
+    borderStyle: "solid",
+    borderWidth: "1px",
+    color: widget.ink,
+    cursor: "pointer",
+    fontFamily: widget.fontBody,
+    fontSize: "13px",
+    fontWeight: 400,
+    padding: "7px 12px",
+  },
+  answerQuestion: {
+    marginBottom: "8px",
+  },
   attachmentPreview: {
     flexBasis: "100%",
     order: -1,
@@ -51,6 +75,50 @@ export const styles = stylex.create({
   },
   closePathMobile: {
     display: { "@media (max-width: 640px)": "inline", default: "none" },
+  },
+  emailCard: {
+    background: widget.fieldBg,
+    borderColor: widget.divider,
+    borderRadius: widget.radiusCard,
+    borderStyle: "solid",
+    borderWidth: "1px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    padding: "14px",
+  },
+  emailError: {
+    color: widget.errorInk,
+    fontSize: "12px",
+  },
+  emailInput: {
+    background: "transparent",
+    borderColor: widget.fieldBorder,
+    borderRadius: widget.radiusBtn,
+    borderStyle: "solid",
+    borderWidth: "1px",
+    color: widget.ink,
+    display: "block",
+    fontFamily: widget.fontBody,
+    fontSize: "14px",
+    marginTop: "6px",
+    padding: "9px 12px",
+    width: "100%",
+  },
+  emailLabel: {
+    color: widget.answerInk,
+    fontSize: "12px",
+  },
+  emailSubmit: {
+    background: widget.ink,
+    borderStyle: "none",
+    borderRadius: "999px",
+    color: widget.btnFg,
+    cursor: "pointer",
+    fontFamily: widget.fontBody,
+    fontSize: "13px",
+    fontWeight: 500,
+    padding: "7px 12px",
   },
   field: {
     alignItems: "flex-end",
@@ -285,6 +353,12 @@ export const styles = stylex.create({
     width: { "@media (max-width: 900px)": "36px", default: "32px" },
   },
   sendIcon: { height: "16px", width: "16px" },
+  sourceLineLink: {
+    color: widget.ink,
+    fontSize: "13px",
+    fontWeight: 500,
+    textDecoration: "underline",
+  },
   subtitleDot: {
     background: "#4ade80",
     borderRadius: "50%",

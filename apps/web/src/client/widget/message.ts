@@ -51,23 +51,40 @@ export const HostMessage = Schema.Union([
 export type HostMessageValue = typeof HostMessage.Type;
 
 export const Message = defineMessageUnion({
+  AcceptedAnswer: {},
+  AskedForPerson: {},
   AttachedImage: { dataUrl: Schema.String },
+  ChangedHandoffEmail: { value: Schema.String },
   ChangedInput: { value: Schema.String },
   ClosedLightbox: {},
   ClosedPanel: {},
+  CompletedEmailValidityCheck: {},
   CompletedHostClose: {},
+  CompletedOpenCitedArticle: {},
   CompletedPublishSession: {},
   CompletedScrollToLatest: {},
   CompletedStoreSession: {},
   CompletedSyncChrome: {},
+  HandoffEmailFailed: {},
+  HandoffEmailSent: { emailed: Schema.Boolean },
   LoadedSession: {
     conversationId: Schema.String,
     sheet: Schema.Boolean,
     visitorId: Schema.String,
     visitorSecret: Schema.String,
   },
+  OpenedCitedArticle: { slug: Schema.String },
   OpenedLightbox: { dataUrl: Schema.String },
   PickedSuggestion: { text: Schema.String },
+  ReceivedAnswer: {
+    answer: Schema.String,
+    sources: Schema.Array(
+      Schema.Struct({
+        slug: Schema.String,
+        title: Schema.optionalKey(Schema.NullOr(Schema.String)),
+      })
+    ),
+  },
   ReceivedHostMessage: {
     data: Schema.Unknown,
     fromParent: Schema.Boolean,
@@ -76,6 +93,7 @@ export const Message = defineMessageUnion({
   RejectedAttachment: {},
   RemovedAttachment: {},
   Submitted: {},
+  SubmittedHandoffEmail: {},
   TookFile: { file: File },
 });
 

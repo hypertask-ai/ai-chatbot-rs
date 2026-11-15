@@ -4,6 +4,7 @@ import { describe, expect, it } from "@effect/vitest";
 
 import { widgetChatPath, widgetScriptPath } from "../src/widget/embed.js";
 import { widgetLoaderScript } from "../src/widget/loader.js";
+import { proactiveDismissKey } from "../src/widget/proactive-bubble.js";
 import {
   displayOf,
   handler,
@@ -250,6 +251,66 @@ describe("widget loader", () => {
     }
 
     expect(plain.elements.get("chat-proactive-bubble")).toBeUndefined();
+  });
+
+  it("stores a dismissal behind the one storage port and never offers the bubble again", () => {
+    const run = runWidgetLoader(script, { article: true });
+    const bubble = element(run, "chat-proactive-bubble");
+    const key = proactiveDismissKey("troubleshooting-email-login-magic-link");
+
+    run.timers[0]?.();
+
+    expect(displayOf(bubble)).toBe("block");
+
+    handler(
+      bubble.querySelector(".proactive-close"),
+      "click"
+    )({
+      stopPropagation: () => undefined,
+    });
+
+    expect(displayOf(bubble)).toBe("none");
+    expect(run.storage.get(key)).toBe("true");
+
+    const reloaded = runWidgetLoader(script, {
+      article: true,
+      stored: Object.fromEntries(run.storage),
+    });
+
+    for (const timer of reloaded.timers) {
+      timer();
+    }
+
+    expect(reloaded.elements.get("chat-proactive-bubble")).toBeUndefined();
+    expect(reloaded.storage.get(key)).toBe("true");
+  });
+
+  it("keeps the bubble hidden when the visitor opens the chat inside the three seconds", () => {
+    const run = runWidgetLoader(script, { article: true });
+    const bubble = element(run, "chat-proactive-bubble");
+
+    handler(element(run, "chat-widget-btn"), "click")();
+
+    expect(displayOf(bubble)).toBe("none");
+
+    run.timers[0]?.();
+
+    expect(displayOf(bubble)).toBe("none");
+    expect(
+      run.storage.get(
+        proactiveDismissKey("troubleshooting-email-login-magic-link")
+      )
+    ).toBeUndefined();
+  });
+
+  it("offers no bubble in dock mode on the same trouble article", () => {
+    const run = runWidgetLoader(script, { article: true, dock: true });
+
+    for (const timer of run.timers) {
+      timer();
+    }
+
+    expect(run.elements.get("chat-proactive-bubble")).toBeUndefined();
   });
 
   it("only closes the frame for a close message from the widget's own origin", () => {

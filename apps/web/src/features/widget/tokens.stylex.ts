@@ -9,6 +9,7 @@ export const widget = stylex.defineVars({
   chatBg: "#111113",
   divider: "#222226",
   dividerSoft: "rgba(255, 255, 255, 0.1)",
+  errorInk: "#fda4af",
   fieldBg: "#0a0a0b",
   fieldBorder: "#303036",
   fontBody: '"IBM Plex Sans", sans-serif',

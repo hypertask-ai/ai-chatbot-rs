@@ -1,4 +1,5 @@
 import { launcherCopy, widgetCopy } from "./copy.js";
+import { proactiveBubbleDelayMs } from "./proactive-bubble.js";
 import {
   dockCollapsedValue,
   hostStorageKeys,
@@ -439,7 +440,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
 
   if (articleSuggestion && !dockMode) {
     var dismissKey = ${json(proactiveDismissPrefix)} + articleSlug;
-    var wasDismissed = localStorage.getItem(dismissKey);
+    var wasDismissed = storageGet(dismissKey);
 
     if (!wasDismissed) {
       proactiveBubble = document.createElement('div');
@@ -453,15 +454,15 @@ export const widgetLoaderScript = (baseUrl: string): string =>
       document.body.appendChild(proactiveBubble);
 
       setTimeout(function() {
-        if (proactiveBubble && !isOpen && !localStorage.getItem(dismissKey)) {
+        if (proactiveBubble && !isOpen && !storageGet(dismissKey)) {
           proactiveBubble.style.display = 'block';
         }
-      }, 3000);
+      }, ${json(proactiveBubbleDelayMs)});
 
       var closeBtn = proactiveBubble.querySelector('.proactive-close');
       closeBtn.onclick = function(e) {
         e.stopPropagation();
-        localStorage.setItem(dismissKey, 'true');
+        storageSet(dismissKey, 'true');
         proactiveBubble.style.display = 'none';
       };
 
@@ -469,7 +470,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
       suggestionBtn.onclick = function(e) {
         e.stopPropagation();
         proactiveBubble.style.display = 'none';
-        localStorage.setItem(dismissKey, 'true');
+        storageSet(dismissKey, 'true');
         openChat();
         setTimeout(function() {
           if (iframeLoaded) tellChat({ type: 'send-suggestion', message: articleSuggestion.prompt });
