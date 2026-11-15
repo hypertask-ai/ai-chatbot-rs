@@ -69,7 +69,7 @@ const multibyteFrames = (): readonly ChatStreamEvent[] => [
     conversationId: "conv-2",
     fullContent: "Prix : 16 € café — fin, naïve.",
     messageId: "msg-2",
-    sources: [],
+    sources: [pricingSource],
   }),
 ];
 
