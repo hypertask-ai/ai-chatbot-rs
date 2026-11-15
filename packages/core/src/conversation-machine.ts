@@ -142,7 +142,10 @@ const move = (
   status: ConversationStatus,
   at: number,
   profile: VisitorProfile = context.profile
-) => ({ context: nextContext(context, at, profile), target: status });
+) => ({
+  context: nextContext(context, at, profile),
+  target: `.${status}`,
+});
 
 const setArchived = (
   context: ConversationContext,
