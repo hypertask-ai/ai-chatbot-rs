@@ -3,7 +3,6 @@ import { Effect } from "effect";
 import { renderToString } from "foldkit/experimental/server";
 
 import { Flags, initialModel } from "../src/client/help/index.js";
-import type { HelpPageValue } from "../src/client/help/index.js";
 import { renderDocument } from "../src/entry.server.js";
 import { view } from "../src/features/help/index.js";
 import { helpPageFlags, helpRouteOf } from "../src/server/help-pages.js";
@@ -25,8 +24,6 @@ const patterns = {
   heading: /<(?<tag>h[1-6])\b[^>]*>(?<heading>[\s\S]*?)<\/\k<tag>>/gu,
   href: /\bhref="(?<href>[^"]*)"/gu,
   image: /<img\b[^>]*\bsrc="(?<src>[^"]*)"/gu,
-  relatedBlock: /<div class="related-articles">(?<block>[\s\S]*?)<\/div>/u,
-  relatedLink: /href="(?<href>[^"]*)"[^>]*>(?<title>[^<]*)</gu,
   script: /<script\b[\s\S]*?<\/script>/gu,
   space: /\s+/gu,
   style: /<style\b[\s\S]*?<\/style>/gu,
@@ -94,30 +91,7 @@ const sourcesOf = (html: string): readonly string[] =>
     .map(decodeEntities)
     .map((source) => selfHostedImages.get(source) ?? source);
 
-const withLiveRelated = (
-  flags: HelpPageValue,
-  related: readonly { readonly slug: string; readonly title: string }[]
-): HelpPageValue => (flags.page === "article" ? { ...flags, related } : flags);
-
-const relatedOfLive = (
-  html: string
-): readonly { readonly slug: string; readonly title: string }[] => {
-  const block = patterns.relatedBlock.exec(html)?.groups?.block;
-
-  if (block === undefined) {
-    return [];
-  }
-
-  return [...block.matchAll(patterns.relatedLink)].map((match) => ({
-    slug: (match.groups?.href ?? "").replaceAll("/help/", ""),
-    title: decodeEntities(match.groups?.title ?? ""),
-  }));
-};
-
-const pageAt = (
-  pathname: string,
-  related: readonly { readonly slug: string; readonly title: string }[] = []
-) =>
+const pageAt = (pathname: string) =>
   Effect.gen(function* buildPage() {
     const route = helpRouteOf(pathname);
 
@@ -135,7 +109,7 @@ const pageAt = (
 
     const application = yield* renderToString(
       { Flags, init: (page) => ({ model: initialModel(page) }), view },
-      { flags: withLiveRelated(flags, related), isHydratable: false }
+      { flags, isHydratable: false }
     );
 
     return renderDocument(application, assets);
@@ -190,10 +164,7 @@ describe("help pages recorded from the old site", () => {
   for (const article of recordedArticles) {
     it.effect(`answers ${article.label} like the live page`, () =>
       Effect.gen(function* helpArticle() {
-        const served = yield* pageAt(
-          `/help/${article.slug}`,
-          relatedOfLive(article.live)
-        );
+        const served = yield* pageAt(`/help/${article.slug}`);
 
         expectSamePage(served, article.live);
       })

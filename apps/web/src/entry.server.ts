@@ -23,10 +23,22 @@ export const renderDocument = (
 
 export const prerenderPaths: readonly string[] = [];
 
+const ARTICLE_NOT_FOUND_BODY = "<h1>Article not found</h1>";
+
+const NOT_FOUND_BODY = "404 Not Found";
+
 const articleNotFound = () =>
   Responded(
-    new Response("<h1>Article not found</h1>", {
+    new Response(ARTICLE_NOT_FOUND_BODY, {
       headers: { "content-type": "text/html; charset=UTF-8" },
+      status: 404,
+    })
+  );
+
+const notFound = () =>
+  Responded(
+    new Response(NOT_FOUND_BODY, {
+      headers: { "content-type": "text/plain; charset=UTF-8" },
       status: 404,
     })
   );
@@ -66,7 +78,7 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   const route = helpRouteOf(pathname);
 
   if (route === null) {
-    return Responded(new Response("Not found", { status: 404 }));
+    return notFound();
   }
 
   return yield* renderHelpPage(request, route.slug);

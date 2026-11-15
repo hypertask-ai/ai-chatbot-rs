@@ -69,6 +69,13 @@ export {
   isHtmlHelpArticle,
 } from "./help-article-html.js";
 
+export {
+  relatedHelpArticles,
+  type HelpRelatedArticle,
+  type HelpRelatedFocus,
+  type HelpRelatedInput,
+} from "./help-related-articles.js";
+
 export { capabilities, inspectFile } from "./inspect-file.js";
 
 export { PromptLibrary, getPrompt, listPrompts } from "./prompts.js";
