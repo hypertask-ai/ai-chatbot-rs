@@ -2,25 +2,57 @@ import { Effect } from "effect";
 import {
   Rendered,
   Responded,
+  renderDocument as renderFoldkitDocument,
   renderToString,
 } from "foldkit/experimental/server";
 
-import { initialModel } from "./client/home/index.js";
-import { view } from "./features/home/index.js";
+import { Flags, initialModel } from "./client/help/index.js";
+import { view } from "./features/help/index.js";
+import { helpPageFlags, helpRouteOf } from "./server/help-pages.js";
+import { recordedHelpArticles } from "./server/recorded-help-articles.js";
 
-export { renderDocument } from "foldkit/experimental/server";
+const headMarkup = [
+  '<link rel="icon" type="image/png" href="/glyph-white.png">',
+  '<script src="https://cdn.usefathom.com/script.js" data-site="SSBYTYUQ" defer></script>',
+].join("");
 
-export const prerenderPaths = ["/"];
+export const renderDocument = (
+  application: Parameters<typeof renderFoldkitDocument>[0],
+  assets: Parameters<typeof renderFoldkitDocument>[1]
+): string => renderFoldkitDocument(application, assets, { head: headMarkup });
+
+export const prerenderPaths: readonly string[] = [];
+
+const articleNotFound = () =>
+  Responded(
+    new Response("<h1>Article not found</h1>", {
+      headers: { "content-type": "text/html; charset=UTF-8" },
+      status: 404,
+    })
+  );
+
+const renderHelpPage = Effect.fn("site.renderHelpPage")(
+  function* renderHelpPage(request: Request, slug: string | null) {
+    const flags = yield* helpPageFlags({ slug }).pipe(
+      Effect.provide(recordedHelpArticles)
+    );
+
+    if (flags === null) {
+      return articleNotFound();
+    }
+
+    const application = yield* renderToString(
+      { Flags, init: (page) => ({ model: initialModel(page) }), view },
+      { flags }
+    );
+
+    return Rendered(application);
+  }
+);
 
 const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   request: Request
 ) {
-  const { pathname } = new URL(request.url);
-
-  if (pathname !== "/") {
-    return Responded(new Response("Not found", { status: 404 }));
-  }
-
   if (request.method !== "GET" && request.method !== "HEAD") {
     return Responded(
       new Response("Unsupported method", {
@@ -30,12 +62,14 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
     );
   }
 
-  const application = yield* renderToString({
-    init: () => ({ model: initialModel }),
-    view,
-  });
+  const { pathname } = new URL(request.url);
+  const route = helpRouteOf(pathname);
 
-  return Rendered(application);
+  if (route === null) {
+    return Responded(new Response("Not found", { status: 404 }));
+  }
+
+  return yield* renderHelpPage(request, route.slug);
 });
 
 export const renderPage = (request: Request) =>

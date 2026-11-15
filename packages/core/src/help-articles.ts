@@ -7,10 +7,8 @@ import {
   readHelpArticlePaneContract,
   searchHelpArticlesContract,
 } from "./contracts.js";
-import { formatHelpArticleContent } from "./help-article-html.js";
+import { helpArticlePane } from "./help-article-pane.js";
 import { HelpArticleStore } from "./help-article-store.js";
-import type { HelpArticleValue } from "./help-article-store.js";
-import { helpPlansHtml } from "./help-plans.js";
 
 const SEARCH_KEYWORD_LIMIT = 5;
 
@@ -46,15 +44,6 @@ export const helpSearchKeywords = (query: string): readonly string[] =>
     .filter((word) => !STOP_WORDS.has(word))
     .slice(0, SEARCH_KEYWORD_LIMIT);
 
-const paneOf = (article: HelpArticleValue) => ({
-  category: article.category ?? "",
-  excerpt: article.excerpt ?? "",
-  html: formatHelpArticleContent(article.content),
-  plansHtml: helpPlansHtml(article.slug),
-  slug: article.slug,
-  title: article.title,
-});
-
 const articleAt = (slug: string) =>
   HelpArticleStore.use((store) => store.read(slug)).pipe(
     Effect.flatMap((found) =>
@@ -74,7 +63,7 @@ export const readHelpArticle = implement(readHelpArticleContract, ({ slug }) =>
 
 export const readHelpArticlePane = implement(
   readHelpArticlePaneContract,
-  ({ slug }) => articleAt(slug).pipe(Effect.map(paneOf))
+  ({ slug }) => articleAt(slug).pipe(Effect.map(helpArticlePane))
 );
 
 export const searchHelpArticles = implement(
