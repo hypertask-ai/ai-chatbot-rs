@@ -25,30 +25,31 @@ jobs:
     timeout-minutes: 5
     outputs:
       engine: ${{ steps.pick.outputs.engine }}
+      deepseek: ${{ steps.pick.outputs.deepseek }}
       codex: ${{ steps.pick.outputs.codex }}
       claude: ${{ steps.pick.outputs.claude }}
     steps:
-      - name: Read which verifier setting exists
+      - name: Check out the engine picker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Pick the first engine that has a verifier setting
         id: pick
         env:
+          OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
           CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           set -euo pipefail
-          codex=no
-          claude=no
-          if [ -n "${CODEX_AUTH_JSON:-}" ] || [ -n "${CODEX_VERIFIER_KEY:-}" ]; then codex=yes; fi
-          if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then claude=yes; fi
-          if [ "$codex" = "no" ] && [ "$claude" = "no" ]; then
-            engine=none
-            echo "::notice title=Verifier skipped::skipped: no verifier setting. The pstack-verifier check stays neutrally skipped. Add the repository secret CODEX_AUTH_JSON with a Codex plan login file, or CODEX_VERIFIER_KEY with a Codex API key, or CLAUDE_CODE_OAUTH_TOKEN from the Claude plan."
-          elif [ "$codex" = "yes" ]; then
-            engine=codex
+          node verify/engine.mjs pick >> "$GITHUB_OUTPUT"
+          engine="$(node verify/engine.mjs pick | sed -n 's/^engine=//p')"
+          if [ "$engine" = "none" ]; then
+            echo "::notice title=Verifier skipped::skipped: no verifier setting. The pstack-verifier check stays neutrally skipped. Add the repository secret OPENCODE_GO_API_KEY for the DeepSeek plan first, or CODEX_AUTH_JSON with a Codex plan login file, or CODEX_VERIFIER_KEY with a Codex API key, or CLAUDE_CODE_OAUTH_TOKEN from the Claude plan."
           else
-            engine=claude
+            printf 'the first engine with a setting is %s\n' "$engine"
           fi
-          printf 'engine=%s\ncodex=%s\nclaude=%s\n' "$engine" "$codex" "$claude" >> "$GITHUB_OUTPUT"
           printf 'engine: %s\n' "$engine" >> "$GITHUB_STEP_SUMMARY"
 
   pstack-verifier:
@@ -62,6 +63,7 @@ jobs:
       SERVER_URL: ${{ github.server_url }}
       RUN_ID: ${{ github.run_id }}
       LIVE_URL: https://help.hypertask.ai
+      VERIFIER_MODEL: deepseek-v4.1-flash
     steps:
       - name: Resolve the pull request, its head and its base
         id: target
@@ -120,9 +122,9 @@ jobs:
         with:
           node-version: 24.18.0
 
-      - name: Check the diff reader on a fixture
+      - name: Check the diff reader and the engine picker on fixtures
         if: steps.target.outputs.go == 'yes'
-        run: node --test verify/diff.test.mjs
+        run: node --test verify/diff.test.mjs verify/engine.test.mjs
 
       - name: Enable corepack pnpm
         if: steps.target.outputs.go == 'yes'
@@ -180,18 +182,20 @@ jobs:
           ln -sfn "$RUNNER_TEMP/browser/node_modules" "$GITHUB_WORKSPACE/verify/node_modules"
           printf 'SCREENS_DIR=%s\n' "$RUNNER_TEMP/browser/screens" >> "$GITHUB_ENV"
 
-      - name: Serve the built sites and any local Worker on the runner
+      - name: Serve the built sites and the Workers they build
         if: steps.target.outputs.go == 'yes'
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/serve.mjs" <<'SERVER'
           import { createReadStream } from "node:fs";
           import { stat } from "node:fs/promises";
-          import { createServer } from "node:http";
+          import { createServer, request as forward } from "node:http";
           import path from "node:path";
 
-          const root = path.resolve(process.argv[2]);
-          const port = Number(process.argv[3]);
+          const [rootArgument, portArgument, workerArgument] = process.argv.slice(2);
+          const root = rootArgument === "none" ? undefined : path.resolve(rootArgument);
+          const port = Number(portArgument);
+          const worker = workerArgument === "" ? undefined : new URL(workerArgument);
 
           const types = {
             ".avif": "image/avif",
@@ -217,6 +221,10 @@ jobs:
           };
 
           const candidatesFor = (urlPath) => {
+            if (root === undefined) {
+              return [];
+            }
+
             const base = path.resolve(
               root,
               decodeURIComponent(urlPath).replace(/^\/+/u, "").replace(/\/+$/u, "")
@@ -243,28 +251,10 @@ jobs:
             return undefined;
           };
 
-          createServer(async (request, response) => {
-            const url = new URL(request.url ?? "/", "http://127.0.0.1");
-            const found = await fileAt(candidatesFor(url.pathname));
-
-            if (found === undefined) {
-              const fallback = await fileAt([path.join(root, "404.html")]);
-              response.writeHead(404, {
-                "content-type":
-                  fallback === undefined ? types[".txt"] : types[".html"]
-              });
-
-              if (request.method === "HEAD" || fallback === undefined) {
-                response.end(fallback === undefined ? `404 ${url.pathname}\n` : undefined);
-                return;
-              }
-
-              createReadStream(fallback).pipe(response);
-              return;
-            }
-
-            response.writeHead(200, {
-              "content-type": types[path.extname(found)] ?? "application/octet-stream"
+          const sendFile = (request, response, found, status) => {
+            response.writeHead(status, {
+              "content-type":
+                types[path.extname(found)] ?? "application/octet-stream"
             });
 
             if (request.method === "HEAD") {
@@ -273,15 +263,91 @@ jobs:
             }
 
             createReadStream(found).pipe(response);
+          };
+
+          const sendToWorker = (request, response) => {
+            const sent = forward(
+              {
+                headers: { ...request.headers, host: worker.host },
+                host: worker.hostname,
+                method: request.method,
+                path: request.url,
+                port: worker.port
+              },
+              (answer) => {
+                response.writeHead(answer.statusCode ?? 502, answer.headers);
+                answer.pipe(response);
+              }
+            );
+
+            sent.on("error", () => {
+              response.writeHead(502, { "content-type": types[".txt"] });
+              response.end("502 the built Worker did not answer\n");
+            });
+
+            request.pipe(sent);
+          };
+
+          createServer(async (request, response) => {
+            const url = new URL(request.url ?? "/", "http://127.0.0.1");
+            const found = await fileAt(candidatesFor(url.pathname));
+
+            if (found !== undefined) {
+              sendFile(request, response, found, 200);
+              return;
+            }
+
+            if (worker !== undefined) {
+              sendToWorker(request, response);
+              return;
+            }
+
+            const fallback = await fileAt([path.join(root ?? ".", "404.html")]);
+
+            if (fallback === undefined) {
+              response.writeHead(404, { "content-type": types[".txt"] });
+              response.end(`404 ${url.pathname}\n`);
+              return;
+            }
+
+            sendFile(request, response, fallback, 404);
           }).listen(port, "127.0.0.1", () => {
-            console.log(`serving ${root} on http://127.0.0.1:${port}`);
+            console.log(
+              `serving ${root ?? "no files"}${worker === undefined ? "" : ` in front of ${worker.origin}`} on http://127.0.0.1:${port}`
+            );
           });
           SERVER
 
-          site_root() {
-            for candidate in "$1/apps/web/dist/client" "$1"/apps/*/dist/client; do
-              if [ -f "$candidate/index.html" ]; then
-                printf '%s\n' "$candidate"
+          dist_dir() {
+            local tree="$1" dist
+            for dist in "$tree"/apps/*/dist; do
+              [ -d "$dist" ] || continue
+              if [ -d "$dist/client" ] || [ -d "$dist/server" ]; then
+                printf '%s\n' "$dist"
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          static_root() {
+            local dist="$1"
+            [ -d "$dist/client" ] || return 1
+            printf '%s\n' "$dist/client"
+          }
+
+          server_entry() {
+            local dist="$1" entry=""
+            if [ -f "$dist/server/foldkit.build.json" ]; then
+              entry="$(jq -r '.serverEntry // ""' "$dist/server/foldkit.build.json")"
+            fi
+            if [ -n "$entry" ] && [ -f "$dist/server/$entry" ]; then
+              printf '%s\n' "$dist/server/$entry"
+              return 0
+            fi
+            for entry in "$dist/server/index.js" "$dist/server/fetch.js" "$dist"/server/*.js; do
+              if [ -f "$entry" ]; then
+                printf '%s\n' "$entry"
                 return 0
               fi
             done
@@ -296,7 +362,7 @@ jobs:
               fi
               code="$(curl --silent --output /dev/null --max-time 2 --write-out '%{http_code}' "$url" || true)"
               if [ -n "$code" ] && [ "$code" != "000" ]; then
-                echo "the site answered $code at $url on attempt $attempt"
+                echo "$url answered $code on attempt $attempt"
                 return 0
               fi
               sleep 2
@@ -304,119 +370,169 @@ jobs:
             return 1
           }
 
-          local_worker() {
-            local tree="$1" app command
-            for app in "$tree"/apps/*; do
-              [ -f "$app/package.json" ] || continue
-              for command in preview dev; do
-                case "$(jq -r --arg name "$command" '.scripts[$name] // ""' "$app/package.json")" in
-                  *"wrangler dev"*) printf '%s\n' "$app"; return 0 ;;
-                esac
-              done
-            done
-            return 1
+          wrangler_bin() {
+            local bin="$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" install="$RUNNER_TEMP/wrangler-install.log"
+            if [ ! -x "$bin" ]; then
+              if ! npm install --prefix "$RUNNER_TEMP/wrangler" --no-fund --no-audit --loglevel=error wrangler@4.162.0 > "$install" 2>&1; then
+                tail -20 "$install"
+                return 1
+              fi
+            fi
+            printf '%s\n' "$bin"
           }
 
           start_worker() {
-            local tree="$1" port="$2" side="$3" app wrangler
-            app="$(local_worker "$tree")" || return 1
-            wrangler="$app/node_modules/.bin/wrangler"
-            if [ ! -x "$wrangler" ]; then
-              echo "::notice::$side declares a local Worker dev or preview script, but $wrangler is missing. Only the built files are served for that side."
-              return 2
-            fi
+            local tree="$1" dist="$2" port="$3" side="$4" entry bin pid
+            entry="$(server_entry "$dist")" || return 1
+            bin="$(wrangler_bin)" || return 2
             (
-              cd "$app"
-              exec "$wrangler" dev --ip 127.0.0.1 --port "$port" --local
+              cd "$tree"
+              exec "$bin" dev "$entry" \
+                --name "$side-site" \
+                --compatibility-date 2026-08-31 \
+                --port "$port" \
+                --ip 127.0.0.1 \
+                --local \
+                --persist-to "$RUNNER_TEMP/$side-worker-state" \
+                --show-interactive-dev-session=false \
+                --log-level log
             ) > "$RUNNER_TEMP/$side-worker.log" 2>&1 &
-            printf '%s\n' "$!" > "$RUNNER_TEMP/$side-worker.pid"
-            if ! wait_for "http://127.0.0.1:$port/" "$(cat "$RUNNER_TEMP/$side-worker.pid")" 60; then
-              echo "::notice::$side declares a local Worker dev or preview script in $app, but it did not answer on http://127.0.0.1:$port within 120 seconds. Only the built files are served for that side."
-              return 2
+            pid="$!"
+            printf '%s\n' "$pid" > "$RUNNER_TEMP/$side-worker.pid"
+            if wait_for "http://127.0.0.1:$port/" "$pid" 90; then
+              printf 'the %s Worker runs the built module %s\n' "$side" "$entry"
+              return 0
             fi
-            return 0
+            tail -20 "$RUNNER_TEMP/$side-worker.log" || true
+            return 2
           }
 
-          head_root="$(site_root "$GITHUB_WORKSPACE" || true)"
-          if [ -z "$head_root" ]; then
-            echo "::error::The head build left no apps/*/dist/client/index.html, so there is nothing to serve."
+          start_front() {
+            local root="$1" port="$2" side="$3" worker="$4" pid
+            node "$RUNNER_TEMP/serve.mjs" "${root:-none}" "$port" "$worker" > "$RUNNER_TEMP/$side.log" 2>&1 &
+            pid="$!"
+            printf '%s\n' "$pid" > "$RUNNER_TEMP/$side.pid"
+            wait_for "http://127.0.0.1:$port/" "$pid" 60
+          }
+
+          head_dist="$(dist_dir "$GITHUB_WORKSPACE" || true)"
+          if [ -z "$head_dist" ]; then
+            echo "::error::The head build left no apps/*/dist/client and no apps/*/dist/server. Looked for built static files at apps/*/dist/client and a built Worker at apps/*/dist/server."
             find apps -maxdepth 3 -type d -name dist -print
             exit 1
           fi
-          node "$RUNNER_TEMP/serve.mjs" "$head_root" 4173 > "$RUNNER_TEMP/head.log" 2>&1 &
-          echo "$!" > "$RUNNER_TEMP/head.pid"
-          if ! wait_for "http://127.0.0.1:4173/" "$(cat "$RUNNER_TEMP/head.pid")" 60; then
+          head_root="$(static_root "$head_dist" || true)"
+          head_worker=""
+          if start_worker "$GITHUB_WORKSPACE" "$head_dist" 4175 head; then
+            head_worker="http://127.0.0.1:4175"
+          fi
+          if [ -z "$head_worker" ] && [ -z "$head_root" ]; then
+            echo "::error::The head build has no apps/*/dist/client and apps/*/dist/server holds no Worker module, so there is nothing to serve. Looked for built static files at apps/*/dist/client/index.html and a Worker module named by apps/*/dist/server/foldkit.build.json or any .js file in apps/*/dist/server."
+            find "$head_dist" -maxdepth 2 -print
+            exit 1
+          fi
+          if [ -z "$head_worker" ] && [ ! -f "$head_root/index.html" ]; then
+            echo "::error::The head build has no apps/*/dist/client/index.html and its Worker module did not answer, so no page can be served. Looked for a prerendered apps/*/dist/client/index.html and for a Worker module in apps/*/dist/server started with wrangler dev in local mode."
+            find "$head_dist" -maxdepth 2 -print
+            exit 1
+          fi
+          if ! start_front "$head_root" 4173 head "$head_worker"; then
             cat "$RUNNER_TEMP/head.log"
             echo "::error::The head site did not answer on http://127.0.0.1:4173 within 120 seconds."
             exit 1
           fi
 
           base_root=""
-          if [ "${{ steps.basebuild.outcome }}" = "success" ]; then
-            base_root="$(site_root "$RUNNER_TEMP/base" || true)"
-          fi
-          if [ -z "$base_root" ]; then
-            echo "::notice::The base has no built site, so this run compares the head with the live old site only."
-          else
-            node "$RUNNER_TEMP/serve.mjs" "$base_root" 4174 > "$RUNNER_TEMP/base.log" 2>&1 &
-            echo "$!" > "$RUNNER_TEMP/base.pid"
-            if ! wait_for "http://127.0.0.1:4174/" "$(cat "$RUNNER_TEMP/base.pid")" 60; then
-              cat "$RUNNER_TEMP/base.log"
-              echo "::notice::The base site did not answer on http://127.0.0.1:4174, so this run compares the head with the live old site only."
-              base_root=""
-            fi
-          fi
-
-          head_worker=""
           base_worker=""
-          head_status=0
-          base_status=0
-          start_worker "$GITHUB_WORKSPACE" 4175 head || head_status=$?
-          if [ "$head_status" -eq 0 ]; then
-            head_worker="http://127.0.0.1:4175"
+          if [ "${{ steps.basebuild.outcome }}" = "success" ]; then
+            base_dist="$(dist_dir "$RUNNER_TEMP/base" || true)"
           fi
-          if [ -n "$base_root" ]; then
-            start_worker "$RUNNER_TEMP/base" 4176 base || base_status=$?
-            if [ "$base_status" -eq 0 ]; then
+          if [ -n "${base_dist:-}" ]; then
+            base_root="$(static_root "$base_dist" || true)"
+            if start_worker "$RUNNER_TEMP/base" "$base_dist" 4176 base; then
               base_worker="http://127.0.0.1:4176"
             fi
-          else
-            base_status=3
+            if [ -z "$base_worker" ] && [ -n "$base_root" ] && [ ! -f "$base_root/index.html" ]; then
+              base_root=""
+            fi
+            if [ -n "$base_root" ] || [ -n "$base_worker" ]; then
+              if ! start_front "$base_root" 4174 base "$base_worker"; then
+                cat "$RUNNER_TEMP/base.log"
+                echo "::notice::The base site did not answer on http://127.0.0.1:4174, so this run compares the head with the live old site only."
+                base_root=""
+                base_worker=""
+              fi
+            fi
+          fi
+          if [ -z "$base_root" ] && [ -z "$base_worker" ]; then
+            echo "::notice::The base has no served site, so this run compares the head with the live old site only."
           fi
 
           head_mode="built files"
-          base_mode="not served"
-          if [ -n "$head_worker" ]; then
-            head_mode="built files and the app's own local Worker"
-          elif [ "$head_status" -eq 1 ]; then
-            echo "::notice::The head declares no local Worker dev or preview script that runs without a Cloudflare login, so only the built files are served there. A redirect, /health, a CORS answer or an unknown address is unproven in this run."
+          if [ -n "$head_worker" ] && [ -n "$head_root" ]; then
+            head_mode="the built Worker for every request no built file matches, and the built files for the rest"
+          elif [ -n "$head_worker" ]; then
+            head_mode="the built Worker"
           fi
-          if [ -n "$base_worker" ]; then
-            base_mode="built files and the app's own local Worker"
+          base_mode="not served"
+          if [ -n "$base_worker" ] && [ -n "$base_root" ]; then
+            base_mode="the built Worker for every request no built file matches, and the built files for the rest"
+          elif [ -n "$base_worker" ]; then
+            base_mode="the built Worker"
           elif [ -n "$base_root" ]; then
             base_mode="built files"
-            if [ "$base_status" -eq 1 ]; then
-              echo "::notice::The base declares no local Worker dev or preview script that runs without a Cloudflare login, so only the built files are served there."
-            fi
           fi
 
           {
-            printf 'SITE_ROOT=%s\nSITE_URL=http://127.0.0.1:4173\n' "$head_root"
-            printf 'BASE_ROOT=%s\n' "$base_root"
-            if [ -n "$base_root" ]; then printf 'BASE_URL=http://127.0.0.1:4174\n'; fi
+            printf 'SITE_ROOT=%s\nSITE_URL=http://127.0.0.1:4173\n' "${head_root:-$head_dist}"
+            printf 'BASE_ROOT=%s\n' "${base_root:-none}"
+            if [ -n "$base_root" ] || [ -n "$base_worker" ]; then printf 'BASE_URL=http://127.0.0.1:4174\n'; fi
             printf 'SITE_WORKER_URL=%s\nBASE_WORKER_URL=%s\n' "$head_worker" "$base_worker"
             printf 'SERVE_MODE_HEAD=%s\nSERVE_MODE_BASE=%s\n' "$head_mode" "$base_mode"
           } >> "$GITHUB_ENV"
           {
-            printf 'head: %s on http://127.0.0.1:4173, %s\n' "$head_root" "$head_mode"
-            if [ -n "$head_worker" ]; then printf 'head local Worker: %s\n' "$head_worker"; fi
-            if [ -n "$base_root" ]; then
-              printf 'base: %s on http://127.0.0.1:4174, %s\n' "$base_root" "$base_mode"
-              if [ -n "$base_worker" ]; then printf 'base local Worker: %s\n' "$base_worker"; fi
+            printf 'head: %s on http://127.0.0.1:4173, %s\n' "${head_root:-$head_dist}" "$head_mode"
+            if [ -n "$head_worker" ]; then printf 'head Worker: %s\n' "$head_worker"; fi
+            if [ -n "$base_root" ] || [ -n "$base_worker" ]; then
+              printf 'base: %s on http://127.0.0.1:4174, %s\n' "${base_root:-the built Worker}" "$base_mode"
+              if [ -n "$base_worker" ]; then printf 'base Worker: %s\n' "$base_worker"; fi
             else
               printf 'base: not served, the live old site is the reference\n'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prove the served root answers before the verifier starts
+        if: steps.target.outputs.go == 'yes'
+        run: |
+          set -euo pipefail
+          prove_page() {
+            local address="$1" side="$2" path="$3" body code bytes
+            body="$RUNNER_TEMP/served-$side.html"
+            rm -f "$body"
+            code="$(curl --silent --show-error --max-time 20 --output "$body" --write-out '%{http_code}' "$address$path" || true)"
+            bytes="$(wc -c < "$body" 2>/dev/null || printf '0')"
+            printf '%s %s answered %s with %s bytes\n' "$side" "$path" "$code" "$bytes"
+            printf '%s %s answered %s with %s bytes\n' "$side" "$path" "$code" "$bytes" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$code" = "200" ] && [ "$bytes" -gt 0 ]; then
+              return 0
+            fi
+            return 1
+          }
+          prove_side() {
+            local address="$1" side="$2" path
+            for path in / /help; do
+              if prove_page "$address" "$side" "$path"; then
+                return 0
+              fi
+            done
+            echo "::error::The served $side site answered no page: $address/ and $address/help both came back without a 200 and a body, so the verifier would judge a site that is not there."
+            return 1
+          }
+          prove_side "$SITE_URL" head
+          if [ -n "${BASE_URL:-}" ] && ! prove_side "$BASE_URL" base; then
+            echo "::notice::The base site answered no page, so this run compares the head with the live old site only."
+            printf 'BASE_URL=\n' >> "$GITHUB_ENV"
+          fi
 
       - name: Read the change under review from the checkout
         if: steps.target.outputs.go == 'yes'
@@ -458,11 +574,11 @@ jobs:
           diff_capped_bytes="$(jq -r '.cappedBytes' "$RUNNER_TEMP/diff.json")"
           diff_limit="$(jq -r '.limit' "$RUNNER_TEMP/diff.json")"
           if [ -n "${SITE_WORKER_URL:-}" ] && [ -n "${BASE_WORKER_URL:-}" ]; then
-            worker_note="- The app's own local Worker also answers, in place of the Cloudflare layer. The head is at $SITE_WORKER_URL and the base is at $BASE_WORKER_URL. Use it for what a file server cannot answer: the status code of an unknown address, a trailing-slash request, /health, a CORS answer, and a redirect."
+            worker_note="- Both sides run the Worker their own build produces, started on this runner with wrangler dev in local mode and no Cloudflare account. The head Worker answers at $SITE_WORKER_URL and the base Worker at $BASE_WORKER_URL, and a request that matches no built file already reaches that Worker through the served address. Use it for the status code of an unknown address, a trailing-slash request, /health, a CORS answer and a redirect."
           elif [ -n "${SITE_WORKER_URL:-}" ] || [ -n "${BASE_WORKER_URL:-}" ]; then
-            worker_note="- Only one side answered on its own local Worker this run: head ${SITE_WORKER_URL:-none}, base ${BASE_WORKER_URL:-none}. A behaviour comparison between the two sides is therefore not possible. Use the side that answered, and say plainly which side you could not compare."
+            worker_note="- Only one side runs the Worker its build produces this run: head ${SITE_WORKER_URL:-none}, base ${BASE_WORKER_URL:-none}. The other side answers from built files only, so a status code, a redirect or a CORS answer cannot be compared between the two sides. Say plainly which side you could not compare."
           else
-            worker_note="- No local Worker dev or preview script answered on this run, so only the built files are served. A redirect, a /health status, a CORS answer or an unknown address therefore cannot be judged from what is running. Say plainly that it is unproven here, and read the checkout for what the code would do."
+            worker_note="- Neither side's build produces a Worker on this run, so built files answer every request. A redirect, a /health status, a CORS answer or an unknown address therefore comes from the file server, not from the app. Say plainly that it is unproven here, and read the checkout for what the code would do."
           fi
           {
             cat <<PROMPT
@@ -482,10 +598,10 @@ jobs:
           ## What you have
           - The pull request head commit $SHA is checked out at the repository root, at $GITHUB_WORKSPACE. That is the change under review.
           - The base commit, the commit this change targets, is checked out at ${RUNNER_TEMP}/base when it could be added. That is what a visitor sees today.
-          - The built head site is running at ${SITE_URL}, from the built files in ${SITE_ROOT}. Serve mode for the head: ${SERVE_MODE_HEAD}.
-          - The built base site, when the base builds, is running at ${BASE_URL:-none}, from the built files in ${BASE_ROOT:-none}. Serve mode for the base: ${SERVE_MODE_BASE}.
+          - The built head site is running at ${SITE_URL}, from ${SITE_ROOT}. Serve mode for the head: ${SERVE_MODE_HEAD}.
+          - The built base site, when the base builds, is running at ${BASE_URL:-none}, from ${BASE_ROOT:-none}. Serve mode for the base: ${SERVE_MODE_BASE}.
           $worker_note
-          - The built files are what a deploy uploads, so a page, an asset, a font and a stylesheet can all be fetched there.
+          - The built output is what a deploy uploads, so a page, an asset, a font and a stylesheet can all be fetched at the served address.
           - The live old site is at $LIVE_URL. Read it for look and content, and compare it with the head. Fetch it with GET only, never post to it, and never send it a chat message.
           - The feature map for the help site is verify/feature-map.md. It lists every user-visible feature, the address to try, and what to look for.
           - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the head with the base, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright 1.65.1 with Chromium is installed outside the repository and linked at verify/node_modules, so the driver resolves it. SCREENS_DIR points at ${SCREENS_DIR}.
@@ -493,7 +609,7 @@ jobs:
             - node verify/driver.mjs compare --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
             - node verify/driver.mjs widget --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
             - node verify/driver.mjs api --head "${SITE_URL}" --base "${BASE_URL:-}" --path /health --path /api/articles
-          - Save every screenshot and report in ${SCREENS_DIR}.
+          - The screenshots the driver writes are PNG files in ${SCREENS_DIR}. Open them with your read tool when your model takes images, and judge the look with your own eyes as well as by measuring the DOM and the CSS. If your model takes no image, write in the verdict that the look was checked by measurement and not by eye, and never claim to have seen a screenshot.
           - The change under review, its title, its body, the files it touches and its diff, is at the end of this prompt.
 
           ## What to do
@@ -540,9 +656,76 @@ jobs:
             printf '~~~\n'
           } > "$RUNNER_TEMP/prompt.md"
 
+      - name: Verify with DeepSeek
+        id: deepseek
+        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.deepseek == 'yes'
+        continue-on-error: true
+        env:
+          OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
+          SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          set -euo pipefail
+          npm install --global --no-fund --no-audit @earendil-works/pi-coding-agent@1.5.0
+          engine_token="$OPENCODE_GO_API_KEY"
+          agent_path="$(dirname "$(command -v pi)"):$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
+          status=0
+          env -i \
+            HOME="$HOME" \
+            PATH="$agent_path" \
+            TERM=dumb \
+            OPENCODE_API_KEY="$engine_token" \
+            GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+            RUNNER_TEMP="$RUNNER_TEMP" \
+            SCREENS_DIR="$SCREENS_DIR" \
+            SITE_URL="$SITE_URL" \
+            BASE_URL="${BASE_URL:-}" \
+            SITE_WORKER_URL="${SITE_WORKER_URL:-}" \
+            BASE_WORKER_URL="${BASE_WORKER_URL:-}" \
+            SERVE_MODE_HEAD="$SERVE_MODE_HEAD" \
+            SERVE_MODE_BASE="$SERVE_MODE_BASE" \
+            LIVE_URL="$LIVE_URL" \
+            pi -p \
+              --provider opencode-go \
+              --model "$VERIFIER_MODEL" \
+              --thinking medium \
+              --no-session \
+              --no-context-files \
+              --no-approve \
+              < "$RUNNER_TEMP/prompt.md" \
+              > "$RUNNER_TEMP/verdict.md" \
+              2> "$RUNNER_TEMP/deepseek.log" || status=$?
+          outcome="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" classify "$RUNNER_TEMP/deepseek.log" "$RUNNER_TEMP/verdict.md" "$SHA")"
+          printf 'fallback=no\n' >> "$GITHUB_OUTPUT"
+          if [ "$outcome" = "used" ]; then
+            printf 'engine: deepseek (%s via pi)\n' "$VERIFIER_MODEL" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          fallback=no
+          case "$outcome" in
+            limit|login) fallback=yes ;;
+          esac
+          printf 'fallback=%s\n' "$fallback" >> "$GITHUB_OUTPUT"
+          if [ "$fallback" = "yes" ]; then
+            echo "::warning::DeepSeek ended on a limit or a login ($outcome), read from its own log. Codex is the next engine."
+            node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/deepseek.log"
+            exit 1
+          fi
+          echo "::error::DeepSeek produced no verdict that names $SHA, and its log shows no limit and no login error (exit status $status). Another engine is not tried for that reason."
+          node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/deepseek.log"
+          sed -n '1,20p' "$RUNNER_TEMP/verdict.md" || true
+          exit 1
+
+      - name: Stop when DeepSeek failed for a reason other than a limit or a login
+        if: steps.target.outputs.go == 'yes' && steps.deepseek.outcome == 'failure' && steps.deepseek.outputs.fallback != 'yes'
+        env:
+          SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          echo "::error::The DeepSeek engine failed at $SHA for a reason that is not a limit and not a login, so this run stops instead of trying another engine."
+          exit 1
+
       - name: Verify with Codex
         id: codex
-        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.codex == 'yes'
+        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.codex == 'yes' && (needs.engine.outputs.deepseek == 'no' || steps.deepseek.outputs.fallback == 'yes')
         continue-on-error: true
         env:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
@@ -586,6 +769,7 @@ jobs:
             engine_token="$CODEX_VERIFIER_KEY"
             codex_env+=("CODEX_API_KEY=$engine_token" "OPENAI_API_KEY=$engine_token")
           fi
+          status=0
           env -i "${codex_env[@]}" \
             codex exec \
               --skip-git-repo-check \
@@ -593,20 +777,26 @@ jobs:
               --sandbox danger-full-access \
               --cd "$GITHUB_WORKSPACE" \
               --output-last-message "$RUNNER_TEMP/verdict.md" \
-              - < "$RUNNER_TEMP/prompt.md"
-          first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true)"
-          case "$first" in
-            "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
-            *)
-              echo "::error::Codex produced no verdict line, so Claude stands in."
-              sed -n '1,40p' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true
-              exit 1
-              ;;
+              - < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/codex.log" 2>&1 || status=$?
+          outcome="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" classify "$RUNNER_TEMP/codex.log" "$RUNNER_TEMP/verdict.md" "$SHA")"
+          printf 'fallback=no\n' >> "$GITHUB_OUTPUT"
+          if [ "$outcome" = "used" ]; then
+            exit 0
+          fi
+          fallback=no
+          case "$outcome" in
+            limit|login) fallback=yes ;;
           esac
-          if ! grep -qi "$SHA" "$RUNNER_TEMP/verdict.md"; then
-            echo "::error::The Codex verdict does not name the head commit $SHA, so Claude stands in."
+          printf 'fallback=%s\n' "$fallback" >> "$GITHUB_OUTPUT"
+          if [ "$fallback" = "yes" ]; then
+            echo "::warning::Codex ended on a limit or a login ($outcome), read from its own log. Claude is the next engine."
+            node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/codex.log"
             exit 1
           fi
+          echo "::error::Codex produced no verdict that names $SHA, and its log shows no limit and no login error (exit status $status). Another engine is not tried for that reason."
+          node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/codex.log"
+          sed -n '1,20p' "$RUNNER_TEMP/verdict.md" || true
+          exit 1
 
       - name: Remove the Codex login file
         if: always()
@@ -619,9 +809,9 @@ jobs:
               ;;
           esac
 
-      - name: Verify with Claude when Codex is absent or refused
+      - name: Verify with Claude when the engines before it are absent or refused
         id: claude
-        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.claude == 'yes' && (needs.engine.outputs.codex == 'no' || steps.codex.outcome == 'failure')
+        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.claude == 'yes' && (needs.engine.outputs.deepseek == 'no' || steps.deepseek.outputs.fallback == 'yes') && (needs.engine.outputs.codex == 'no' || steps.codex.outputs.fallback == 'yes')
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           SHA: ${{ steps.target.outputs.sha }}
@@ -645,13 +835,14 @@ jobs:
             SERVE_MODE_HEAD="$SERVE_MODE_HEAD" \
             SERVE_MODE_BASE="$SERVE_MODE_BASE" \
             LIVE_URL="$LIVE_URL" \
-            claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md"
+            claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md" 2> "$RUNNER_TEMP/claude.log"
           first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
           case "$first" in
             "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
             *)
               echo "::error::Claude produced no verdict line."
-              sed -n '1,40p' "$RUNNER_TEMP/verdict.md"
+              node "$GITHUB_WORKSPACE/verify/engine.mjs" redact "$RUNNER_TEMP/claude.log"
+              sed -n '1,20p' "$RUNNER_TEMP/verdict.md"
               exit 1
               ;;
           esac
@@ -670,6 +861,8 @@ jobs:
           CODEX_OUTCOME: ${{ steps.codex.outcome }}
           CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
           CODEX_CONFIGURED: ${{ needs.engine.outputs.codex }}
+          DEEPSEEK_OUTCOME: ${{ steps.deepseek.outcome }}
+          DEEPSEEK_CONFIGURED: ${{ needs.engine.outputs.deepseek }}
         run: |
           set -euo pipefail
           if [ ! -s "$RUNNER_TEMP/verdict.md" ]; then
@@ -696,14 +889,19 @@ jobs:
             echo "::notice::The pull request head moved from $SHA to $head_now while this run was verifying. A newer run posts the verdict."
             exit 0
           fi
-          if [ "${CODEX_OUTCOME:-}" = "success" ]; then
-            engine_note="codex"
-          elif [ "${CLAUDE_OUTCOME:-}" = "success" ] && [ "${CODEX_CONFIGURED:-no}" = "no" ]; then
-            engine_note="claude, because no Codex setting exists"
-          elif [ "${CLAUDE_OUTCOME:-}" = "success" ]; then
-            engine_note="claude, after Codex was refused"
+          if [ "${DEEPSEEK_OUTCOME:-}" = "success" ]; then
+            engine_note="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" note deepseek "$VERIFIER_MODEL")"
           else
-            engine_note="unknown"
+            before=""
+            if [ "${DEEPSEEK_CONFIGURED:-no}" = "yes" ]; then before="deepseek"; fi
+            if [ "${CODEX_OUTCOME:-}" = "success" ] && [ "${CODEX_CONFIGURED:-no}" = "yes" ]; then
+              engine_note="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" note codex "$VERIFIER_MODEL" $before)"
+            elif [ "${CLAUDE_OUTCOME:-}" = "success" ]; then
+              if [ "${CODEX_CONFIGURED:-no}" = "yes" ]; then before="${before:+$before }codex"; fi
+              engine_note="$(node "$GITHUB_WORKSPACE/verify/engine.mjs" note claude "$VERIFIER_MODEL" $before)"
+            else
+              engine_note="unknown"
+            fi
           fi
           {
             printf 'pstack-verifier: %s @ %s\n' "$verdict" "$SHA"

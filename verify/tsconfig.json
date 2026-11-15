@@ -5,5 +5,5 @@
     "checkJs": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"]
   },
-  "include": ["diff.mjs", "diff.test.mjs"]
+  "include": ["diff.mjs", "diff.test.mjs", "engine.mjs", "engine.test.mjs"]
 }
