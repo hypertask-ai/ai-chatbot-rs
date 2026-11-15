@@ -126,11 +126,8 @@ const mentionsAny = (marks, text) => marks.some((mark) => mark.test(text));
 export const classifyEngineRun = (log, verdict, sha) => {
   const line = firstLine(verdict);
 
-  if (
-    VERDICT_LINE.test(line) &&
-    verdict.toLowerCase().includes(sha.toLowerCase())
-  ) {
-    return "used";
+  if (VERDICT_LINE.test(line)) {
+    return verdict.toLowerCase().includes(sha.toLowerCase()) ? "used" : "other";
   }
 
   if (mentionsAny(LIMIT_MARKS, log)) {

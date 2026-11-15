@@ -147,6 +147,25 @@ await test("falls back when the DeepSeek log ends on a login error", () => {
   );
 });
 
+await test("stops on a verdict that is stale instead of trying another engine", () => {
+  assert.equal(
+    classifyEngineRun(
+      "status code 429, too many requests",
+      verdictFor("VERDICT: FAIL"),
+      "0".repeat(40)
+    ),
+    "other"
+  );
+  assert.equal(
+    classifyEngineRun(
+      "status code 401, unauthorized",
+      verdictFor("VERDICT: PASS"),
+      "0".repeat(40)
+    ),
+    "other"
+  );
+});
+
 await test("stops instead of falling back on any other failure", () => {
   assert.equal(
     classifyEngineRun("process exited with code 1", "", SHA),
