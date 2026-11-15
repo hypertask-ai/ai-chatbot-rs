@@ -37,6 +37,18 @@ export {
   readFlagLedgerContract,
 } from "./flag-contracts.js";
 
+export {
+  HandoffAnswerSchema,
+  HandoffEmailAnswerSchema,
+  VisitorProfileAnswerSchema,
+  leaveHandoffEmailContract,
+  requestHandoffContract,
+  saveVisitorProfileContract,
+  type HandoffAnswer,
+  type HandoffEmailAnswer,
+  type VisitorProfileAnswer,
+} from "./chat-contracts.js";
+
 export { UnknownPrompt } from "./unknown-prompt.js";
 
 export {
