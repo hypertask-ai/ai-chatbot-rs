@@ -8,17 +8,44 @@ import {
   customerAlertVisitorLabel,
   escapeCustomerAlertHtml,
 } from "../src/customer-alert-text.js";
-import type {
-  CustomerAlert,
-  NewConversationAlert,
-} from "../src/customer-alerts.js";
 
 const CHAT_URL = "https://help.hypertask.ai/admin#conv=conv-1";
 
-const alert = (
-  type: CustomerAlert["type"],
-  value: CustomerAlert["alert"]
-): CustomerAlert => ({ alert: value, type });
+const newConversationText = (
+  message: string | undefined,
+  isEval = false
+): string =>
+  customerAlertText({
+    alert: { conversationId: "conv-1", isEval, message },
+    type: "new_conversation",
+  });
+
+const handoffText = (
+  visitorName: string | null,
+  visitorEmail: string | null,
+  isEval = false
+): string =>
+  customerAlertText({
+    alert: { conversationId: "conv-1", isEval, visitorEmail, visitorName },
+    type: "handoff_requested",
+  });
+
+const newMessageText = (
+  visitorName: string | null,
+  visitorEmail: string | null,
+  message: string,
+  isEval = false
+): string =>
+  customerAlertText({
+    alert: {
+      conversationId: "conv-1",
+      isEval,
+      message,
+      visitorEmail,
+      visitorName,
+    },
+    type: "new_message",
+  });
 
 describe("customer alert text", () => {
   it("opens the chat the alert is about", () => {
@@ -26,60 +53,25 @@ describe("customer alert text", () => {
   });
 
   it("announces a new conversation with its message and the open chat link", () => {
-    expect(
-      customerAlertText(
-        alert("new_conversation", {
-          conversationId: "conv-1",
-          isEval: false,
-          message: "Hello, I need help with billing",
-        })
-      )
-    ).toBe(
+    expect(newConversationText("Hello, I need help with billing")).toBe(
       '<b>New Conversation</b>\n\nCustomer: Unknown visitor\nMessage: Hello, I need help with billing\n\n<a href="https://help.hypertask.ai/admin#conv=conv-1">Open Chat</a>'
     );
   });
 
   it("names the customer and the email on a handoff request", () => {
-    expect(
-      customerAlertText(
-        alert("handoff_requested", {
-          conversationId: "conv-1",
-          isEval: false,
-          visitorEmail: "ada@example.com",
-          visitorName: "Ada",
-        })
-      )
-    ).toBe(
+    expect(handoffText("Ada", "ada@example.com")).toBe(
       '<b>Handoff Requested</b>\n\nCustomer: Ada\nEmail: ada@example.com\n\n<a href="https://help.hypertask.ai/admin#conv=conv-1">Accept Handoff</a>'
     );
   });
 
   it("leaves the email line out of a handoff request with no email", () => {
-    expect(
-      customerAlertText(
-        alert("handoff_requested", {
-          conversationId: "conv-1",
-          isEval: false,
-          visitorEmail: null,
-          visitorName: "Ada",
-        })
-      )
-    ).toBe(
+    expect(handoffText("Ada", null)).toBe(
       '<b>Handoff Requested</b>\n\nCustomer: Ada\n\n<a href="https://help.hypertask.ai/admin#conv=conv-1">Accept Handoff</a>'
     );
   });
 
   it("calls an unnamed visitor Unknown visitor", () => {
-    expect(
-      customerAlertText(
-        alert("handoff_requested", {
-          conversationId: "conv-1",
-          isEval: false,
-          visitorEmail: null,
-          visitorName: null,
-        })
-      )
-    ).toBe(
+    expect(handoffText(null, null)).toBe(
       '<b>Handoff Requested</b>\n\nCustomer: Unknown visitor\n\n<a href="https://help.hypertask.ai/admin#conv=conv-1">Accept Handoff</a>'
     );
   });
@@ -93,15 +85,7 @@ describe("customer alert text", () => {
 
   it("shows a new customer message with its sender and the reply link", () => {
     expect(
-      customerAlertText(
-        alert("new_message", {
-          conversationId: "conv-1",
-          isEval: false,
-          message: "Where is my invoice?",
-          visitorEmail: "ada@example.com",
-          visitorName: "Ada",
-        })
-      )
+      newMessageText("Ada", "ada@example.com", "Where is my invoice?")
     ).toBe(
       '<b>New Message</b>\n\nFrom: Ada\nMessage: Where is my invoice?\n\n<a href="https://help.hypertask.ai/admin#conv=conv-1">Reply</a>'
     );
@@ -128,32 +112,16 @@ describe("customer alert text", () => {
 
   it("escapes the three characters Telegram HTML reserves", () => {
     expect(escapeCustomerAlertHtml("Ada & <Co>")).toBe("Ada &amp; &lt;Co&gt;");
-    expect(
-      customerAlertText(
-        alert("new_message", {
-          conversationId: "conv-1",
-          isEval: false,
-          message: "<b>not bold</b>",
-          visitorEmail: null,
-          visitorName: "Ada & Co",
-        })
-      )
-    ).toBe(
+    expect(newMessageText("Ada & Co", null, "<b>not bold</b>")).toBe(
       '<b>New Message</b>\n\nFrom: Ada &amp; Co\nMessage: &lt;b&gt;not bold&lt;/b&gt;\n\n<a href="https://help.hypertask.ai/admin#conv=conv-1">Reply</a>'
     );
   });
 
   it("builds the same text for an eval alert, which the sender then skips", () => {
-    const data: NewConversationAlert = {
-      conversationId: "conv-1",
-      isEval: true,
-      message: "Replay question",
-    };
-
-    expect(customerAlertText(alert("new_conversation", data))).toBe(
-      customerAlertText(alert("new_conversation", { ...data, isEval: false }))
+    expect(newConversationText("Replay question", true)).toBe(
+      newConversationText("Replay question", false)
     );
-    expect(customerAlertText(alert("new_conversation", data))).toContain(
+    expect(newConversationText("Replay question", true)).toContain(
       "Replay question"
     );
   });
