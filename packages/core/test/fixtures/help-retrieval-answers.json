@@ -1,0 +1,592 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai/api/chat/debug-rag",
+  "method": "curl, GET only, no chat message sent, no cookies and no visitor data",
+  "defaultQuery": "how do i create a task",
+  "defaultIds": [
+    "10895348",
+    "docs-mcp-agents",
+    "10895766",
+    "10895347",
+    "docs-features-tasks",
+    "10895739",
+    "docs-cli-tasks-assign",
+    "10895744"
+  ],
+  "questions": [
+    {
+      "query": "board",
+      "ids": [
+        "docs-features-boards",
+        "docs-features-board-settings",
+        "docs-features-board-visibility",
+        "docs-features-chat-board-filter",
+        "10895347",
+        "10895515",
+        "article-ai-chat-1741567200",
+        "10895720"
+      ]
+    },
+    {
+      "query": "BOARD",
+      "ids": [
+        "docs-features-boards",
+        "docs-features-board-settings",
+        "docs-features-board-visibility",
+        "docs-features-chat-board-filter",
+        "10895347",
+        "10895515",
+        "article-ai-chat-1741567200",
+        "10895720"
+      ]
+    },
+    {
+      "query": "Board",
+      "ids": [
+        "docs-features-boards",
+        "docs-features-board-settings",
+        "docs-features-board-visibility",
+        "docs-features-chat-board-filter",
+        "10895347",
+        "10895515",
+        "article-ai-chat-1741567200",
+        "10895720"
+      ]
+    },
+    {
+      "query": "Time Tracking",
+      "ids": [
+        "docs-features-time-tracking",
+        "11106356",
+        "docs-features-board-settings",
+        "docs-features-tasks",
+        "article-ai-chat-1741567200",
+        "docs-features-collaboration",
+        "docs-features-agents-dashboard",
+        "docs-getting-started-settings-profile"
+      ]
+    },
+    {
+      "query": "time tracking",
+      "ids": [
+        "docs-features-time-tracking",
+        "11106356",
+        "docs-features-board-settings",
+        "docs-features-tasks",
+        "article-ai-chat-1741567200",
+        "docs-features-collaboration",
+        "docs-features-agents-dashboard",
+        "docs-getting-started-settings-profile"
+      ]
+    },
+    {
+      "query": "track",
+      "ids": [
+        "docs-features-time-tracking",
+        "11106356",
+        "docs-getting-started-settings-profile",
+        "docs-features-board-settings",
+        "docs-features-billing",
+        "docs-features-tasks",
+        "10895766",
+        "10895739"
+      ]
+    },
+    {
+      "query": "tracking time",
+      "ids": [
+        "docs-features-time-tracking",
+        "11106356",
+        "docs-features-board-settings",
+        "docs-features-tasks",
+        "article-ai-chat-1741567200",
+        "docs-features-collaboration",
+        "docs-features-agents-dashboard",
+        "docs-getting-started-settings-profile"
+      ]
+    },
+    {
+      "query": "pricng",
+      "ids": [
+        "pricing-plans",
+        "11829886",
+        "docs-features-ai-chat-capabilities",
+        "docs-mcp-workflows",
+        "docs-features-billing",
+        "docs-features-appearance",
+        "docs-features-ai-features"
+      ]
+    },
+    {
+      "query": "freeplan",
+      "ids": ["pricing-plans"]
+    },
+    {
+      "query": "what are the limitations fo the freeplan",
+      "ids": [
+        "pricing-plans",
+        "docs-features-ai-chat-capabilities",
+        "docs-features-board-settings",
+        "docs-features-billing",
+        "docs-api-tools-reference",
+        "docs-mcp-workflows",
+        "docs-features-search",
+        "docs-features-collaboration"
+      ]
+    },
+    {
+      "query": "tiem trackng",
+      "ids": [
+        "docs-features-time-tracking",
+        "11106356",
+        "docs-features-board-settings",
+        "docs-features-tasks",
+        "article-ai-chat-1741567200",
+        "docs-features-collaboration",
+        "docs-features-agents-dashboard",
+        "docs-getting-started-settings-profile"
+      ]
+    },
+    {
+      "query": "slak",
+      "ids": [
+        "docs-features-slack",
+        "docs-features-integrations",
+        "docs-features-board-settings",
+        "docs-features-collaboration",
+        "docs-changelog-index",
+        "docs-features-search",
+        "docs-features-tasks"
+      ]
+    },
+    {
+      "query": "conect to slak",
+      "ids": [
+        "docs-features-slack",
+        "docs-features-integrations",
+        "docs-connect-an-agent",
+        "docs-features-collaboration",
+        "docs-features-board-settings",
+        "docs-mcp-troubleshooting",
+        "docs-changelog-index",
+        "docs-mcp-overview"
+      ]
+    },
+    {
+      "query": "team size",
+      "ids": [
+        "docs-features-billing",
+        "pricing-plans",
+        "docs-getting-started-concepts",
+        "docs-features-collaboration",
+        "docs-getting-started-introduction",
+        "10895747",
+        "10895348",
+        "docs-getting-started-settings-profile"
+      ]
+    },
+    {
+      "query": "seats",
+      "ids": [
+        "docs-features-billing",
+        "pricing-plans",
+        "docs-getting-started-concepts",
+        "docs-features-collaboration",
+        "docs-getting-started-introduction"
+      ]
+    },
+    {
+      "query": "restrictions",
+      "ids": [
+        "pricing-plans",
+        "docs-features-ai-chat-capabilities",
+        "docs-features-board-settings",
+        "docs-features-billing",
+        "docs-api-tools-reference",
+        "docs-mcp-workflows",
+        "docs-features-search",
+        "docs-features-collaboration"
+      ]
+    },
+    {
+      "query": "custom fields",
+      "ids": [
+        "docs-features-custom-fields",
+        "docs-mcp-overview",
+        "docs-features-time-tracking",
+        "docs-cli-commands",
+        "docs-features-ai-features",
+        "10895799",
+        "docs-features-scheduling",
+        "docs-changelog-index"
+      ]
+    },
+    {
+      "query": "custum feilds on a task",
+      "ids": [
+        "docs-features-custom-fields",
+        "docs-mcp-overview",
+        "10895799",
+        "docs-features-time-tracking",
+        "docs-cli-commands",
+        "docs-features-ai-features",
+        "docs-features-tasks",
+        "docs-features-scheduling"
+      ]
+    },
+    {
+      "query": "webhoook when an agent is assigned",
+      "ids": [
+        "docs-mcp-agent-webhooks",
+        "docs-mcp-agent-sdk",
+        "docs-mcp-workflows",
+        "docs-features-agent-chat",
+        "docs-cli-commands",
+        "docs-api-tools-reference",
+        "docs-cli-tasks-assign",
+        "docs-mcp-agents"
+      ]
+    },
+    {
+      "query": "kanban borad",
+      "ids": [
+        "10895347",
+        "11064688",
+        "docs-getting-started-introduction",
+        "11204658",
+        "docs-features-board-visibility",
+        "docs-features-tasks",
+        "docs-features-smart-labels",
+        "10895353"
+      ]
+    },
+    {
+      "query": "keybaord shortcts",
+      "ids": [
+        "docs-features-keyboard-shortcuts",
+        "10895373",
+        "10895425",
+        "10895790",
+        "10895515",
+        "10895786",
+        "docs-getting-started-settings-profile",
+        "docs-getting-started-switching"
+      ]
+    },
+    {
+      "query": "magik link email never arrived",
+      "ids": [
+        "11900001",
+        "docs-getting-started-introduction",
+        "docs-getting-started-troubleshooting-login",
+        "docs-features-chat-board-filter",
+        "docs-getting-started-quickstart",
+        "docs-getting-started-settings-profile",
+        "docs-features-scheduling",
+        "docs-features-billing"
+      ]
+    },
+    {
+      "query": "desktpo app for windows",
+      "ids": [
+        "docs-getting-started-apps",
+        "docs-getting-started-introduction",
+        "10895425",
+        "docs-features-tasks",
+        "docs-changelog-index",
+        "docs-getting-started-quickstart",
+        "docs-features-keyboard-shortcuts",
+        "docs-mcp-agents"
+      ]
+    },
+    {
+      "query": "intergrations",
+      "ids": [
+        "docs-features-integrations",
+        "docs-mcp-overview",
+        "docs-features-slack",
+        "pricing-plans",
+        "docs-getting-started-introduction",
+        "docs-features-byok",
+        "docs-api-rest-api",
+        "10895799"
+      ]
+    },
+    {
+      "query": "café board",
+      "ids": [
+        "docs-features-boards",
+        "docs-features-board-settings",
+        "docs-features-board-visibility",
+        "docs-features-chat-board-filter",
+        "10895347",
+        "10895515",
+        "article-ai-chat-1741567200",
+        "10895720"
+      ]
+    },
+    {
+      "query": "pricing-plans?",
+      "ids": [
+        "pricing-plans",
+        "docs-features-billing",
+        "docs-features-ai-chat-capabilities",
+        "docs-features-appearance",
+        "docs-mcp-workflows",
+        "11829886",
+        "10895715",
+        "docs-getting-started-switching"
+      ]
+    },
+    {
+      "query": "what's a board?",
+      "ids": [
+        "docs-features-boards",
+        "docs-features-board-settings",
+        "docs-features-board-visibility",
+        "docs-features-chat-board-filter",
+        "10895347",
+        "10895515",
+        "article-ai-chat-1741567200",
+        "10895720"
+      ]
+    },
+    {
+      "query": "a",
+      "ids": []
+    },
+    {
+      "query": "how do i create a task",
+      "ids": [
+        "10895348",
+        "docs-mcp-agents",
+        "10895766",
+        "10895347",
+        "docs-features-tasks",
+        "10895739",
+        "docs-cli-tasks-assign",
+        "10895744"
+      ]
+    },
+    {
+      "query": "zzzqx",
+      "ids": []
+    },
+    {
+      "query": "how do I add a team member",
+      "ids": [
+        "docs-features-collaboration",
+        "docs-getting-started-concepts",
+        "10895353",
+        "docs-features-boards",
+        "10895348",
+        "docs-features-skills",
+        "docs-features-billing",
+        "docs-mcp-agents"
+      ]
+    },
+    {
+      "query": "Does Hypertask work with Cursor?",
+      "ids": [
+        "docs-features-integrations",
+        "docs-api-tools-reference",
+        "docs-mcp-agents",
+        "docs-getting-started-quickstart",
+        "article-ai-chat-1741567200",
+        "docs-mcp-overview",
+        "docs-cli-commands",
+        "10895754"
+      ]
+    },
+    {
+      "query": "What is Hypertask?",
+      "ids": [
+        "docs-getting-started-introduction",
+        "10895350",
+        "10895786",
+        "10895732",
+        "10895347",
+        "10895780",
+        "10895642",
+        "10895747"
+      ]
+    },
+    {
+      "query": "usage",
+      "ids": [
+        "docs-cli-commands",
+        "docs-features-ai-features",
+        "docs-getting-started-settings-profile",
+        "docs-mcp-troubleshooting",
+        "docs-features-smart-labels",
+        "10895353",
+        "docs-mcp-agents",
+        "pricing-plans"
+      ]
+    },
+    {
+      "query": "mcp",
+      "ids": [
+        "docs-mcp-overview",
+        "docs-mcp-troubleshooting",
+        "docs-api-tools-reference",
+        "docs-getting-started-quickstart",
+        "docs-features-integrations",
+        "docs-getting-started-switching",
+        "article-ai-chat-1741567200",
+        "docs-features-custom-fields"
+      ]
+    },
+    {
+      "query": "agent",
+      "ids": [
+        "docs-features-agents",
+        "docs-features-agents-dashboard",
+        "docs-mcp-agents",
+        "docs-features-agent-chat",
+        "docs-mcp-workflows",
+        "docs-mcp-agent-sdk",
+        "docs-mcp-agent-webhooks",
+        "docs-mcp-scheduling"
+      ]
+    },
+    {
+      "query": "codex",
+      "ids": [
+        "docs-features-integrations",
+        "docs-features-appearance",
+        "docs-features-byok",
+        "docs-mcp-overview"
+      ]
+    },
+    {
+      "query": "saml",
+      "ids": ["docs-getting-started-security-and-privacy"]
+    },
+    {
+      "query": "pwa",
+      "ids": ["10895425"]
+    },
+    {
+      "query": "webhook",
+      "ids": [
+        "docs-mcp-agent-webhooks",
+        "docs-mcp-agent-sdk",
+        "docs-mcp-workflows",
+        "docs-cli-commands",
+        "docs-features-integrations",
+        "docs-api-tools-reference",
+        "docs-api-rest-api",
+        "docs-features-agent-chat"
+      ]
+    },
+    {
+      "query": "scheduling",
+      "ids": [
+        "docs-features-scheduling",
+        "docs-mcp-scheduling",
+        "docs-features-agents-dashboard",
+        "docs-mcp-agent-sdk",
+        "docs-features-superhuman-snippets",
+        "11874355",
+        "docs-features-board-visibility",
+        "docs-getting-started-introduction"
+      ]
+    },
+    {
+      "query": "auto-splits",
+      "ids": [
+        "10895796",
+        "10895790",
+        "10895786",
+        "10895739",
+        "docs-features-scheduling",
+        "docs-features-board-settings",
+        "docs-features-tasks",
+        "11064688"
+      ]
+    },
+    {
+      "query": "api key",
+      "ids": [
+        "docs-api-rest-api",
+        "docs-features-byok",
+        "docs-mcp-troubleshooting",
+        "docs-mcp-overview",
+        "docs-getting-started-settings-profile",
+        "docs-getting-started-quickstart",
+        "docs-getting-started-introduction",
+        "docs-mcp-agents"
+      ]
+    },
+    {
+      "query": "connect claude",
+      "ids": [
+        "docs-connect-an-agent",
+        "docs-mcp-overview",
+        "docs-features-integrations",
+        "docs-getting-started-quickstart",
+        "docs-mcp-agents",
+        "docs-features-agents",
+        "article-ai-chat-1741567200",
+        "docs-getting-started-introduction"
+      ]
+    },
+    {
+      "query": "invite a teammate",
+      "ids": [
+        "docs-features-collaboration",
+        "docs-getting-started-introduction",
+        "docs-getting-started-concepts",
+        "docs-features-boards",
+        "docs-features-inbox",
+        "10895353",
+        "docs-features-calendar",
+        "docs-features-billing"
+      ]
+    },
+    {
+      "query": "change my plan",
+      "ids": [
+        "pricing-plans",
+        "docs-features-billing",
+        "docs-features-ai-chat-capabilities",
+        "10895715",
+        "docs-mcp-workflows",
+        "docs-features-scheduling",
+        "docs-changelog-index",
+        "docs-features-board-settings"
+      ]
+    },
+    {
+      "query": "Custom Fields",
+      "ids": [
+        "docs-features-custom-fields",
+        "docs-mcp-overview",
+        "docs-features-time-tracking",
+        "docs-cli-commands",
+        "docs-features-ai-features",
+        "10895799",
+        "docs-features-scheduling",
+        "docs-changelog-index"
+      ]
+    },
+    {
+      "query": "résumé",
+      "ids": []
+    },
+    {
+      "query": "keyboard shortcuts",
+      "ids": [
+        "docs-features-keyboard-shortcuts",
+        "10895373",
+        "10895425",
+        "10895790",
+        "10895515",
+        "10895786",
+        "docs-getting-started-settings-profile",
+        "docs-getting-started-switching"
+      ]
+    }
+  ]
+}

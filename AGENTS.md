@@ -41,6 +41,9 @@ This is the template's package inventory. The workspace keeps the `@rat-stack/` 
 - **`@rat-stack/flags`**:
   - Path: `packages/flags`
   - Role: Typed flags cartridge with the template's default Durable Object ledger (`src/cloudflare-ledger.ts`). Kept as the Durable Object example the live chat room follows. Not wired into the Stack yet
+- **`@rat-stack/telegram`**:
+  - Path: `packages/telegram`
+  - Role: Help Desk bot adapter behind the `CustomerAlerts` port. Sends the new conversation, handoff request and new customer message alerts with the old text and the admin chat link, skips eval traffic before any request, and reads `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` through `TelegramConfig`. Not wired into the Stack yet
 - **`@rat-stack/web`**:
   - Path: `apps/web`
   - Role: Foldkit site on Vite, deployed through Alchemy's `Cloudflare.Website.Foldkit` as `Website` (`apps/web/src/website.ts`). One home shell until the help pages move. Include it with `const website = yield* Website;`
