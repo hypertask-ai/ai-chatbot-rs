@@ -25,7 +25,6 @@ jobs:
       SMOKE_ORIGIN: https://help.hypertask.ai
       SMOKE_BASE_PATH: /ratstack
       SMOKE_DIST: apps/web/dist/client
-      SMOKE_STATE: ${{ runner.temp }}/ratstack-old-site.tsv
     steps:
       - name: Require the Cloudflare deploy secrets
         env:

@@ -122,6 +122,7 @@ The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `
 | Every response under the preview path says `X-Robots-Tag: noindex` and every page carries the robots meta tag, and both disappear when the base path becomes empty at the cutover. | `siteRobotsMeta` and `siteAssetHeaders` in `apps/web/src/site-base-path.ts`, tested in `apps/web/test/site-base-path.test.ts` and read by GET in the last step of `.github/workflows/publish-ratstack.yml`. |
 | A publish can only create or update the preview Worker, its one route and its own Alchemy state store. | `apps/infra/test/publish-scope.test.ts` compiles the published stack without a cloud call and requires exactly one resource, `Website`. |
 | The old site keeps answering exactly what it answered before the deploy. | The record and smoke steps of `.github/workflows/publish-ratstack.yml` compare https://help.hypertask.ai/ before and after the deploy. |
+| Every workflow file is valid, so GitHub starts every run instead of rejecting the file before its first job and listing the workflow by its path. | The `Lint every workflow file with actionlint` step in `.github/workflows/ci.yml` runs actionlint `1.7.7` over every file under `.github/workflows/`, with the release tarball's sha256 pinned in the step. |
 
 ## Release a package
 
