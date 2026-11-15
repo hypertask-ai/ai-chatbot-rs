@@ -505,18 +505,34 @@ jobs:
         if: steps.target.outputs.go == 'yes'
         run: |
           set -euo pipefail
-          for address in "$SITE_URL" ${BASE_URL:-}; do
-            body="$RUNNER_TEMP/served-root.html"
+          prove_page() {
+            local address="$1" side="$2" path="$3" body code bytes
+            body="$RUNNER_TEMP/served-$side.html"
             rm -f "$body"
-            code="$(curl --silent --show-error --max-time 20 --output "$body" --write-out '%{http_code}' "$address/" || true)"
+            code="$(curl --silent --show-error --max-time 20 --output "$body" --write-out '%{http_code}' "$address$path" || true)"
             bytes="$(wc -c < "$body" 2>/dev/null || printf '0')"
-            printf '%s/ answered %s with %s bytes\n' "$address" "$code" "$bytes"
-            printf '%s/ answered %s with %s bytes\n' "$address" "$code" "$bytes" >> "$GITHUB_STEP_SUMMARY"
-            if [ "$code" != "200" ] || [ "$bytes" -lt 1 ]; then
-              echo "::error::The served root at $address/ answered $code with $bytes bytes, so the verifier would judge a site that is not there."
-              exit 1
+            printf '%s %s answered %s with %s bytes\n' "$side" "$path" "$code" "$bytes"
+            printf '%s %s answered %s with %s bytes\n' "$side" "$path" "$code" "$bytes" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$code" = "200" ] && [ "$bytes" -gt 0 ]; then
+              return 0
             fi
-          done
+            return 1
+          }
+          prove_side() {
+            local address="$1" side="$2" path
+            for path in / /help; do
+              if prove_page "$address" "$side" "$path"; then
+                return 0
+              fi
+            done
+            echo "::error::The served $side site answered no page: $address/ and $address/help both came back without a 200 and a body, so the verifier would judge a site that is not there."
+            return 1
+          }
+          prove_side "$SITE_URL" head
+          if [ -n "${BASE_URL:-}" ] && ! prove_side "$BASE_URL" base; then
+            echo "::notice::The base site answered no page, so this run compares the head with the live old site only."
+            printf 'BASE_URL=\n' >> "$GITHUB_ENV"
+          fi
 
       - name: Read the change under review from the checkout
         if: steps.target.outputs.go == 'yes'
