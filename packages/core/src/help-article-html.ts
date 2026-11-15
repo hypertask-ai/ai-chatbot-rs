@@ -201,7 +201,7 @@ const withoutTagOpenings = (value: string): string => {
   return parts.toReversed().join("");
 };
 
-const plainTextOf = (value: string): string =>
+export const plainTextOf = (value: string): string =>
   withoutTagOpenings(withoutTags(value));
 
 const normalizeDocPath = (path: string): string =>
