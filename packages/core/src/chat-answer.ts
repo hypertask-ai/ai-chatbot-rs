@@ -79,8 +79,7 @@ export type ChatAnswerRequirements =
   | ChatCitations
   | ChatConversationStore
   | ChatMessageStore
-  | FirstAnswerCache
-  | typeof ChatClock;
+  | FirstAnswerCache;
 
 export interface ChatAnswerInput {
   readonly answerMessageId: string;
