@@ -109,6 +109,44 @@ await test("never falls back on a FAIL verdict, whatever the log says", () => {
   );
 });
 
+await test("falls back on the line Pi 1.5.0 prints for a rejected key", () => {
+  assert.equal(
+    classifyEngineRun(
+      '401: {"type":"authentication_error","message":"Invalid credential"}\n',
+      "",
+      SHA
+    ),
+    "login"
+  );
+  assert.equal(
+    classifyEngineRun(
+      '403: {"type":"permission_error","message":"Invalid credential"}\n',
+      "",
+      SHA
+    ),
+    "login"
+  );
+});
+
+await test("falls back on the line Pi 1.5.0 prints for an unusable balance", () => {
+  assert.equal(
+    classifyEngineRun(
+      '402: {"type":"payment_required","message":"Insufficient balance"}\n',
+      "",
+      SHA
+    ),
+    "limit"
+  );
+  assert.equal(
+    classifyEngineRun(
+      '429: {"type":"rate_limit","message":"Rate limit exceeded"}\n',
+      "",
+      SHA
+    ),
+    "limit"
+  );
+});
+
 await test("falls back when the DeepSeek log ends on a limit", () => {
   assert.equal(
     classifyEngineRun(

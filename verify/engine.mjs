@@ -24,23 +24,30 @@ const LIMIT_MARKS = [
   /usage limit/iu,
   /limit reached/iu,
   /quota/iu,
+  /insufficient balance/iu,
   /insufficient credit/iu,
   /insufficient funds/iu,
+  /insufficient_quota/iu,
   /credit balance/iu,
   /payment required/iu,
+  /payment_required/iu,
   /status(?: code)? 402/iu,
   /status(?: code)? 429/iu,
   /http[^\n]{0,16}402/iu,
   /http[^\n]{0,16}429/iu,
+  /^\s*(?:402|429):/mu,
 ];
 
 const LOGIN_MARKS = [
   /unauthorized/iu,
   /unauthenticated/iu,
   /authentication failed/iu,
+  /authentication_error/iu,
   /invalid api key/iu,
   /incorrect api key/iu,
   /api key is invalid/iu,
+  /invalid credential/iu,
+  /invalid_credential/iu,
   /missing api key/iu,
   /no api key/iu,
   /not logged in/iu,
@@ -52,6 +59,7 @@ const LOGIN_MARKS = [
   /status(?: code)? 403/iu,
   /http[^\n]{0,16}401/iu,
   /http[^\n]{0,16}403/iu,
+  /^\s*40[13]:/mu,
 ];
 
 const VERDICT_LINE = /^VERDICT: (?:PASS\+NOTES|PASS|FAIL)/u;
