@@ -3,6 +3,7 @@ import { toHttpApi } from "@rat-stack/capability/http-api";
 import {
   HelpArticle,
   HelpArticleMatch,
+  HelpArticlePane,
   HelpArticleSummary,
 } from "@rat-stack/core/contracts";
 import { HelpArticleStore } from "@rat-stack/core/help-article-store";
@@ -62,6 +63,10 @@ const decodeArticle = Schema.decodeUnknownSync(
 
 const decodeMatches = Schema.decodeUnknownSync(
   Schema.fromJsonString(Schema.Array(HelpArticleMatch))
+);
+
+const decodePane = Schema.decodeUnknownSync(
+  Schema.fromJsonString(HelpArticlePane)
 );
 
 const memory = {
@@ -172,8 +177,10 @@ describe("help article answers recorded from the old site", () => {
         })
       );
 
-      expect(pricing.body).toContain('<section class="plan-board"');
-      expect(other.body).toContain('"plansHtml":""');
+      expect(decodePane(pricing.body).plansHtml).toContain(
+        '<section class="plan-board"'
+      );
+      expect(decodePane(other.body).plansHtml).toBe("");
     }).pipe(Effect.scoped)
   );
 });

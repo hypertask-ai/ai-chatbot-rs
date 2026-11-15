@@ -82,7 +82,7 @@ describe("pricing plans block", () => {
 
     expect(html).toContain("Own up to 3 boards (archived boards do not count)");
     expect(html).toContain("14-day trial");
-    expect(html).toContain("More than 50 seats");
+    expect(html).toContain("For more than 50 seats");
     expect(html).toContain("save 20%");
   });
 
