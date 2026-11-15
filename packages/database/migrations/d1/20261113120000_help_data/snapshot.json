@@ -2,9 +2,7 @@
   "version": "7",
   "dialect": "sqlite",
   "id": "4c198cbc-76c7-4cef-8f87-e2cb2f22e1cc",
-  "prevIds": [
-    "f7737ae2-cd0b-4504-bf9e-a80b383ca461"
-  ],
+  "prevIds": ["f7737ae2-cd0b-4504-bf9e-a80b383ca461"],
   "ddl": [
     {
       "name": "articles",
@@ -101,18 +99,14 @@
       "table": "articles"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "articles_pk",
       "table": "articles",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "slug"
-      ],
+      "columns": ["slug"],
       "nameExplicit": false,
       "name": "articles_slug_unique",
       "table": "articles",
@@ -271,9 +265,7 @@
       "table": "conversations"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "conversations_pk",
       "table": "conversations",
@@ -466,9 +458,7 @@
       "table": "messages"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "messages_pk",
       "table": "messages",
@@ -528,12 +518,8 @@
       "name": "messages_conversation_id_conversations_id_fk",
       "tableFrom": "messages",
       "tableTo": "conversations",
-      "columnsFrom": [
-        "conversation_id"
-      ],
-      "columnsTo": [
-        "id"
-      ],
+      "columnsFrom": ["conversation_id"],
+      "columnsTo": ["id"],
       "onDelete": "no action",
       "onUpdate": "no action",
       "entityType": "fks"
@@ -589,9 +575,7 @@
       "table": "chat_response_cache"
     },
     {
-      "columns": [
-        "cache_key"
-      ],
+      "columns": ["cache_key"],
       "nameExplicit": false,
       "name": "chat_response_cache_pk",
       "table": "chat_response_cache",
