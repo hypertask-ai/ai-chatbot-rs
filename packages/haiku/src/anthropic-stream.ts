@@ -1,4 +1,4 @@
-import { emptyUsage } from "@rat-stack/core";
+import { answerModelFailure, emptyUsage } from "@rat-stack/core";
 import type {
   AnswerModelFailure,
   AnswerStreamRead,
@@ -129,8 +129,8 @@ const failureOf = (
   retryable: boolean
 ): AnswerModelFailure =>
   emitted || !retryable
-    ? refusedAnswerFailure(detail, 0)
-    : retryableAnswerFailure(detail, 0);
+    ? answerModelFailure.AnswerRefused({ detail, status: 0 })
+    : answerModelFailure.RetryableAnswerFailure({ detail, status: 0 });
 
 const applyEvent = (
   state: Ref.Ref<ReadState>,
@@ -195,8 +195,11 @@ const streamFailure = (
   error: HttpClientError.HttpClientError
 ): AnswerModelFailure =>
   Predicate.isTagged(error.reason, "EmptyBodyError")
-    ? refusedAnswerFailure(error.message, 0)
-    : retryableAnswerFailure(error.message, 0);
+    ? answerModelFailure.AnswerRefused({ detail: error.message, status: 0 })
+    : answerModelFailure.RetryableAnswerFailure({
+        detail: error.message,
+        status: 0,
+      });
 
 const toRead = (state: ReadState): AnswerStreamRead => ({
   stopReason: state.stopReason,

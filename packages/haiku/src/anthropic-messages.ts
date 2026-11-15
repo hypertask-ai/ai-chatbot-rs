@@ -1,14 +1,10 @@
-import { AnswerModel } from "@rat-stack/core";
+import { AnswerModel, answerModelFailure } from "@rat-stack/core";
 import type { AnswerRequest, AnswerStreamRead } from "@rat-stack/core";
 import { Effect, Layer, Predicate, Redacted } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { AnthropicConfig } from "./anthropic-config.js";
-import {
-  isRetryableAnthropicFailure,
-  refusedAnswerFailure,
-  retryableAnswerFailure,
-} from "./anthropic-failure.js";
+import { isRetryableAnthropicFailure } from "./anthropic-failure.js";
 import { readAnthropicStream } from "./anthropic-stream.js";
 
 export const ANTHROPIC_MESSAGES_URL =
@@ -42,15 +38,19 @@ export const answerModelLayer = Layer.effect(
         HttpClientRequest.bodyText(JSON.stringify(request), "application/json")
       );
 
-      const response = yield* client
-        .execute(httpRequest)
-        .pipe(
-          Effect.mapError((error) =>
-            Predicate.isTagged(error.reason, "TransportError")
-              ? retryableAnswerFailure(error.message, 0)
-              : refusedAnswerFailure(error.message, 0)
-          )
-        );
+      const response = yield* client.execute(httpRequest).pipe(
+        Effect.mapError((error) =>
+          Predicate.isTagged(error.reason, "TransportError")
+            ? answerModelFailure.RetryableAnswerFailure({
+                detail: error.message,
+                status: 0,
+              })
+            : answerModelFailure.AnswerRefused({
+                detail: error.message,
+                status: 0,
+              })
+        )
+      );
 
       if (response.status < 200 || response.status > 299) {
         const body = yield* response.text.pipe(Effect.orElseSucceed(() => ""));
@@ -61,8 +61,14 @@ export const answerModelLayer = Layer.effect(
         );
 
         const failure = isRetryableAnthropicFailure(response.status, body)
-          ? retryableAnswerFailure(detail, response.status)
-          : refusedAnswerFailure(detail, response.status);
+          ? answerModelFailure.RetryableAnswerFailure({
+              detail,
+              status: response.status,
+            })
+          : answerModelFailure.AnswerRefused({
+              detail,
+              status: response.status,
+            });
 
         return yield* Effect.fail(failure);
       }
