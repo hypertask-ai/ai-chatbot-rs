@@ -1,13 +1,13 @@
-import {
-  answerModelFailure,
-  emptyUsage,
-  isRetryableAnthropicFailure,
-  type AnswerModelFailure,
-  type AnswerStreamRead,
-  type TokenUsage,
+import { answerModelFailure, emptyUsage } from "@rat-stack/core";
+import type {
+  AnswerModelFailure,
+  AnswerStreamRead,
+  TokenUsage,
 } from "@rat-stack/core";
 import { Effect, Option, Predicate, Ref, Schema, Stream } from "effect";
 import type { HttpClientError } from "effect/http";
+
+import { isRetryableAnthropicFailure } from "./anthropic-failure.js";
 
 const AnthropicUsageSchema = Schema.Struct({
   cache_creation_input_tokens: Schema.optionalKey(Schema.Number),
@@ -115,7 +115,7 @@ const textOf = (event: AnthropicEvent): string | undefined => {
     return undefined;
   }
 
-  const text = event.delta.text;
+  const { text } = event.delta;
 
   return text === undefined || text === "" ? undefined : text;
 };

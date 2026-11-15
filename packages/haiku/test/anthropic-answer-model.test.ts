@@ -5,8 +5,11 @@ import {
   AnswerModel,
   buildAnswerRequest,
   toAnswerUserContent,
-  type AnswerStreamRead,
-  type ChatTurn,
+} from "@rat-stack/core";
+import type {
+  AnswerModelFailure,
+  AnswerStreamRead,
+  ChatTurn,
 } from "@rat-stack/core";
 import { Effect, Layer, Predicate, Redacted, Ref } from "effect";
 import { HttpClient, HttpClientResponse } from "effect/http";
@@ -31,10 +34,10 @@ interface AnswerRun {
 }
 
 const fixtureText = (name: string): string =>
-  readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8");
+  readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf-8");
 
 const fixtureBytes = (name: string): Uint8Array =>
-  new Uint8Array(readFileSync(new URL(`./fixtures/${name}`, import.meta.url)));
+  new Uint8Array(readFileSync(new URL(`fixtures/${name}`, import.meta.url)));
 
 const splitBytes = (bytes: Uint8Array, at: number): readonly Uint8Array[] => [
   bytes.slice(0, at),
@@ -64,7 +67,8 @@ const clientOf = (
 ): HttpClient.HttpClient =>
   HttpClient.make((request) =>
     Effect.gen(function* captureAnthropicRequest() {
-      const body = request.body;
+      const { body } = request;
+
       const bytes = Predicate.isTagged(body, "Uint8Array")
         ? body.body
         : new Uint8Array();
@@ -106,7 +110,10 @@ const answerRequest = buildAnswerRequest({
   ),
 });
 
-const collect = (chunks: readonly Uint8Array[], status = 200) =>
+const collect = (
+  chunks: readonly Uint8Array[],
+  status = 200
+): Effect.Effect<AnswerRun, AnswerModelFailure> =>
   Effect.gen(function* collectAnswer() {
     const captured = yield* Ref.make<readonly Captured[]>([]);
     const text = yield* Ref.make("");
@@ -140,7 +147,7 @@ describe("help answer model over the Cloudflare AI Gateway", () => {
   it.effect("sends the recorded request body and headers", () =>
     Effect.gen(function* sendRecordedRequest() {
       const run = yield* collect([fixtureBytes("answer.sse")]);
-      const request = run.captured[0];
+      const [request] = run.captured;
 
       expect(request?.url).toBe(ANTHROPIC_MESSAGES_URL);
       expect(request?.method).toBe("POST");
@@ -188,8 +195,10 @@ describe("help answer model over the Cloudflare AI Gateway", () => {
     () =>
       Effect.gen(function* readSplitCharacter() {
         const text = fixtureText("answer-multibyte.sse");
+
         const at =
           new TextEncoder().encode(text.slice(0, text.indexOf("é"))).length + 1;
+
         const chunks = splitBytes(fixtureBytes("answer-multibyte.sse"), at);
         const run = yield* collect(chunks);
 
@@ -271,6 +280,7 @@ describe("help answer failures", () => {
           529
         )
       );
+
       const serverError = yield* Effect.flip(
         collect([new TextEncoder().encode("")], 500)
       );

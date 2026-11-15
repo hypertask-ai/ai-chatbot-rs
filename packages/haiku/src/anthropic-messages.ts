@@ -1,43 +1,30 @@
-import {
-  AnswerModel,
-  answerModelFailure,
-  type AnswerModelFailure,
-  type AnswerRequest,
-  type AnswerStreamRead,
+import { AnswerModel, answerModelFailure } from "@rat-stack/core";
+import type {
+  AnswerModelFailure,
+  AnswerRequest,
+  AnswerStreamRead,
 } from "@rat-stack/core";
 import { Effect, Layer, Predicate, Redacted } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { AnthropicConfig } from "./anthropic-config.js";
+import { isRetryableAnthropicFailure } from "./anthropic-failure.js";
 import { readAnthropicStream } from "./anthropic-stream.js";
 
 export const ANTHROPIC_MESSAGES_URL =
   "https://gateway.ai.cloudflare.com/v1/6031a7dff0d4a6469414cfa8a6dedddf/hypertask-ai/anthropic/v1/messages";
 
-const RETRYABLE_FAILURE_PATTERN =
-  /overloaded|rate_limit|api_error|unavailable|timeout/iu;
-
-const gatewayMetadata = (): string => {
+const gatewayMetadata = (): string =>
   // oxlint-disable-next-line sort-keys -- The old request sends the worker before the client and the recorded request compares the header.
-  return JSON.stringify({ worker: "ai-chatbot", client: "hypertask" });
-};
+  JSON.stringify({ worker: "ai-chatbot", client: "hypertask" });
 
-const requestHeaders = (apiKey: string): Record<string, string> => ({
+const requestHeaders = (apiKey: string) => ({
   accept: "text/event-stream",
   "anthropic-version": "2023-06-01",
   "cf-aig-metadata": gatewayMetadata(),
   "content-type": "application/json",
   "x-api-key": apiKey,
 });
-
-export const isRetryableAnthropicFailure = (
-  status: number,
-  body: string
-): boolean =>
-  status === 429 ||
-  status === 529 ||
-  status >= 500 ||
-  RETRYABLE_FAILURE_PATTERN.test(body);
 
 const retryableFailure = (detail: string, status: number): AnswerModelFailure =>
   answerModelFailure.RetryableAnswerFailure({ detail, status });

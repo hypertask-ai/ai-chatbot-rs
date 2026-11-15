@@ -10,11 +10,11 @@ import {
   SYSTEM_PROMPT,
   toAnswerUserContent,
   trimConversation,
-  type ChatTurn,
 } from "../src/index.js";
+import type { ChatTurn } from "../src/index.js";
 
 const recorded = (name: string): string =>
-  readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8");
+  readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf-8");
 
 const articleContext =
   "AVAILABLE ARTICLES (ONLY link to these - do NOT invent other URLs):\n---\nTitle: Install the CLI\nRun the installer from the command line.\n---";
@@ -118,14 +118,14 @@ describe("help answer request", () => {
     );
 
     expect(content).toEqual([
-      { type: "text", text: "What is this error?" },
+      { text: "What is this error?", type: "text" },
       {
-        type: "image",
         source: {
-          type: "base64",
-          media_type: "image/png",
           data: "iVBORw0KGgo=AAA",
+          media_type: "image/png",
+          type: "base64",
         },
+        type: "image",
       },
     ]);
   });
@@ -133,10 +133,10 @@ describe("help answer request", () => {
   it("keeps the old fallback wording for an empty message", () => {
     expect(toAnswerUserContent("   ")).toBe("Hello");
     expect(toAnswerUserContent("  ", "data:image/png;base64,AAAA")).toEqual([
-      { type: "text", text: "What is this image?" },
+      { text: "What is this image?", type: "text" },
       {
+        source: { data: "AAAA", media_type: "image/png", type: "base64" },
         type: "image",
-        source: { type: "base64", media_type: "image/png", data: "AAAA" },
       },
     ]);
     expect(toAnswerUserContent("hi", "https://example.test/a.png")).toBe("hi");

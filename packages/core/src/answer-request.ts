@@ -42,15 +42,13 @@ export interface AnswerRequestInput {
 const DATA_IMAGE_URL =
   /^data:(?<mediaType>image\/[a-zA-Z0-9.+-]+);base64,(?<data>[A-Za-z0-9+/=\s]+)$/u;
 
-const textBlock = (text: string): AnswerTextBlock => {
+const textBlock = (text: string): AnswerTextBlock =>
   // oxlint-disable-next-line sort-keys -- The old request sends type before text and the recorded body compares the encoded JSON.
-  return { type: "text", text };
-};
+  ({ type: "text", text });
 
-const cachedTextBlock = (text: string): AnswerTextBlock => {
+const cachedTextBlock = (text: string): AnswerTextBlock =>
   // oxlint-disable-next-line sort-keys -- The old request sends type, text, then cache_control and the recorded body compares the encoded JSON.
-  return { type: "text", text, cache_control: { type: "ephemeral" } };
-};
+  ({ type: "text", text, cache_control: { type: "ephemeral" } });
 
 export const textFromUserContent = (content: AnswerUserContent): string =>
   Predicate.isString(content)
@@ -67,25 +65,27 @@ export const visitorAsksForPerson = (text: string): boolean => {
   }
 
   if (
-    /\b(talk|speak|chat|connect|transfer)\b[\s\S]{0,40}\b(person|someone)\b/u.test(
+    /\b(?:talk|speak|chat|connect|transfer)\b[\s\S]{0,40}\b(?:person|someone)\b/u.test(
       value
     )
   ) {
     return true;
   }
 
-  if (/\b(real|live)\s+person\b/u.test(value)) {
+  if (/\b(?:real|live)\s+person\b/u.test(value)) {
     return true;
   }
 
   if (
-    /\b(customer support|live support|live agent|support agent)\b/u.test(value)
+    /\b(?:customer support|live support|live agent|support agent)\b/u.test(
+      value
+    )
   ) {
     return true;
   }
 
   if (
-    /\b(need|want|get)\b[\s\S]{0,30}\b(support|an agent|a person)\b/u.test(
+    /\b(?:need|want|get)\b[\s\S]{0,30}\b(?:support|an agent|a person)\b/u.test(
       value
     )
   ) {
@@ -93,20 +93,19 @@ export const visitorAsksForPerson = (text: string): boolean => {
   }
 
   return (
-    /\b(talk|speak|chat|connect|transfer)\b[\s\S]{0,40}\bagent\b/u.test(
+    /\b(?:talk|speak|chat|connect|transfer)\b[\s\S]{0,40}\bagent\b/u.test(
       value
     ) && !/\bcoding agents?\b/u.test(value)
   );
 };
 
-const imageBlockOf = (mediaType: string, data: string): AnswerImageBlock => {
+const imageBlockOf = (mediaType: string, data: string): AnswerImageBlock =>
   // oxlint-disable-next-line sort-keys -- The old request sends type before source and the recorded body compares the encoded JSON.
-  return {
+  ({
     type: "image",
     // oxlint-disable-next-line sort-keys -- The old request sends type, media_type, then data and the recorded body compares the encoded JSON.
     source: { type: "base64", media_type: mediaType, data },
-  };
-};
+  });
 
 const emptyFallback = (imageUrl?: string): string =>
   imageUrl === undefined ? "Hello" : "What is this image?";
@@ -127,6 +126,7 @@ export const toAnswerUserContent = (
   const image = DATA_IMAGE_URL.exec(imageUrl);
   const mediaType = image?.groups?.mediaType;
   const imageData = image?.groups?.data;
+
   const data =
     imageData === undefined ? undefined : imageData.replaceAll(/\s/gu, "");
 
@@ -162,7 +162,7 @@ export const profileContextBlock = (
     return null;
   }
 
-  const displayName = name === null ? "Unknown" : name;
+  const displayName = name ?? "Unknown";
   const address = email === null ? "" : ` <${email}>`;
   const plan = account === null ? "" : ` (${account} account)`;
 
@@ -206,15 +206,15 @@ export const trimConversation = (
   return merged;
 };
 
-const userMessage = (content: AnswerUserContent): AnswerMessage => {
+const userMessage = (content: AnswerUserContent): AnswerMessage =>
   // oxlint-disable-next-line sort-keys -- The old request sends role before content and the recorded body compares the encoded JSON.
-  return { role: "user", content };
-};
+  ({ role: "user", content });
 
 export const buildAnswerRequest = (
   input: AnswerRequestInput
 ): AnswerRequest => {
   const userText = textFromUserContent(input.userContent);
+
   const system: AnswerTextBlock[] = [
     cachedTextBlock(SYSTEM_PROMPT),
     textBlock(input.articleContext),
