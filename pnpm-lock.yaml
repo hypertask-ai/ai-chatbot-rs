@@ -310,6 +310,12 @@ importers:
       '@alchemy.run/cloudflare':
         specifier: 2.0.0-beta.85
         version: 2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.2.1))(@effect/sql-pg@4.1.2(effect@4.1.2))(@types/node@24.19.2)(alchemy@2.0.0-beta.85(@effect/platform-node@4.1.2(effect@4.1.2)(redis@6.2.1))(effect@4.1.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))(ws@8.22.1))(effect@4.1.2)(pg@8.23.1)(typescript@7.0.2)(vite@8.3.6(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))
+      '@rat-stack/capability':
+        specifier: workspace:*
+        version: link:../../packages/capability
+      '@rat-stack/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@stylexjs/stylex':
         specifier: 0.19.1
         version: 0.19.1
