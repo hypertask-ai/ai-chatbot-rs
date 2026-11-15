@@ -38,6 +38,12 @@ export interface ReplayVerdict {
   readonly total: number;
 }
 
+export interface ReplayInput {
+  readonly cases: readonly ReplayCase[];
+  readonly listings: readonly ArticleListing[];
+  readonly readings: readonly ReplayReading[];
+}
+
 const slugIndex = (
   listings: readonly ArticleListing[]
 ): ReadonlyMap<string, string> =>
@@ -49,19 +55,15 @@ const slugsFor = (
 ): readonly string[] =>
   reading.articleIds.map((id) => {
     const slug = slugs.get(String(id));
+
     if (slug === undefined) {
       throw new Error(
         `Case ${reading.caseId} retrieved article ${String(id)}, which is not in the public article index. Fix: check that the article list and the retrieval route read the same article table.`
       );
     }
+
     return slug;
   });
-
-export interface ReplayInput {
-  readonly cases: readonly ReplayCase[];
-  readonly listings: readonly ArticleListing[];
-  readonly readings: readonly ReplayReading[];
-}
 
 export const scoreReplay = ({
   cases,
@@ -69,17 +71,22 @@ export const scoreReplay = ({
   readings,
 }: ReplayInput): ReplayScore => {
   const slugs = slugIndex(listings);
+
   const readingByCase = new Map(
     readings.map((reading) => [reading.caseId, reading])
   );
+
   const rows = cases.map((item) => {
     const reading = readingByCase.get(item.id);
+
     if (reading === undefined) {
       throw new Error(
         `Case ${item.id} holds no retrieval reading. Fix: read every case in the fixture before scoring.`
       );
     }
+
     const retrievedSlugs = slugsFor(slugs, reading);
+
     return {
       caseId: item.id,
       expectedSlugs: item.acceptable_slugs,

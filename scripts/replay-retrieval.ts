@@ -41,8 +41,11 @@ const required = (
   example: string
 ): string => {
   if (value === undefined) {
-    throw new Error(`The --${name} setting is required. Fix: pass ${example}.`);
+    throw new TypeError(
+      `The --${name} setting is required. Fix: pass ${example}.`
+    );
   }
+
   return value;
 };
 
@@ -58,11 +61,13 @@ const count = (
   example: string
 ): number => {
   const parsed = Number(required(value, name, example));
+
   if (!Number.isFinite(parsed)) {
-    throw new Error(
+    throw new TypeError(
       `The --${name} setting takes a number. Fix: pass ${example}.`
     );
   }
+
   return parsed;
 };
 
@@ -70,12 +75,14 @@ const count = (
 const readJson = async (url: URL): Promise<string> => {
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI reads a public route outside an Effect runtime.
   const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+
   if (!response.ok) {
     throw new Error(
       `GET ${url.href} answered ${String(response.status)}. Fix: check that the site is up and that the route answers.`
     );
   }
-  return response.text();
+
+  return await response.text();
 };
 
 // @effect-diagnostics-next-line asyncFunction:off -- This Node CLI reads a public route with native Promise I/O outside an Effect runtime.
@@ -87,7 +94,9 @@ const readReplay = async (
     `/api/chat/debug-rag?q=${encodeURIComponent(item.question)}`,
     origin
   );
+
   const body = decodeRetrieval(await readJson(url));
+
   return {
     articleIds: body.articles.map((article) => article.id),
     caseId: item.id,
@@ -97,7 +106,7 @@ const readReplay = async (
 const { values } = parseArgs({
   options: {
     baseline: { type: "string" },
-    cases: { type: "string", default: "eval/replay-v0.jsonl" },
+    cases: { default: "eval/replay-v0.jsonl", type: "string" },
     origin: { type: "string" },
   },
 });
@@ -105,17 +114,21 @@ const { values } = parseArgs({
 const origin = new URL(
   required(values.origin, "origin", "--origin https://help.hypertask.ai")
 );
+
 const baseline = count(values.baseline, "baseline", "--baseline 10");
+
 const cases = readCases(values.cases);
 
 const listings: readonly ArticleListing[] = decodeListings(
   await readJson(new URL("/api/articles", origin))
 );
+
 const readings = await Promise.all(
   cases.map((item) => readReplay(origin, item))
 );
 
 const score = scoreReplay({ cases, listings, readings });
+
 const verdict = replayVerdict({ baseline, score });
 
 process.stdout.write(
@@ -134,5 +147,6 @@ if (!verdict.passed) {
   process.stderr.write(
     `Retrieval answered ${String(score.hits)}/${String(score.total)}, below the baseline of ${String(verdict.baseline)}. Fix: read the miss lines above before changing the ranking.\n`
   );
+
   process.exitCode = 1;
 }

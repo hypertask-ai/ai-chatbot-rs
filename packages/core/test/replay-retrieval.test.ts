@@ -36,17 +36,22 @@ it.prop(
       id: `c${index}`,
       question: `question ${index}`,
     }));
+
     const readings = rows.map((row, index) => ({
       articleIds: [...row.retrieved],
       caseId: `c${index}`,
     }));
+
     const expectedHits = rows.map((row) => {
       const acceptable = new Set<string>(row.acceptable);
+
       return row.retrieved.some((id) => acceptable.has(slugById.get(id) ?? id));
     });
-    const expectedCount = expectedHits.filter((hit) => hit).length;
+
+    const expectedCount = expectedHits.filter(Boolean).length;
 
     const score = scoreReplay({ cases, listings, readings });
+
     const verdict = replayVerdict({ baseline, score });
 
     expect(score.total).toBe(rows.length);
