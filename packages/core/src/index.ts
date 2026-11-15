@@ -18,6 +18,10 @@ export {
 
 export { capabilities, inspectFile } from "./inspect-file.js";
 
+export { shouldOfferHandoff } from "./handoff-offer.js";
+
+export type { HandoffOfferInput } from "./handoff-offer.js";
+
 export { PromptLibrary, getPrompt, listPrompts } from "./prompts.js";
 
 export { CafeDataError } from "./cafe-data-error.js";

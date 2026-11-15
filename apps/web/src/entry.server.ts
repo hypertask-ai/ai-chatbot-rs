@@ -6,20 +6,61 @@ import {
 } from "foldkit/experimental/server";
 
 import { initialModel } from "./client/home/index.js";
+import {
+  Flags as WidgetFlags,
+  initialModel as initialWidgetModel,
+} from "./client/widget/index.js";
 import { view } from "./features/home/index.js";
+import { view as widgetView } from "./features/widget/index.js";
+import {
+  widgetChatHeaders,
+  widgetChatPath,
+  widgetScriptHeaders,
+  widgetScriptPath,
+} from "./widget/embed.js";
+import { widgetLoaderScript } from "./widget/loader.js";
+import { widgetPageFlags } from "./widget/params.js";
 
 export { renderDocument } from "foldkit/experimental/server";
 
 export const prerenderPaths = ["/"];
 
-const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
-  request: Request
+const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
+  request: Request,
+  origin: string
 ) {
   const { pathname } = new URL(request.url);
 
-  if (pathname !== "/") {
-    return Responded(new Response("Not found", { status: 404 }));
+  if (pathname === widgetScriptPath) {
+    return Responded(
+      new Response(
+        request.method === "HEAD" ? null : widgetLoaderScript(origin),
+        {
+          headers: widgetScriptHeaders,
+          status: 200,
+        }
+      )
+    );
   }
+
+  const flags = widgetPageFlags(new URL(request.url).search);
+
+  const application = yield* renderToString(
+    {
+      Flags: WidgetFlags,
+      init: (page) => ({ model: initialWidgetModel(page) }),
+      view: widgetView,
+    },
+    { flags }
+  );
+
+  return Rendered(application, { headers: widgetChatHeaders, status: 200 });
+});
+
+const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
+  request: Request
+) {
+  const { origin, pathname } = new URL(request.url);
 
   if (request.method !== "GET" && request.method !== "HEAD") {
     return Responded(
@@ -28,6 +69,14 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
         status: 405,
       })
     );
+  }
+
+  if (pathname === widgetScriptPath || pathname === widgetChatPath) {
+    return yield* widgetRoutes(request, origin);
+  }
+
+  if (pathname !== "/") {
+    return Responded(new Response("Not found", { status: 404 }));
   }
 
   const application = yield* renderToString({
