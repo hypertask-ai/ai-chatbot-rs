@@ -101,8 +101,8 @@ export const AdminConversationStoreLayer = (vendor: DatabaseVendorResource) =>
                       ...conversationColumns,
                       first_message: sql<
                         string | null
-                      >`(SELECT content FROM messages WHERE conversation_id = ${Conversations.id} ORDER BY created_at ASC LIMIT 1)`,
-                      message_count: sql<number>`(SELECT COUNT(*) FROM messages WHERE conversation_id = ${Conversations.id})`,
+                      >`(SELECT content FROM messages WHERE messages.conversation_id = conversations.id ORDER BY messages.created_at ASC LIMIT 1)`,
+                      message_count: sql<number>`(SELECT COUNT(*) FROM messages WHERE messages.conversation_id = conversations.id)`,
                     })
                     .from(Conversations)
                     .where(eq(Conversations.visitorEmail, email))
@@ -119,14 +119,14 @@ export const AdminConversationStoreLayer = (vendor: DatabaseVendorResource) =>
                       ...conversationColumns,
                       last_message: sql<
                         string | null
-                      >`(SELECT content FROM messages WHERE conversation_id = ${Conversations.id} ORDER BY created_at DESC LIMIT 1)`,
+                      >`(SELECT content FROM messages WHERE messages.conversation_id = conversations.id ORDER BY messages.created_at DESC LIMIT 1)`,
                       last_message_role: sql<
                         string | null
-                      >`(SELECT role FROM messages WHERE conversation_id = ${Conversations.id} ORDER BY created_at DESC LIMIT 1)`,
+                      >`(SELECT role FROM messages WHERE messages.conversation_id = conversations.id ORDER BY messages.created_at DESC LIMIT 1)`,
                       last_message_time: sql<
                         number | null
-                      >`(SELECT created_at FROM messages WHERE conversation_id = ${Conversations.id} ORDER BY created_at DESC LIMIT 1)`,
-                      message_count: sql<number>`(SELECT COUNT(*) FROM messages WHERE conversation_id = ${Conversations.id})`,
+                      >`(SELECT created_at FROM messages WHERE messages.conversation_id = conversations.id ORDER BY messages.created_at DESC LIMIT 1)`,
+                      message_count: sql<number>`(SELECT COUNT(*) FROM messages WHERE messages.conversation_id = conversations.id)`,
                     })
                     .from(Conversations)
                     .where(
