@@ -19,7 +19,7 @@ export const fakePastChats = (
   const sessions = Array.from(
     { length: count },
     (_, index): ChatSessionValue => {
-      const stamp = new Date(nowMillis - (index + 1) * 60_000).toISOString();
+      const stamp = nowMillis - (index + 1) * 60_000;
 
       return {
         created_at: stamp,

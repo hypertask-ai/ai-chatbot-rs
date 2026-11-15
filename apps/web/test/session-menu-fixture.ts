@@ -1,4 +1,4 @@
-export const sessionMenuNow = Date.UTC(2026, 10, 15, 12, 0, 0);
+export const sessionMenuNow = 1_795_000_000_000;
 
 const fifty = "x".repeat(50);
 
@@ -12,6 +12,7 @@ export const sessionMenuFixture = {
     pastChatEmpty: "No messages in this conversation.",
     pastChatTitle: "Past Conversation",
     readOnlyBanner: "Viewing past conversation (read-only)",
+    sessionInvalidTime: "Invalid Date",
     sessionJustNow: "Just now",
     sessionNoMessages: "No messages yet",
     sessionYesterday: "Yesterday",

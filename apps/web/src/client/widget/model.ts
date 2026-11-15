@@ -24,7 +24,7 @@ export type WidgetFlags = typeof Flags.Type;
 
 export const Menu = Schema.Struct({
   kind: Schema.Literals(["closed", "failed", "loading", "ready"]),
-  now: Schema.Number,
+  now: Schema.Finite,
   rows: Schema.Array(ChatSession),
 });
 

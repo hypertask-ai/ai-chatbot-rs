@@ -25,6 +25,7 @@ export const widgetCopy = {
   readOnlyBanner: "Viewing past conversation (read-only)",
   removeAttachmentLabel: "Remove attachment",
   sendLabel: "Send",
+  sessionInvalidTime: "Invalid Date",
   sessionJustNow: "Just now",
   sessionNoMessages: "No messages yet",
   sessionYesterday: "Yesterday",

@@ -63,7 +63,7 @@ export const Message = defineMessageUnion({
   CompletedStoreSession: {},
   CompletedSyncChrome: {},
   LoadedMenuSessions: {
-    now: Schema.Number,
+    now: Schema.Finite,
     sessions: Schema.Array(ChatSession),
   },
   LoadedPastChat: { messages: Schema.Array(ChatLine) },

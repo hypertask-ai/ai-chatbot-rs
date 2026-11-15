@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { DateTime } from "effect";
 
 import {
   sessionPreview,
@@ -40,6 +41,9 @@ describe("chat session rows match the old menu", () => {
     expect(widgetCopy.sessionYesterday).toBe(
       sessionMenuFixture.copy.sessionYesterday
     );
+    expect(widgetCopy.sessionInvalidTime).toBe(
+      sessionMenuFixture.copy.sessionInvalidTime
+    );
     expect(widgetCopy.newConversationText).toBe(
       sessionMenuFixture.copy.newConversationText
     );
@@ -56,18 +60,21 @@ describe("chat session rows match the old menu", () => {
 
   it("reads the time the way the old menu reads it", () => {
     for (const { expected, millisAgo } of sessionMenuFixture.times) {
-      const stamp = new Date(sessionMenuNow - millisAgo).toISOString();
+      const stamp = sessionMenuNow - millisAgo;
 
       expect(sessionTime(stamp, sessionMenuNow)).toBe(expected);
+      const iso = DateTime.formatIso(DateTime.makeUnsafe(stamp));
+
+      expect(sessionTime(iso, sessionMenuNow)).toBe(expected);
     }
   });
 
   it("falls back to the visitor's calendar date from seven days on", () => {
-    const stamp = new Date(sessionMenuNow - 604_800_000).toISOString();
-    const calendar = new Date(stamp).toLocaleDateString(undefined, {
+    const stamp = sessionMenuNow - 604_800_000;
+    const calendar = new Intl.DateTimeFormat(undefined, {
       day: "numeric",
       month: "short",
-    });
+    }).format(stamp);
 
     expect(calendar).toMatch(/\d/u);
     expect(sessionTime(stamp, sessionMenuNow)).toBe(calendar);
@@ -80,8 +87,12 @@ describe("chat session rows match the old menu", () => {
   });
 
   it("shows an invalid date when the read gives no time", () => {
-    expect(sessionTime(undefined, sessionMenuNow)).toBe("Invalid Date");
-    expect(sessionTime(null, sessionMenuNow)).toBe("Invalid Date");
+    expect(sessionTime(undefined, sessionMenuNow)).toBe(
+      sessionMenuFixture.copy.sessionInvalidTime
+    );
+    expect(sessionTime(null, sessionMenuNow)).toBe(
+      sessionMenuFixture.copy.sessionInvalidTime
+    );
   });
 
   it("prefers the last update over the creation time", () => {

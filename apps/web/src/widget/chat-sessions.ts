@@ -1,8 +1,8 @@
-import { Schema } from "effect";
+import { DateTime, Option, Schema } from "effect";
 
 import { widgetCopy } from "./copy.js";
 
-export const ChatStamp = Schema.Union([Schema.Number, Schema.String]);
+export const ChatStamp = Schema.Union([Schema.Finite, Schema.String]);
 
 export const ChatSession = Schema.Struct({
   created_at: Schema.optionalKey(Schema.NullOr(ChatStamp)),
@@ -49,8 +49,13 @@ export const sessionTime = (
   stamp: number | string | null | undefined,
   nowMillis: number
 ): string => {
-  const date = new Date(stamp ?? Number.NaN);
-  const diffMillis = nowMillis - date.getTime();
+  const parsed = DateTime.make(stamp ?? "");
+
+  if (Option.isNone(parsed)) {
+    return widgetCopy.sessionInvalidTime;
+  }
+
+  const diffMillis = nowMillis - DateTime.toEpochMillis(parsed.value);
   const minutes = Math.floor(diffMillis / millisPerMinute);
   const hours = Math.floor(diffMillis / millisPerHour);
   const days = Math.floor(diffMillis / millisPerDay);
@@ -71,5 +76,8 @@ export const sessionTime = (
     return days === 1 ? widgetCopy.sessionYesterday : `${days} days ago`;
   }
 
-  return date.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  return DateTime.formatLocal(parsed.value, {
+    day: "numeric",
+    month: "short",
+  });
 };
