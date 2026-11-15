@@ -23,7 +23,7 @@ interface Capture {
   readonly title: string;
 }
 
-interface ChatShape {
+interface ChatProbe {
   readonly eventOrder: readonly string[];
   readonly sourceCount: number | null;
   readonly status: number;
@@ -33,8 +33,8 @@ interface ChatShape {
 
 interface BehaviourResult {
   readonly failure: string | null;
-  readonly newShape: ChatShape | null;
-  readonly oldShape: ChatShape | null;
+  readonly newChat: ChatProbe | null;
+  readonly oldChat: ChatProbe | null;
   readonly ran: boolean;
   readonly reason: string;
 }
@@ -150,24 +150,34 @@ const decodeArticles = Schema.decodeUnknownSync(
   )
 );
 
-const decodeSsePayload = Schema.decodeUnknownSync(
-  Schema.fromJsonString(Schema.Record(Schema.String, Schema.Unknown))
-);
-
 const decodeHistory = Schema.decodeUnknownSync(
   Schema.fromJsonString(
     Schema.Struct({
-      messages: Schema.optional(Schema.Array(Schema.Unknown)),
+      messages: Schema.optional(
+        Schema.Array(Schema.Struct({ id: Schema.String }))
+      ),
     })
   )
 );
 
-const decodeJsonDocument = Schema.decodeUnknownSync(
+const decodeJsonRecord = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Record(Schema.String, Schema.Json))
+);
+
+const decodeJsonRecords = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Array(Schema.Record(Schema.String, Schema.Json)))
+);
+
+const decodeChatEvent = Schema.decodeUnknownSync(
   Schema.fromJsonString(
-    Schema.Union([
-      Schema.Array(Schema.Unknown),
-      Schema.Record(Schema.String, Schema.Unknown),
-    ])
+    Schema.Struct({
+      conversationId: Schema.optional(Schema.String),
+      sources: Schema.optional(
+        Schema.Array(Schema.Struct({ title: Schema.String }))
+      ),
+      type: Schema.String,
+      visitorSecret: Schema.optional(Schema.String),
+    })
   )
 );
 
@@ -212,44 +222,17 @@ if (!Number.isFinite(threshold) || threshold < 0) {
   );
 }
 
-const isPresent = (value: string | null): value is string => value !== null;
-
-const stringField = (
-  record: Readonly<Record<string, unknown>>,
-  name: string
-): string | null => {
-  const value = record[name];
-
-  return typeof value === "string" ? value : null;
-};
-
-const connectedPayloadField = (
-  payload: Readonly<Record<string, unknown>> | undefined,
-  name: string
-): string | null => (payload === undefined ? null : stringField(payload, name));
-
-const arrayLengthField = (
-  record: Readonly<Record<string, unknown>>,
-  name: string
-): number | null => {
-  const value = record[name];
-
-  return Array.isArray(value) ? value.length : null;
-};
-
-const jsonKeysOf = (document: unknown): readonly string[] => {
+const jsonKeysOf = (body: string): readonly string[] => {
   const keys = new Set<string>();
 
-  const rows: readonly unknown[] = Array.isArray(document)
-    ? document
-    : [document];
-
-  for (const row of rows) {
-    if (row === null || typeof row !== "object") {
-      continue;
+  if (body.trimStart().startsWith("[")) {
+    for (const row of decodeJsonRecords(body)) {
+      for (const key of Object.keys(row)) {
+        keys.add(key);
+      }
     }
-
-    for (const key of Object.keys(row)) {
+  } else {
+    for (const key of Object.keys(decodeJsonRecord(body))) {
       keys.add(key);
     }
   }
@@ -266,7 +249,7 @@ const documentKeysOf = (
   }
 
   try {
-    return jsonKeysOf(decodeJsonDocument(body));
+    return jsonKeysOf(body);
   } catch {
     return ["<unreadable json>"];
   }
@@ -321,6 +304,7 @@ const fileNameFor = (pagePath: string): string => {
 
 // @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
 const visibleText = async (page: Page): Promise<string> => {
+  // oxlint-disable-next-line unicorn/prefer-dom-node-text-content -- Locator.innerText reads rendered text, so inline script bodies and hidden article cards stay out of the comparison.
   const text = await page.locator("body").innerText();
 
   return text.replaceAll(/\s+/gu, " ").trim();
@@ -555,11 +539,10 @@ const probe = async (
   base: string,
   target: RouteProbe
 ): Promise<ProbeSnapshot> => {
-  const headers: Record<string, string> = { accept: "*/*" };
-
-  if (target.origin !== undefined) {
-    headers["origin"] = target.origin;
-  }
+  const headers =
+    target.origin === undefined
+      ? { accept: "*/*" }
+      : { accept: "*/*", origin: target.origin };
 
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI probes a public site outside an Effect runtime.
   const response = await fetch(new URL(target.path, base).href, {
@@ -739,7 +722,7 @@ const storedMessageCount = async (
 };
 
 // @effect-diagnostics-next-line asyncFunction:off -- This Node CLI sends one test-marked chat with native Promise I/O outside an Effect runtime.
-const runChat = async (base: string, token: string): Promise<ChatShape> => {
+const runChat = async (base: string, token: string): Promise<ChatProbe> => {
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI sends one test-marked chat outside an Effect runtime.
   const response = await fetch(new URL("/api/chat/message", base).href, {
     body: JSON.stringify({
@@ -755,24 +738,18 @@ const runChat = async (base: string, token: string): Promise<ChatShape> => {
     method: "POST",
   });
 
-  const payloads = ssePayloadsOf(await response.text()).map((payload) =>
-    decodeSsePayload(payload)
+  const events = ssePayloadsOf(await response.text()).map((payload) =>
+    decodeChatEvent(payload)
   );
 
-  const kinds = payloads
-    .map((payload) => stringField(payload, "type"))
-    .filter(isPresent);
+  const kinds = events.map((event) => event.type);
 
-  const connected = payloads.find(
-    (payload) => stringField(payload, "type") === "connected"
-  );
+  const connected = events.find((event) => event.type === "connected");
 
-  const done = payloads.find(
-    (payload) => stringField(payload, "type") === "done"
-  );
+  const done = events.find((event) => event.type === "done");
 
-  const conversationId = connectedPayloadField(connected, "conversationId");
-  const visitorSecret = connectedPayloadField(connected, "visitorSecret");
+  const conversationId = connected?.conversationId ?? null;
+  const visitorSecret = connected?.visitorSecret ?? null;
 
   const messageCount =
     conversationId === null || visitorSecret === null
@@ -781,7 +758,7 @@ const runChat = async (base: string, token: string): Promise<ChatShape> => {
 
   return {
     eventOrder: collapseKinds(kinds),
-    sourceCount: done === undefined ? null : arrayLengthField(done, "sources"),
+    sourceCount: done?.sources?.length ?? null,
     status: response.status,
     storedMessageCount: messageCount,
     timingMetrics: timingMetricsOf(response.headers.get("server-timing")),
@@ -799,32 +776,35 @@ const answerActionLabels = async (base: string): Promise<readonly string[]> => {
 };
 
 // @effect-diagnostics-next-line asyncFunction:off -- This Node CLI runs the optional behaviour comparison outside an Effect runtime.
-const runBehaviour = async (): Promise<BehaviourResult> => {
-  const skipped = (reason: string): BehaviourResult => ({
-    failure: null,
-    newShape: null,
-    oldShape: null,
-    ran: false,
-    reason,
-  });
+const skippedBehaviour = (reason: string): BehaviourResult => ({
+  failure: null,
+  newChat: null,
+  oldChat: null,
+  ran: false,
+  reason,
+});
 
+// @effect-diagnostics-next-line asyncFunction:off -- This Node CLI runs the optional behaviour comparison outside an Effect runtime.
+const runBehaviour = async (): Promise<BehaviourResult> => {
   if (!behaviourRequested) {
-    return skipped("the behaviour input is false");
+    return skippedBehaviour("the behaviour input is false");
   }
 
   if (baselineMode) {
-    return skipped("no new base was given, so there is nothing to compare");
+    return skippedBehaviour(
+      "no new base was given, so there is nothing to compare"
+    );
   }
 
   if (evalToken.length === 0) {
-    return skipped(
+    return skippedBehaviour(
       "the EVAL_INGEST_SECRET repository secret is not set, and an unmarked chat would page a human"
     );
   }
 
   try {
-    const oldShape = await runChat(oldBase, evalToken);
-    const newShape = await runChat(newBase, evalToken);
+    const oldChat = await runChat(oldBase, evalToken);
+    const newChat = await runChat(newBase, evalToken);
 
     const oldActions = await answerActionLabels(oldBase);
     const newActions = await answerActionLabels(newBase);
@@ -832,8 +812,8 @@ const runBehaviour = async (): Promise<BehaviourResult> => {
     if (oldActions.join(",") !== newActions.join(",")) {
       return {
         failure: "the answer action buttons differ",
-        newShape,
-        oldShape,
+        newChat,
+        oldChat,
         ran: true,
         reason: "compared",
       };
@@ -841,16 +821,16 @@ const runBehaviour = async (): Promise<BehaviourResult> => {
 
     return {
       failure: null,
-      newShape,
-      oldShape,
+      newChat,
+      oldChat,
       ran: true,
       reason: "compared",
     };
   } catch (error) {
     return {
       failure: error instanceof Error ? error.message : String(error),
-      newShape: null,
-      oldShape: null,
+      newChat: null,
+      oldChat: null,
       ran: true,
       reason: "compared",
     };
@@ -866,8 +846,8 @@ const behaviourViolations = (result: BehaviourResult): readonly string[] => {
     return [result.failure];
   }
 
-  const before = result.oldShape;
-  const after = result.newShape;
+  const before = result.oldChat;
+  const after = result.newChat;
 
   if (before === null || after === null) {
     return ["the chat shapes are missing"];
@@ -1038,7 +1018,7 @@ const distinctCategories = (
   const categories: string[] = [];
 
   for (const article of articles) {
-    const category = article.category;
+    const { category } = article;
 
     if (category === null || category === undefined || seen.has(category)) {
       continue;
@@ -1089,7 +1069,7 @@ if (articles.length === 0) {
   );
 }
 
-const sampleSlug = articles.map((article) => article.slug).toSorted()[0];
+const [sampleSlug] = articles.map((article) => article.slug).toSorted();
 
 if (sampleSlug === undefined) {
   failWith(
@@ -1281,8 +1261,8 @@ writeFileSync(
       newBase,
       oldBase,
       pageCaptures: pageResults.length,
-      pages: pageGroups.size,
       pageRows: orderedPages,
+      pages: pageGroups.size,
       routeRows: routeResults,
       routes: routeResults.length,
       threshold,
