@@ -69,9 +69,33 @@ export {
 export {
   CustomerAlerts,
   HandoffAlertSchema,
+  NewConversationAlertSchema,
+  NewMessageAlertSchema,
+  raiseCustomerAlert,
+  type CustomerAlert,
   type CustomerAlertOperations,
   type HandoffAlert,
+  type NewConversationAlert,
+  type NewMessageAlert,
 } from "./customer-alerts.js";
+
+export {
+  CUSTOMER_ALERT_CHAT_URL,
+  CUSTOMER_ALERT_PREVIEW_LENGTH,
+  CUSTOMER_ALERT_UNKNOWN_VISITOR,
+  customerAlertChatUrl,
+  customerAlertMessagePreview,
+  customerAlertText,
+  customerAlertVisitorLabel,
+  escapeCustomerAlertHtml,
+} from "./customer-alert-text.js";
+
+export {
+  EVAL_HEADER,
+  EXCLUDE_EVAL_SQL,
+  isEvalConversation,
+  isVerifiedEvalRequest,
+} from "./eval-traffic.js";
 
 export {
   HandoffEmail,
