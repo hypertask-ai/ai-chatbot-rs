@@ -36,6 +36,29 @@ export const chevronLeftIcon = (h: Builder): Html =>
     [h.path([h.D("m15 18-6-6 6-6")])]
   );
 
+export const documentIcon = (h: Builder): Html =>
+  h.svg(
+    [
+      h.AriaHidden(true),
+      h.Width("18"),
+      h.Height("18"),
+      h.ViewBox("0 0 24 24"),
+      h.Fill("none"),
+      h.Stroke("currentColor"),
+      h.StrokeWidth("2"),
+      h.StrokeLinecap("round"),
+      h.StrokeLinejoin("round"),
+    ],
+    [
+      h.path([
+        h.D(
+          "M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+        ),
+      ]),
+      h.polyline([h.Points("14 2 14 8 20 8")]),
+    ]
+  );
+
 export const searchIcon = (h: Builder): Html =>
   strokeIcon(h, 16, [
     h.circle([h.Cx("11"), h.Cy("11"), h.R("8")]),
@@ -59,6 +82,25 @@ export const menuIcon = (h: Builder): Html =>
       h.line([h.X1("3"), h.Y1("12"), h.X2("21"), h.Y2("12")]),
       h.line([h.X1("3"), h.Y1("6"), h.X2("21"), h.Y2("6")]),
       h.line([h.X1("3"), h.Y1("18"), h.X2("21"), h.Y2("18")]),
+    ]
+  );
+
+export const noResultsIcon = (h: Builder): Html =>
+  h.svg(
+    [
+      h.AriaHidden(true),
+      h.Width("32"),
+      h.Height("32"),
+      h.ViewBox("0 0 24 24"),
+      h.Fill("none"),
+      h.Stroke("currentColor"),
+      h.StrokeWidth("1.5"),
+      h.StrokeLinecap("round"),
+      h.StrokeLinejoin("round"),
+    ],
+    [
+      h.circle([h.Cx("11"), h.Cy("11"), h.R("8")]),
+      h.path([h.D("m21 21-4.35-4.35")]),
     ]
   );
 
