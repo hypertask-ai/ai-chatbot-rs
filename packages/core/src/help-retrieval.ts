@@ -3,11 +3,8 @@ import { Context, Effect, Layer, Option } from "effect";
 
 import { debugHelpRetrievalContract } from "./contracts.js";
 import { HelpArticleStore } from "./help-article-store.js";
-import {
-  HELP_RETRIEVAL_LIMIT,
-  rankHelpArticles,
-  type HelpSearchArticleValue,
-} from "./help-search.js";
+import { HELP_RETRIEVAL_LIMIT, rankHelpArticles } from "./help-search.js";
+import type { HelpSearchArticleValue } from "./help-search.js";
 
 export const DEBUG_RETRIEVAL_DEFAULT_QUERY = "how do i create a task";
 
@@ -24,15 +21,13 @@ export class HelpArticleCorpus extends Context.Service<
     this,
     Effect.gen(function* readCorpusFromStore() {
       const store = yield* HelpArticleStore;
+      const summaries = yield* store.list;
 
-      return {
-        articles: store.list.pipe(
-          Effect.flatMap((summaries) =>
-            Effect.forEach(summaries, (summary) => store.read(summary.slug))
-          ),
-          Effect.map((found) => found.flatMap(Option.toArray))
-        ),
-      };
+      const found = yield* Effect.all(
+        summaries.map((summary) => store.read(summary.slug))
+      );
+
+      return { articles: found.flatMap((option) => Option.toArray(option)) };
     })
   );
 }
@@ -50,6 +45,7 @@ export const debugHelpRetrieval = implement(
     Effect.gen(function* answerDebugRetrieval() {
       const query =
         q === undefined || q === "" ? DEBUG_RETRIEVAL_DEFAULT_QUERY : q;
+
       const articles = yield* findHelpArticles(query);
 
       return {

@@ -31,15 +31,16 @@ it.layer(HelpArticleCorpus.layer(corpus))(
   "the debug retrieval view",
   (test) => {
     test.effect("answers every recorded debug path byte for byte", () =>
-      Effect.forEach(bodies.rows, (row) =>
-        Effect.gen(function* answersRecordedPath() {
+      Effect.gen(function* answersRecordedPaths() {
+        for (const row of bodies.rows) {
           const answer = yield* debugHelpRetrieval.handler(inputOf(row.path));
+
           const encoded =
             yield* Schema.encodeEffect(HelpRetrievalAnswer)(answer);
 
           expect(JSON.stringify(encoded), row.path).toBe(row.body);
-        })
-      )
+        }
+      })
     );
 
     test.effect("answers the old debug address", () =>

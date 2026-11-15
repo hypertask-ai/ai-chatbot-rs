@@ -46,6 +46,7 @@ export const helpSearchHits = (
     needle.replaceAll(PATTERN_CHARACTERS, "\\$&"),
     "giu"
   );
+
   const hits: HelpVisitorHit[] = [];
 
   for (const match of text.matchAll(pattern)) {

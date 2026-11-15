@@ -105,6 +105,11 @@ interface FuzzyCandidate {
   readonly word: string;
 }
 
+interface Averages {
+  readonly body: number;
+  readonly title: number;
+}
+
 interface ScoredArticle {
   readonly article: HelpSearchArticleValue;
   score: number;
@@ -119,56 +124,68 @@ export const helpArticleTokens = (text: string): readonly string[] =>
       (word) => word.length >= SHORTEST_WORD && !RETRIEVAL_STOP_WORDS.has(word)
     );
 
+const STEM_SUFFIXES: readonly string[] = [
+  "ing",
+  "ed",
+  "ation",
+  "ion",
+  "ate",
+  "ment",
+  "ness",
+];
+
+const INFLECTED_SUFFIXES: ReadonlySet<string> = new Set(["ing", "ed"]);
+
+const RESTRICTED_STEMS: ReadonlySet<string> = new Set(["restric", "restrict"]);
+
+const PLURAL_SHORTEST_STEM = 4;
+
+const hasSuffix = (
+  word: string,
+  suffix: string,
+  shortestStem: number
+): boolean =>
+  word.endsWith(suffix) && word.length - suffix.length >= shortestStem;
+
+const withoutPlural = (word: string): string => {
+  if (hasSuffix(word, "ies", SHORTEST_WORD)) {
+    return `${word.slice(0, -3)}y`;
+  }
+
+  if (hasSuffix(word, "s", PLURAL_SHORTEST_STEM) && !word.endsWith("ss")) {
+    return word.slice(0, -1);
+  }
+
+  return word;
+};
+
+const withoutInflection = (
+  word: string
+): { readonly inflected: boolean; readonly stemmed: string } => {
+  for (const suffix of STEM_SUFFIXES) {
+    if (hasSuffix(word, suffix, SHORTEST_WORD)) {
+      return {
+        inflected: INFLECTED_SUFFIXES.has(suffix),
+        stemmed: word.slice(0, -suffix.length),
+      };
+    }
+  }
+
+  return { inflected: false, stemmed: word };
+};
+
+const withoutAt = (word: string): string =>
+  hasSuffix(word, "at", SHORTEST_WORD) ? word.slice(0, -2) : word;
+
 export const helpArticleStem = (word: string): string => {
-  let stemmed = word;
+  const { inflected, stemmed } = withoutInflection(withoutPlural(word));
+  const trimmedAt = inflected ? withoutAt(stemmed) : stemmed;
 
-  if (stemmed.endsWith("ies") && stemmed.length > 5) {
-    stemmed = `${stemmed.slice(0, -3)}y`;
-  } else if (
-    stemmed.endsWith("s") &&
-    !stemmed.endsWith("ss") &&
-    stemmed.length > 4
-  ) {
-    stemmed = stemmed.slice(0, -1);
-  }
+  const trimmed = hasSuffix(trimmedAt, "e", SHORTEST_WORD)
+    ? trimmedAt.slice(0, -1)
+    : trimmedAt;
 
-  let inflected = false;
-
-  if (stemmed.endsWith("ing") && stemmed.length - 3 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -3);
-    inflected = true;
-  } else if (stemmed.endsWith("ed") && stemmed.length - 2 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -2);
-    inflected = true;
-  } else if (stemmed.endsWith("ation") && stemmed.length - 5 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -5);
-  } else if (stemmed.endsWith("ion") && stemmed.length - 3 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -3);
-  } else if (stemmed.endsWith("ate") && stemmed.length - 3 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -3);
-  } else if (stemmed.endsWith("ment") && stemmed.length - 4 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -4);
-  } else if (stemmed.endsWith("ness") && stemmed.length - 4 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -4);
-  }
-
-  if (
-    inflected &&
-    stemmed.endsWith("at") &&
-    stemmed.length - 2 >= SHORTEST_WORD
-  ) {
-    stemmed = stemmed.slice(0, -2);
-  }
-
-  if (stemmed.endsWith("e") && stemmed.length - 1 >= SHORTEST_WORD) {
-    stemmed = stemmed.slice(0, -1);
-  }
-
-  if (stemmed === "restric" || stemmed === "restrict") {
-    return "limit";
-  }
-
-  return stemmed;
+  return RESTRICTED_STEMS.has(trimmed) ? "limit" : trimmed;
 };
 
 const stemCounts = (text: string): ReadonlyMap<string, number> => {
@@ -259,19 +276,21 @@ const editDistance = (left: string, right: string, maximum: number): number => {
   }
 
   let beforePrevious: readonly number[] | null = null;
+
   let previous: readonly number[] = Array.from(
     { length: rightLength + 1 },
     (_unused, index) => index
   );
 
   for (let row = 1; row <= leftLength; row += 1) {
-    const current = new Array<number>(rightLength + 1);
+    const current = Array.from({ length: rightLength + 1 }, () => 0);
     current[0] = row;
     let rowMinimum = row;
 
     for (let column = 1; column <= rightLength; column += 1) {
       const cost =
         letterAt(left, row - 1) === letterAt(right, column - 1) ? 0 : 1;
+
       let value = Math.min(
         numberOf(previous, column) + 1,
         numberOf(current, column - 1) + 1,
@@ -387,7 +406,7 @@ const bestFuzzy = (
   let best: FuzzyCandidate | null = null;
 
   for (const word of index.vocabulary) {
-    if (word.length < FUZZY_SHORTEST_WORD || word.charAt(0) !== opening) {
+    if (word.length < FUZZY_SHORTEST_WORD || !word.startsWith(opening)) {
       continue;
     }
 
@@ -507,6 +526,8 @@ export const expandedHelpQueryTerms = (
 ): readonly string[] =>
   query.trim() === "" ? [] : searchTerms(query, buildIndex(articles));
 
+const atLeastOne = (length: number): number => (length === 0 ? 1 : length);
+
 const bm25 = (
   termFrequency: number,
   documentsWithTerm: number,
@@ -517,6 +538,7 @@ const bm25 = (
   const idf = Math.log(
     1 + (documents - documentsWithTerm + 0.5) / (documentsWithTerm + 0.5)
   );
+
   const denominator =
     termFrequency +
     BM25_K1 * (1 - BM25_B + (BM25_B * documentLength) / averageLength);
@@ -534,7 +556,98 @@ const averageLength = (
     total += lengthOf(doc);
   }
 
-  return total / (docs.length || 1) || 1;
+  if (docs.length === 0 || total === 0) {
+    return 1;
+  }
+
+  return total / docs.length;
+};
+
+const distinctStems = (terms: readonly string[]): readonly string[] => {
+  const stems: string[] = [];
+  const seen = new Set<string>();
+
+  for (const term of terms) {
+    const stemmed = helpArticleStem(term);
+
+    if (seen.has(stemmed)) {
+      continue;
+    }
+
+    seen.add(stemmed);
+    stems.push(stemmed);
+  }
+
+  return stems;
+};
+
+const documentsHolding = (
+  docs: readonly IndexedArticle[],
+  stems: readonly string[]
+): ReadonlyMap<string, number> => {
+  const holding = new Map<string, number>();
+
+  for (const stemmed of stems) {
+    let containing = 0;
+
+    for (const doc of docs) {
+      const titleTerms = doc.titleCounts.get(stemmed) ?? 0;
+      const bodyTerms = doc.bodyCounts.get(stemmed) ?? 0;
+
+      if (titleTerms + bodyTerms > 0) {
+        containing += 1;
+      }
+    }
+
+    holding.set(stemmed, containing);
+  }
+
+  return holding;
+};
+
+const documentScore = (
+  doc: IndexedArticle,
+  stems: readonly string[],
+  holding: ReadonlyMap<string, number>,
+  averages: Averages,
+  documents: number
+): number => {
+  let score = 0;
+
+  for (const stemmed of stems) {
+    const titleTerms = doc.titleCounts.get(stemmed) ?? 0;
+    const bodyTerms = doc.bodyCounts.get(stemmed) ?? 0;
+
+    if (titleTerms === 0 && bodyTerms === 0) {
+      continue;
+    }
+
+    const containing = holding.get(stemmed) ?? 0;
+
+    if (titleTerms > 0) {
+      score +=
+        TITLE_WEIGHT *
+        bm25(
+          titleTerms,
+          containing,
+          atLeastOne(doc.titleLength),
+          averages.title,
+          documents
+        );
+    }
+
+    if (bodyTerms > 0) {
+      score += bm25(
+        bodyTerms,
+        containing,
+        atLeastOne(doc.bodyLength),
+        averages.body,
+        documents
+      );
+    }
+  }
+
+  return score;
 };
 
 export const rankHelpArticles = (
@@ -554,79 +667,17 @@ export const rankHelpArticles = (
     return [];
   }
 
-  const stems: string[] = [];
-  const seenStems = new Set<string>();
-
-  for (const term of terms) {
-    const stemmed = helpArticleStem(term);
-
-    if (seenStems.has(stemmed)) {
-      continue;
-    }
-
-    seenStems.add(stemmed);
-    stems.push(stemmed);
-  }
-
+  const stems = distinctStems(terms);
   const documents = index.docs.length;
-  const averageTitle = averageLength(index.docs, (doc) => doc.titleLength);
-  const averageBody = averageLength(index.docs, (doc) => doc.bodyLength);
-
-  const documentsWithTerm = new Map<string, number>();
-
-  for (const stemmed of stems) {
-    let containing = 0;
-
-    for (const doc of index.docs) {
-      if (
-        (doc.titleCounts.get(stemmed) ?? 0) +
-          (doc.bodyCounts.get(stemmed) ?? 0) >
-        0
-      ) {
-        containing += 1;
-      }
-    }
-
-    documentsWithTerm.set(stemmed, containing);
-  }
-
+  const averages = {
+    body: averageLength(index.docs, (doc) => doc.bodyLength),
+    title: averageLength(index.docs, (doc) => doc.titleLength),
+  };
+  const holding = documentsHolding(index.docs, stems);
   const scored: ScoredArticle[] = [];
 
   for (const doc of index.docs) {
-    let score = 0;
-
-    for (const stemmed of stems) {
-      const titleTerms = doc.titleCounts.get(stemmed) ?? 0;
-      const bodyTerms = doc.bodyCounts.get(stemmed) ?? 0;
-
-      if (titleTerms === 0 && bodyTerms === 0) {
-        continue;
-      }
-
-      const containing = documentsWithTerm.get(stemmed) ?? 0;
-
-      if (titleTerms > 0) {
-        score +=
-          TITLE_WEIGHT *
-          bm25(
-            titleTerms,
-            containing,
-            doc.titleLength || 1,
-            averageTitle,
-            documents
-          );
-      }
-
-      if (bodyTerms > 0) {
-        score += bm25(
-          bodyTerms,
-          containing,
-          doc.bodyLength || 1,
-          averageBody,
-          documents
-        );
-      }
-    }
+    const score = documentScore(doc, stems, holding, averages, documents);
 
     if (score > 0) {
       scored.push({ article: doc.article, score });
@@ -655,6 +706,7 @@ export const scoreHelpSearchMatches = (
 
     if (existing === undefined) {
       candidates.set(article.id, { article, score: weight });
+
       return;
     }
 

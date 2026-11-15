@@ -6,8 +6,8 @@ import {
   expandedHelpQueryTerms,
   helpArticleStem,
   rankHelpArticles,
-  type HelpSearchArticleValue,
 } from "../src/help-search.js";
+import type { HelpSearchArticleValue } from "../src/help-search.js";
 import articlesJson from "./fixtures/help-articles.json";
 import answersJson from "./fixtures/help-retrieval-answers.json";
 import typosJson from "./fixtures/help-retrieval-typos.json";
@@ -93,16 +93,7 @@ describe("help chat retrieval", () => {
   });
 
   it("joins the inflected forms of one word on one stem", () => {
-    const shared = (words: readonly string[]): void => {
-      const stems = new Set(words.map((word) => helpArticleStem(word)));
-
-      expect(
-        stems.size,
-        `${words.join(" ")} gave ${[...stems].join(" ")}`
-      ).toBe(1);
-    };
-
-    shared([
+    shareOneStem([
       "connect",
       "connects",
       "connected",
@@ -110,7 +101,7 @@ describe("help chat retrieval", () => {
       "connection",
       "connections",
     ]);
-    shared([
+    shareOneStem([
       "integrate",
       "integrates",
       "integrated",
@@ -118,7 +109,7 @@ describe("help chat retrieval", () => {
       "integration",
       "integrations",
     ]);
-    shared([
+    shareOneStem([
       "configure",
       "configures",
       "configured",
@@ -126,7 +117,7 @@ describe("help chat retrieval", () => {
       "configuration",
       "configurations",
     ]);
-    shared([
+    shareOneStem([
       "install",
       "installs",
       "installed",

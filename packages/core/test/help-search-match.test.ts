@@ -5,8 +5,8 @@ import { helpSearchKeywords } from "../src/help-articles.js";
 import {
   HelpSearchArticle,
   scoreHelpSearchMatches,
-  type HelpSearchArticleValue,
 } from "../src/help-search.js";
+import type { HelpSearchArticleValue } from "../src/help-search.js";
 import articlesJson from "./fixtures/help-articles.json";
 import answersJson from "./fixtures/help-search-answers.json";
 
