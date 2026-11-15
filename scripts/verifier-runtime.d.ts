@@ -101,3 +101,48 @@ declare module "playwright" {
 
   export const chromium: BrowserType;
 }
+
+interface VerifierStyle {
+  display: string;
+  visibility: string;
+}
+
+interface VerifierElement {
+  childElementCount: number;
+  getAttribute: (name: string) => string | null;
+  href: string;
+  name: string;
+  placeholder: string;
+  querySelectorAll: (selector: string) => VerifierElement[];
+  tagName: string;
+  textContent: string | null;
+  type: string;
+}
+
+interface VerifierFontFace {
+  family: string;
+  status: string;
+  style: string;
+  weight: string;
+}
+
+interface VerifierFontFaceSet extends Iterable<VerifierFontFace> {
+  ready: Promise<unknown>;
+}
+
+interface VerifierBody {
+  querySelectorAll: (selector: string) => VerifierElement[];
+}
+
+interface VerifierDocument {
+  body: VerifierBody | null;
+  fonts: VerifierFontFaceSet;
+}
+
+interface VerifierWindow {
+  getComputedStyle: (element: VerifierElement) => VerifierStyle;
+}
+
+declare const document: VerifierDocument;
+
+declare const window: VerifierWindow;
