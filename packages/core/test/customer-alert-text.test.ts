@@ -88,7 +88,7 @@ describe("customer alert text", () => {
     expect(customerAlertVisitorLabel("", "ada@example.com")).toBe(
       "ada@example.com"
     );
-    expect(customerAlertVisitorLabel(null, undefined)).toBe("Unknown visitor");
+    expect(customerAlertVisitorLabel(null)).toBe("Unknown visitor");
   });
 
   it("shows a new customer message with its sender and the reply link", () => {
@@ -122,7 +122,7 @@ describe("customer alert text", () => {
   });
 
   it("shows an empty message as an empty line", () => {
-    expect(customerAlertMessagePreview(undefined)).toBe("");
+    expect(customerAlertMessagePreview()).toBe("");
     expect(customerAlertMessagePreview("")).toBe("");
   });
 

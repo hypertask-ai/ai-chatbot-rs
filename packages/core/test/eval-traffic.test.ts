@@ -24,8 +24,8 @@ describe("test traffic marker", () => {
     expect(isVerifiedEvalRequest("eval-secret-extra", SECRET)).toBe(false);
     expect(isVerifiedEvalRequest("eval-secre", SECRET)).toBe(false);
     expect(isVerifiedEvalRequest("1", SECRET)).toBe(false);
-    expect(isVerifiedEvalRequest("eval-secret", undefined)).toBe(false);
-    expect(isVerifiedEvalRequest(undefined, SECRET)).toBe(false);
+    expect(isVerifiedEvalRequest(SECRET)).toBe(false);
+    expect(isVerifiedEvalRequest()).toBe(false);
     expect(isVerifiedEvalRequest("", SECRET)).toBe(false);
     expect(isVerifiedEvalRequest(SECRET, "")).toBe(false);
   });
@@ -48,7 +48,7 @@ describe("test traffic marker", () => {
     expect(isEvalConversation(false)).toBe(false);
     expect(isEvalConversation("0")).toBe(false);
     expect(isEvalConversation(null)).toBe(false);
-    expect(isEvalConversation(undefined)).toBe(false);
+    expect(isEvalConversation()).toBe(false);
     expect(isEvalConversation("eval-customer")).toBe(false);
   });
 });

@@ -13,16 +13,14 @@ export const escapeCustomerAlertHtml = (text: string): string =>
   text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
 export const customerAlertVisitorLabel = (
-  visitorName: string | null | undefined,
-  visitorEmail: string | null | undefined
+  visitorName?: string | null,
+  visitorEmail?: string | null
 ): string =>
   [visitorName, visitorEmail].find(
     (value) => value !== null && value !== undefined && value !== ""
   ) ?? CUSTOMER_ALERT_UNKNOWN_VISITOR;
 
-export const customerAlertMessagePreview = (
-  message: string | undefined
-): string => {
+export const customerAlertMessagePreview = (message?: string): string => {
   if (message === undefined || message === "") {
     return "";
   }
@@ -34,27 +32,36 @@ export const customerAlertMessagePreview = (
     : preview;
 };
 
+const customerLine = (
+  visitorName?: string | null,
+  visitorEmail?: string | null
+): string =>
+  escapeCustomerAlertHtml(customerAlertVisitorLabel(visitorName, visitorEmail));
+
 export const customerAlertText = (alert: CustomerAlert): string => {
   const url = customerAlertChatUrl(alert.alert.conversationId);
 
   switch (alert.type) {
-    case "new_conversation":
-      return `<b>New Conversation</b>\n\nCustomer: ${escapeCustomerAlertHtml(CUSTOMER_ALERT_UNKNOWN_VISITOR)}\nMessage: ${escapeCustomerAlertHtml(customerAlertMessagePreview(alert.alert.message))}\n\n<a href="${url}">Open Chat</a>`;
-    case "handoff_requested": {
-      const label = escapeCustomerAlertHtml(
-        customerAlertVisitorLabel(
-          alert.alert.visitorName,
-          alert.alert.visitorEmail
-        )
-      );
-      const email =
-        alert.alert.visitorEmail === null || alert.alert.visitorEmail === ""
-          ? ""
-          : `\nEmail: ${escapeCustomerAlertHtml(alert.alert.visitorEmail)}`;
+    case "new_conversation": {
+      const preview = customerAlertMessagePreview(alert.alert.message);
 
-      return `<b>Handoff Requested</b>\n\nCustomer: ${label}${email}\n\n<a href="${url}">Accept Handoff</a>`;
+      return `<b>New Conversation</b>\n\nCustomer: ${CUSTOMER_ALERT_UNKNOWN_VISITOR}\nMessage: ${escapeCustomerAlertHtml(preview)}\n\n<a href="${url}">Open Chat</a>`;
     }
-    case "new_message":
-      return `<b>New Message</b>\n\nFrom: ${escapeCustomerAlertHtml(customerAlertVisitorLabel(alert.alert.visitorName, alert.alert.visitorEmail))}\nMessage: ${escapeCustomerAlertHtml(customerAlertMessagePreview(alert.alert.message))}\n\n<a href="${url}">Reply</a>`;
+
+    case "handoff_requested": {
+      const email = alert.alert.visitorEmail;
+
+      return `<b>Handoff Requested</b>\n\nCustomer: ${customerLine(alert.alert.visitorName, alert.alert.visitorEmail)}${email === null || email === "" ? "" : `\nEmail: ${escapeCustomerAlertHtml(email)}`}\n\n<a href="${url}">Accept Handoff</a>`;
+    }
+
+    case "new_message": {
+      const preview = customerAlertMessagePreview(alert.alert.message);
+
+      return `<b>New Message</b>\n\nFrom: ${customerLine(alert.alert.visitorName, alert.alert.visitorEmail)}\nMessage: ${escapeCustomerAlertHtml(preview)}\n\n<a href="${url}">Reply</a>`;
+    }
+
+    default: {
+      return alert satisfies never;
+    }
   }
 };

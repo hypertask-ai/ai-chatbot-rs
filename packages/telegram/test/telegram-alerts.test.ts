@@ -7,7 +7,7 @@ import type {
   NewMessageAlert,
 } from "@rat-stack/core";
 import { Effect, Layer, Option, Predicate, Redacted, Ref } from "effect";
-import { HttpClient, HttpClientError, HttpClientResponse } from "effect/http";
+import { HttpClient, HttpClientResponse } from "effect/http";
 
 import { TelegramConfig, telegramAlertsLayer } from "../src/index.js";
 
@@ -19,7 +19,7 @@ interface Captured {
 }
 
 interface Settings {
-  readonly botToken: Option.Option<Redacted.Redacted<string>>;
+  readonly botToken: Option.Option<Redacted.Redacted>;
   readonly chatId: Option.Option<string>;
 }
 
@@ -59,28 +59,21 @@ const capture = (captured: Ref.Ref<readonly Captured[]>) =>
     })
   );
 
-const refuseTransport = (status = 400) =>
-  HttpClient.make((request) => {
-    if (status === 0) {
-      return Effect.fail(
-        new HttpClientError({
-          reason: new HttpClientError.TransportError({
-            description: "offline",
-            request,
-          }),
-        })
-      );
-    }
-
-    return Effect.succeed(
+const answering = (status: number) =>
+  HttpClient.make((request) =>
+    Effect.succeed(
       HttpClientResponse.fromWeb(request, new Response("{}", { status }))
-    );
-  });
+    )
+  );
+
+const unreachable = HttpClient.make(() =>
+  Effect.die("Telegram is unreachable")
+);
 
 const telegramAlerts = (
   settings: Settings,
   captured: Ref.Ref<readonly Captured[]>,
-  client: HttpClient.HttpClient | undefined = undefined
+  client?: HttpClient.HttpClient
 ) =>
   telegramAlertsLayer.pipe(
     Layer.provide(
@@ -99,7 +92,7 @@ interface AlertRun {
 const runAlert = (
   settings: Settings,
   operation: (alerts: CustomerAlertOperations) => Effect.Effect<boolean>,
-  client: HttpClient.HttpClient | undefined = undefined
+  client?: HttpClient.HttpClient
 ): Effect.Effect<AlertRun> =>
   Effect.gen(function* runOneAlert() {
     const captured = yield* Ref.make<readonly Captured[]>([]);
@@ -208,8 +201,11 @@ describe("customer alerts over the Help Desk bot", () => {
           ...newConversation,
           isEval,
         };
+
         const message: NewMessageAlert = { ...newMessage, isEval };
+
         const person: HandoffAlert = { ...handoff, isEval };
+
         const captured = yield* Ref.make<readonly Captured[]>([]);
 
         const outcomes = yield* CustomerAlerts.use((alerts) =>
@@ -272,7 +268,7 @@ describe("customer alerts over the Help Desk bot", () => {
       const run = yield* runAlert(
         configured(),
         (alerts) => alerts.handoffRequested(handoff),
-        refuseTransport(0)
+        unreachable
       );
 
       expect(run.outcome).toBe(false);
@@ -284,7 +280,7 @@ describe("customer alerts over the Help Desk bot", () => {
       const run = yield* runAlert(
         configured(),
         (alerts) => alerts.handoffRequested(handoff),
-        refuseTransport(500)
+        answering(500)
       );
 
       expect(run.outcome).toBe(true);

@@ -1,9 +1,5 @@
-import {
-  CustomerAlerts,
-  customerAlertText,
-  type CustomerAlert,
-  type CustomerAlertOperations,
-} from "@rat-stack/core";
+import { CustomerAlerts, customerAlertText } from "@rat-stack/core";
+import type { CustomerAlert, CustomerAlertOperations } from "@rat-stack/core";
 import { Effect, Layer, Option, Redacted } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
@@ -14,7 +10,7 @@ export const TELEGRAM_API_ORIGIN = "https://api.telegram.org";
 export const telegramSendMessageUrl = (botToken: string): string =>
   `${TELEGRAM_API_ORIGIN}/bot${botToken}/sendMessage`;
 
-const filledToken = (token: Redacted.Redacted<string>): boolean =>
+const filledToken = (token: Redacted.Redacted): boolean =>
   Redacted.value(token) !== "";
 
 export const telegramAlertsLayer = Layer.effect(
@@ -22,8 +18,8 @@ export const telegramAlertsLayer = Layer.effect(
   Effect.gen(function* buildTelegramAlerts() {
     const config = yield* TelegramConfig;
     const client = yield* HttpClient.HttpClient;
-    const botToken = Option.filter(config.botToken, filledToken);
-    const chatId = Option.filter(config.chatId, (value) => value !== "");
+    const botToken = config.botToken.pipe(Option.filter(filledToken));
+    const chatId = config.chatId.pipe(Option.filter((value) => value !== ""));
 
     const sendCustomerAlert = (alert: CustomerAlert): Effect.Effect<boolean> =>
       Effect.gen(function* sendTelegramMessage() {
@@ -62,17 +58,15 @@ export const telegramAlertsLayer = Layer.effect(
           Effect.catchCause(() => Effect.succeed(false))
         );
 
-        if (sent) {
-          yield* Effect.logInfo("[Telegram] sent alert", {
-            conversationId,
-            type: alert.type,
-          });
-        } else {
-          yield* Effect.logError("[Telegram] failed to send alert", {
-            conversationId,
-            type: alert.type,
-          });
-        }
+        yield* sent
+          ? Effect.logInfo("[Telegram] sent alert", {
+              conversationId,
+              type: alert.type,
+            })
+          : Effect.logError("[Telegram] failed to send alert", {
+              conversationId,
+              type: alert.type,
+            });
 
         return sent;
       });

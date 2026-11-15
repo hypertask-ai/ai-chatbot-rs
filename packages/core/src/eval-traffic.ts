@@ -2,12 +2,14 @@ export const EVAL_HEADER = "x-eval-token";
 
 export const EXCLUDE_EVAL_SQL = "COALESCE(c.is_eval, 0) = 0";
 
-export const isEvalConversation = (flag: unknown): boolean =>
+export type StoredEvalFlag = boolean | number | string | null;
+
+export const isEvalConversation = (flag?: StoredEvalFlag): boolean =>
   flag === 1 || flag === true || flag === "1";
 
 export const isVerifiedEvalRequest = (
-  header: string | undefined,
-  secret: string | undefined
+  header?: string,
+  secret?: string
 ): boolean => {
   if (
     header === undefined ||
