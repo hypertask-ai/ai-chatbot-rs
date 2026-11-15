@@ -310,7 +310,6 @@ export const runWidgetLoader = (
   runInNewContext(script, {
     document,
     encodeURIComponent,
-    URL,
     history,
     localStorage,
     location,
@@ -319,6 +318,7 @@ export const runWidgetLoader = (
 
       return timers.length;
     },
+    URL,
     window,
   });
 
