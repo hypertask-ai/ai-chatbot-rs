@@ -17,6 +17,7 @@
           "effect/ai/McpProtocol",
           "effect/ai/McpServer",
           "effect/crypto/Digest",
+          "effect/http-api/HttpApiBuilder",
           "effect/http/FetchHttpClient",
           "effect/http/HttpRouter",
           "effect/http/HttpServerRequest",

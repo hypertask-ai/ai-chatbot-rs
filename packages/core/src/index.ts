@@ -7,16 +7,20 @@ export { ConfigService } from "./config-service.js";
 export { FileInspector } from "./file-inspector.js";
 
 export {
+  HealthOutput,
   ReadOutput,
   ResourceNotFound,
   SearchMatch,
   SearchOutput,
+  healthContract,
   inspectFileContract,
   readContract,
   searchContract,
 } from "./contracts.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
+
+export { health } from "./health.js";
 
 export { PromptLibrary, getPrompt, listPrompts } from "./prompts.js";
 

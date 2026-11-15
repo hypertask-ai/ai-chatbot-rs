@@ -79,6 +79,11 @@
       "import": "./dist/contracts.js",
       "default": "./dist/contracts.js"
     },
+    "./health": {
+      "types": "./src/health.ts",
+      "import": "./dist/health.js",
+      "default": "./dist/health.js"
+    },
     "./intake": {
       "types": "./src/intake.ts",
       "import": "./dist/intake.js",

@@ -1,0 +1,329 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai",
+  "method": "curl, GET and OPTIONS only, no chat message sent",
+  "comparedHeaders": [
+    "access-control-allow-headers",
+    "access-control-allow-methods",
+    "access-control-allow-origin",
+    "cache-control",
+    "content-type",
+    "location",
+    "vary"
+  ],
+  "rows": [
+    {
+      "id": "health",
+      "method": "GET",
+      "path": "/health",
+      "origin": null,
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "health-head",
+      "method": "HEAD",
+      "path": "/health",
+      "origin": null,
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-root",
+      "method": "GET",
+      "path": "/",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-root-head",
+      "method": "HEAD",
+      "path": "/",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-en",
+      "method": "GET",
+      "path": "/en",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-en-slash",
+      "method": "GET",
+      "path": "/en/",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-en-child",
+      "method": "GET",
+      "path": "/en/foo",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-en-grandchild",
+      "method": "GET",
+      "path": "/en/foo/bar",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "redirect-en-query",
+      "method": "GET",
+      "path": "/en?x=1",
+      "origin": null,
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "cors-health-allowed",
+      "method": "GET",
+      "path": "/health",
+      "origin": "https://hypertask.ai",
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "access-control-allow-origin": "https://hypertask.ai",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "cors-health-www-allowed",
+      "method": "GET",
+      "path": "/health",
+      "origin": "https://www.hypertask.ai",
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "access-control-allow-origin": "https://www.hypertask.ai",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "cors-health-docs-allowed",
+      "method": "GET",
+      "path": "/health",
+      "origin": "https://docs.hypertask.ai",
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "access-control-allow-origin": "https://docs.hypertask.ai",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "cors-health-disallowed",
+      "method": "GET",
+      "path": "/health",
+      "origin": "https://hypertask.ai.evil.example",
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "cors-health-http-scheme",
+      "method": "GET",
+      "path": "/health",
+      "origin": "http://hypertask.ai",
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "cors-health-self",
+      "method": "GET",
+      "path": "/health",
+      "origin": "https://help.hypertask.ai",
+      "requestMethod": null,
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
+    },
+    {
+      "id": "cors-redirect-allowed",
+      "method": "GET",
+      "path": "/",
+      "origin": "https://docs.hypertask.ai",
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "access-control-allow-origin": "https://docs.hypertask.ai",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "cors-redirect-disallowed",
+      "method": "GET",
+      "path": "/en",
+      "origin": "https://evil.example",
+      "requestMethod": null,
+      "status": 302,
+      "headers": {
+        "location": "/help",
+        "vary": "Origin"
+      },
+      "body": ""
+    },
+    {
+      "id": "preflight-allowed",
+      "method": "OPTIONS",
+      "path": "/api/chat/message",
+      "origin": "https://docs.hypertask.ai",
+      "requestMethod": "POST",
+      "status": 204,
+      "headers": {
+        "access-control-allow-origin": "https://docs.hypertask.ai",
+        "vary": "Origin, Access-Control-Request-Headers",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,OPTIONS"
+      },
+      "body": ""
+    },
+    {
+      "id": "preflight-www-allowed",
+      "method": "OPTIONS",
+      "path": "/health",
+      "origin": "https://www.hypertask.ai",
+      "requestMethod": "GET",
+      "status": 204,
+      "headers": {
+        "access-control-allow-origin": "https://www.hypertask.ai",
+        "vary": "Origin, Access-Control-Request-Headers",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,OPTIONS"
+      },
+      "body": ""
+    },
+    {
+      "id": "preflight-disallowed",
+      "method": "OPTIONS",
+      "path": "/api/chat/message",
+      "origin": "https://evil.example",
+      "requestMethod": "POST",
+      "status": 204,
+      "headers": {
+        "vary": "Origin, Access-Control-Request-Headers",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,OPTIONS"
+      },
+      "body": ""
+    },
+    {
+      "id": "preflight-no-origin",
+      "method": "OPTIONS",
+      "path": "/health",
+      "origin": null,
+      "requestMethod": null,
+      "status": 204,
+      "headers": {
+        "vary": "Origin, Access-Control-Request-Headers",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,OPTIONS"
+      },
+      "body": ""
+    },
+    {
+      "id": "preflight-unknown-path",
+      "method": "OPTIONS",
+      "path": "/nope",
+      "origin": "https://hypertask.ai",
+      "requestMethod": "GET",
+      "status": 204,
+      "headers": {
+        "access-control-allow-origin": "https://hypertask.ai",
+        "vary": "Origin, Access-Control-Request-Headers",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,OPTIONS"
+      },
+      "body": ""
+    },
+    {
+      "id": "preflight-en-allowed",
+      "method": "OPTIONS",
+      "path": "/en",
+      "origin": "https://hypertask.ai",
+      "requestMethod": "GET",
+      "status": 204,
+      "headers": {
+        "access-control-allow-origin": "https://hypertask.ai",
+        "vary": "Origin, Access-Control-Request-Headers",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,OPTIONS"
+      },
+      "body": ""
+    }
+  ]
+}

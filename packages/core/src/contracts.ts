@@ -299,6 +299,20 @@ export const inspectFileContract = defineContract("inspectFile", {
   output: FileStatsSchema,
 });
 
+export const HealthOutput = Schema.Struct({
+  status: Schema.Literals(["ok"]),
+  service: Schema.Literals(["ai-chatbot"]),
+});
+
+export const healthContract = defineContract("health", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "Report that the help site worker is serving",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/health" },
+  input: Schema.Struct({}),
+  output: HealthOutput,
+});
+
 export const PromptSlug = Schema.String.check(
   Schema.isPattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)
 );
