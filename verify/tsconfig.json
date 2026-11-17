@@ -5,5 +5,10 @@
     "checkJs": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"]
   },
-  "include": ["diff.mjs", "diff.test.mjs", "driver.test.mjs", "feature-map.test.mjs"]
+  "include": [
+    "diff.mjs",
+    "diff.test.mjs",
+    "driver.test.mjs",
+    "feature-map.test.mjs"
+  ]
 }
