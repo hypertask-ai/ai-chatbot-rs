@@ -430,11 +430,24 @@ const proveSeed = async (port, seed) => {
  */
 const forward = async (request, upstream, port) => {
   const incoming = new URL(request.url ?? "/", `http://127.0.0.1:${port}`);
+  const allowed = new URL(upstream);
 
-  const target = new URL(
-    `${incoming.pathname}${incoming.search}`,
-    upstream.endsWith("/") ? upstream : `${upstream}/`
-  );
+  if (allowed.protocol !== "http:" && allowed.protocol !== "https:") {
+    throw new Error(
+      `The verify seed upstream uses the ${allowed.protocol} scheme. A forwarded path must stay on http or https. Fix: pass \`--upstream\` as an http or https URL.`
+    );
+  }
+
+  const target = new URL(allowed.origin);
+
+  target.pathname = incoming.pathname;
+  target.search = incoming.search;
+
+  if (target.origin !== allowed.origin) {
+    throw new Error(
+      `The verify seed refused to forward ${incoming.pathname}. That path changed the upstream host. Fix: keep the forward URL on \`${allowed.origin}\`.`
+    );
+  }
 
   const headers = new Headers();
 

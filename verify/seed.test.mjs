@@ -8,7 +8,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { createServer } from "node:http";
+import { createServer, request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -251,6 +251,87 @@ await test("the seed serves 97 articles and opens the seeded past chat", async (
 
     assert.equal(health.status, 200);
     assert.equal(await health.text(), "upstream-ok");
+  } finally {
+    started.server.close();
+    upstream.close();
+  }
+});
+
+await test("a forwarded path cannot choose the upstream host", async () => {
+  /** @type {string[]} */
+  const seen = [];
+
+  const upstream = createServer((request, result) => {
+    seen.push(`${request.headers.host ?? ""} ${request.url ?? ""}`);
+    result.writeHead(200, { "content-type": "text/plain; charset=utf-8" });
+    result.end("upstream-ok");
+  });
+
+  upstream.listen(0, "127.0.0.1");
+  await once(upstream, "listening");
+  const upstreamPort = portOf(upstream);
+
+  const started = await startSeedServer({
+    port: 0,
+    upstream: `http://127.0.0.1:${upstreamPort}`,
+  });
+
+  const readText = Schema.decodeUnknownSync(Schema.String);
+
+  /**
+   * @param {string} requestPath
+   * @returns {Promise<{ body: string, status: number | undefined }>}
+   */
+  const send = async (requestPath) => {
+    /** @type {string[]} */
+    const parts = [];
+
+    /** @type {number[]} */
+    const statuses = [];
+
+    const outgoing = httpRequest(
+      {
+        hostname: "127.0.0.1",
+        method: "GET",
+        path: requestPath,
+        port: started.port,
+      },
+      (result) => {
+        result.setEncoding("utf-8");
+
+        if (result.statusCode !== undefined) {
+          statuses.push(result.statusCode);
+        }
+
+        result.on("data", (chunk) => {
+          parts.push(readText(chunk));
+        });
+      }
+    );
+
+    const closed = once(outgoing, "close");
+
+    outgoing.end();
+    await closed;
+
+    return {
+      body: parts.join(""),
+      status: statuses[0],
+    };
+  };
+
+  try {
+    const health = await send("/health?x=1");
+    const attack = await send("/.//evil.example");
+
+    assert.equal(health.status, 200);
+    assert.equal(health.body, "upstream-ok");
+    assert.equal(attack.status, 200);
+    assert.equal(attack.body, "upstream-ok");
+    assert.deepEqual(seen, [
+      `127.0.0.1:${upstreamPort} /health?x=1`,
+      `127.0.0.1:${upstreamPort} //evil.example`,
+    ]);
   } finally {
     started.server.close();
     upstream.close();
