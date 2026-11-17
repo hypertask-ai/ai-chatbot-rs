@@ -9,6 +9,8 @@
     "diff.mjs",
     "diff.test.mjs",
     "driver.test.mjs",
-    "feature-map.test.mjs"
+    "feature-map.test.mjs",
+    "pick-engine.mjs",
+    "pick-engine.test.mjs"
   ]
 }
