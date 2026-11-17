@@ -37,9 +37,11 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Fetch pinned source objects
         run: pnpm sources:fetch
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Check and test
         # 6882060, 4 cores/16 GB: median N1=479s, N2=265s, N4=271s; N2 worst test=39.13% of budget.
-        run: pnpm turbo run check test build --concurrency=2
+        run: pnpm turbo run check test build //#test:verify --concurrency=2
       - name: Measure built site
         # HTPR-9180: docs-rs reports the built size it would deploy. Static assets are
         # counted from dist/client. The Worker is the JavaScript in dist/server, with
