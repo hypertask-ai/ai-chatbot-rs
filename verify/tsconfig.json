@@ -13,6 +13,8 @@
     "driver.test.mjs",
     "feature-map.test.mjs",
     "pick-engine.mjs",
-    "pick-engine.test.mjs"
+    "pick-engine.test.mjs",
+    "seed.mjs",
+    "seed.test.mjs"
   ]
 }

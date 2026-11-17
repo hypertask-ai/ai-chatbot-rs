@@ -292,6 +292,40 @@ jobs:
           ln -sfn "$RUNNER_TEMP/browser/node_modules" "$GITHUB_WORKSPACE/verify/node_modules"
           printf 'SCREENS_DIR=%s\n' "$RUNNER_TEMP/browser/screens" >> "$GITHUB_ENV"
 
+      - name: Seed recorded articles and a sample chat
+        if: steps.target.outputs.go == 'yes'
+        run: |
+          set -euo pipefail
+          node verify/seed.mjs --wrap "$GITHUB_WORKSPACE/apps/web/dist"
+          if [ -f "$RUNNER_TEMP/base/apps/web/dist/server/foldkit.build.json" ]; then
+            node verify/seed.mjs --wrap "$RUNNER_TEMP/base/apps/web/dist"
+          fi
+          node verify/seed.mjs --port 4178 > "$RUNNER_TEMP/seed.log" 2>&1 &
+          echo "$!" > "$RUNNER_TEMP/seed.pid"
+          ready=no
+          for attempt in $(seq 1 30); do
+            if grep -q "seed: /api/articles returned 97 articles" "$RUNNER_TEMP/seed.log" && grep -q "seed: opened past chat seed-past-chat" "$RUNNER_TEMP/seed.log"; then
+              ready=yes
+              break
+            fi
+            if ! kill -0 "$(cat "$RUNNER_TEMP/seed.pid")" 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/seed.log"
+          if [ "$ready" != "yes" ]; then
+            echo "::error::The verify seed did not log 97 articles and an opened past chat."
+            exit 1
+          fi
+          node verify/driver.mjs page --head "http://127.0.0.1:4178" --path "/widget/chat?conversation=seed-past-chat" > "$RUNNER_TEMP/seed-page.json"
+          node verify/seed.mjs --expect-page "$RUNNER_TEMP/seed-page.json"
+          printf 'VERIFY_SEED_URL=http://127.0.0.1:4178\n' >> "$GITHUB_ENV"
+          {
+            printf 'seed: /api/articles returned 97 articles\n'
+            printf 'seed: opened past chat seed-past-chat\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Serve the built sites and any local Worker on the runner
         if: steps.target.outputs.go == 'yes'
         run: |
@@ -610,7 +644,7 @@ jobs:
 
           ## What to do
           1. Read the pull request's title and body, and name what it claims. Read the diff, then name what a reader would notice.
-          2. Drive the base site and the head site like a user, the same way for both. Run the driver for the pages in the feature map, and curl the addresses that answer JSON or redirects.
+          2. Drive the base site and the head site like a user, the same way for both. Run the driver for the pages in the feature map, and curl the addresses that answer JSON or redirects. The verify seed is at ${VERIFY_SEED_URL:-unset}. GET /api/articles there returns the 97 recorded articles, and GET /widget/chat?conversation=seed-past-chat opens the seeded past chat. Quote both in the verdict. Do not post a chat message to the seed.
           3. Do the same to the base site when it is running, then compare head against base with diff and with the screenshots. The live old site is the reference for look and content, so fetch it when the base build and the live site disagree.
           4. Try to break it. Unknown paths, a trailing slash, a missing asset, text that differs from the live page, a font or colour or size or corner that differs, a link that goes nowhere, a JavaScript error, a layout that breaks at 390 pixels, a control you cannot reach with the keyboard.
           5. Keep what you used as evidence: the addresses you fetched, the text you compared, the screenshots you took, the driver reports.
@@ -861,12 +895,14 @@ jobs:
             ${{ runner.temp }}/base.log
             ${{ runner.temp }}/head-worker.log
             ${{ runner.temp }}/base-worker.log
+            ${{ runner.temp }}/seed.log
+            ${{ runner.temp }}/seed-page.json
           if-no-files-found: ignore
 
       - name: Stop the local sites
         if: always() && steps.target.outputs.go == 'yes'
         run: |
-          for pid in "$RUNNER_TEMP/head.pid" "$RUNNER_TEMP/base.pid" "$RUNNER_TEMP/head-worker.pid" "$RUNNER_TEMP/base-worker.pid"; do
+          for pid in "$RUNNER_TEMP/head.pid" "$RUNNER_TEMP/base.pid" "$RUNNER_TEMP/head-worker.pid" "$RUNNER_TEMP/base-worker.pid" "$RUNNER_TEMP/seed.pid"; do
             if [ -f "$pid" ]; then
               kill "$(cat "$pid")" 2>/dev/null || true
             fi
