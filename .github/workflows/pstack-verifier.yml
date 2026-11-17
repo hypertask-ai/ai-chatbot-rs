@@ -122,7 +122,7 @@ jobs:
 
       - name: Check the diff reader on a fixture
         if: steps.target.outputs.go == 'yes'
-        run: node --test verify/diff.test.mjs
+        run: node --test verify/diff.test.mjs verify/feature-map.test.mjs verify/driver-gate.test.mjs verify/serve-worker.test.mjs
 
       - name: Enable corepack pnpm
         if: steps.target.outputs.go == 'yes'
@@ -418,6 +418,77 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Start the local Worker for the help routes
+        if: steps.target.outputs.go == 'yes'
+        run: |
+          set -euo pipefail
+          start_one() {
+            local dist="$1" port="$2" side="$3" attempts=30 attempt code
+            if [ ! -f "$dist/server/foldkit.build.json" ]; then
+              echo "$side build has no server/foldkit.build.json" >&2
+              return 1
+            fi
+            node verify/serve-worker.mjs --dist "$dist" --port "$port" > "$RUNNER_TEMP/$side-worker.log" 2>&1 &
+            echo "$!" > "$RUNNER_TEMP/$side-worker.pid"
+            for attempt in $(seq 1 "$attempts"); do
+              if ! kill -0 "$(cat "$RUNNER_TEMP/$side-worker.pid")" 2>/dev/null; then
+                cat "$RUNNER_TEMP/$side-worker.log" >&2
+                echo "the $side Worker exited before it answered" >&2
+                return 1
+              fi
+              code="$(curl --silent --output /dev/null --max-time 2 --write-out '%{http_code}' "http://127.0.0.1:$port/health" || true)"
+              if [ -n "$code" ] && [ "$code" != "000" ]; then
+                echo "the $side Worker answered $code at http://127.0.0.1:$port/health on attempt $attempt"
+                return 0
+              fi
+              sleep 2
+            done
+            cat "$RUNNER_TEMP/$side-worker.log" >&2
+            echo "the $side Worker did not answer on http://127.0.0.1:$port within 60 seconds" >&2
+            return 1
+          }
+
+          if ! start_one "$GITHUB_WORKSPACE/apps/web/dist" 4175 head; then
+            echo "::error::The head Worker did not start, so the driver cannot open the help routes."
+            exit 1
+          fi
+          printf 'SITE_WORKER_URL=http://127.0.0.1:4175\n' >> "$GITHUB_ENV"
+          base_worker=no
+          if [ -f "$RUNNER_TEMP/base/apps/web/dist/server/foldkit.build.json" ]; then
+            if start_one "$RUNNER_TEMP/base/apps/web/dist" 4176 base; then
+              printf 'BASE_WORKER_URL=http://127.0.0.1:4176\n' >> "$GITHUB_ENV"
+              base_worker=yes
+            else
+              echo "::notice::The base Worker did not start. The driver compares the head Worker with itself."
+            fi
+          fi
+          {
+            printf 'head Worker: http://127.0.0.1:4175\n'
+            if [ "$base_worker" = "yes" ]; then
+              printf 'base Worker: http://127.0.0.1:4176\n'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run every driver command against the local Worker
+        if: steps.target.outputs.go == 'yes'
+        run: |
+          set -euo pipefail
+          if [ -z "${SITE_WORKER_URL:-}" ]; then
+            echo "::error::The local Worker did not start, so the driver did not run."
+            exit 1
+          fi
+          base="${BASE_WORKER_URL:-$SITE_WORKER_URL}"
+          node verify/driver.mjs page --head "$SITE_WORKER_URL" --base "$base" --path /help
+          node verify/driver.mjs compare --head "$SITE_WORKER_URL" --base "$base" --path /help
+          node verify/driver.mjs widget --head "$SITE_WORKER_URL" --base "$base" --path /help
+          node verify/driver.mjs api \
+            --head "$SITE_WORKER_URL" \
+            --base "$base" \
+            --path /health \
+            --path /api/articles \
+            --path /api/help-reader/pricing-plans
+          node verify/driver-gate.mjs --screens "$SCREENS_DIR" --worker "$SITE_WORKER_URL"
+
       - name: Read the change under review from the checkout
         if: steps.target.outputs.go == 'yes'
         env:
@@ -489,10 +560,11 @@ jobs:
           - The live old site is at $LIVE_URL. Read it for look and content, and compare it with the head. Fetch it with GET only, never post to it, and never send it a chat message.
           - The feature map for the help site is verify/feature-map.md. It lists every user-visible feature, the address to try, and what to look for.
           - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the head with the base, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright 1.65.1 with Chromium is installed outside the repository and linked at verify/node_modules, so the driver resolves it. SCREENS_DIR points at ${SCREENS_DIR}.
-            - node verify/driver.mjs page --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help --path /help/<slug>
-            - node verify/driver.mjs compare --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
-            - node verify/driver.mjs widget --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
-            - node verify/driver.mjs api --head "${SITE_URL}" --base "${BASE_URL:-}" --path /health --path /api/articles
+          - The workflow already ran every driver command against the local Worker at ${SITE_WORKER_URL:-unset}, before this prompt. The reports are report-page.json, report-compare.json, report-widget.json and report-api.json in ${SCREENS_DIR}. Read them. This job fails when those reports are missing, when a console error or a page error is recorded, or when /help, /health, /api/articles or /api/help-reader/pricing-plans answers with a status outside 200 to 399.
+            - node verify/driver.mjs page --head "${SITE_WORKER_URL:-}" --base "${BASE_WORKER_URL:-${SITE_WORKER_URL:-}}" --path /help
+            - node verify/driver.mjs compare --head "${SITE_WORKER_URL:-}" --base "${BASE_WORKER_URL:-${SITE_WORKER_URL:-}}" --path /help
+            - node verify/driver.mjs widget --head "${SITE_WORKER_URL:-}" --base "${BASE_WORKER_URL:-${SITE_WORKER_URL:-}}" --path /help
+            - node verify/driver.mjs api --head "${SITE_WORKER_URL:-}" --base "${BASE_WORKER_URL:-${SITE_WORKER_URL:-}}" --path /health --path /api/articles --path /api/help-reader/pricing-plans
           - Save every screenshot and report in ${SCREENS_DIR}.
           - The change under review, its title, its body, the files it touches and its diff, is at the end of this prompt.
 
