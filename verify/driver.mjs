@@ -492,7 +492,13 @@ const readFrame = async (frame) => {
 /** @param {VerifierPage} page
  * @returns {Promise<FrameState>} */
 const frameState = async (page) => {
-  const handle = await page.locator("iframe").first().elementHandle();
+  const frames = page.locator("iframe");
+
+  if ((await frames.count()) === 0) {
+    return { buttons: [], found: false, inputs: [] };
+  }
+
+  const handle = await frames.first().elementHandle();
   const frame = await handle?.contentFrame();
 
   if (frame === null || frame === undefined) {
@@ -545,58 +551,64 @@ const widgetOne = async (browser, base, routePath, namePrefix) => {
   let status = 0;
 
   try {
-    const response = await page.goto(`${base}${routePath}`, {
-      timeout: TIMEOUT,
-      waitUntil: "load",
-    });
+    try {
+      const response = await page.goto(`${base}${routePath}`, {
+        timeout: TIMEOUT,
+        waitUntil: "load",
+      });
 
-    status = response?.status() ?? 0;
+      status = response?.status() ?? 0;
+    } catch (error) {
+      return { error: String(error), path: routePath, status };
+    }
+
+    await settle(page);
+
+    const closedShots = {
+      full: path.join(SCREENS, `${stem}-widget-closed-full.png`),
+      viewport: path.join(SCREENS, `${stem}-widget-closed-viewport.png`),
+    };
+
+    await shoot(page, closedShots.viewport, false);
+    await shoot(page, closedShots.full, true);
+    const matches = await findSelectors(page);
+    const clicked = await clickLauncher(page, matches);
+    await page.waitForTimeout(1500);
+    await settle(page);
+
+    const openShots = {
+      full: path.join(SCREENS, `${stem}-widget-open-full.png`),
+      viewport: path.join(SCREENS, `${stem}-widget-open-viewport.png`),
+    };
+
+    await shoot(page, openShots.viewport, false);
+    await shoot(page, openShots.full, true);
+    const state = await frameState(page);
+
+    return {
+      blockedChatSends: session.blocked,
+      clicked,
+      closedScreenshots: closedShots,
+      consoleErrors: session.watched.consoleErrors,
+      openScreenshots: openShots,
+      pageErrors: session.watched.pageErrors,
+      path: routePath,
+      selectors: matches,
+      sentAMessage: false,
+      state,
+      status,
+    };
   } catch (error) {
+    return {
+      consoleErrors: session.watched.consoleErrors,
+      error: String(error),
+      pageErrors: session.watched.pageErrors,
+      path: routePath,
+      status,
+    };
+  } finally {
     await session.context.close();
-
-    return { error: String(error), path: routePath, status };
   }
-
-  await settle(page);
-
-  const closedShots = {
-    full: path.join(SCREENS, `${stem}-widget-closed-full.png`),
-    viewport: path.join(SCREENS, `${stem}-widget-closed-viewport.png`),
-  };
-
-  await shoot(page, closedShots.viewport, false);
-  await shoot(page, closedShots.full, true);
-  const matches = await findSelectors(page);
-  const clicked = await clickLauncher(page, matches);
-  await page.waitForTimeout(1500);
-  await settle(page);
-
-  const openShots = {
-    full: path.join(SCREENS, `${stem}-widget-open-full.png`),
-    viewport: path.join(SCREENS, `${stem}-widget-open-viewport.png`),
-  };
-
-  await shoot(page, openShots.viewport, false);
-  await shoot(page, openShots.full, true);
-  const state = await frameState(page);
-
-  const report = {
-    blockedChatSends: session.blocked,
-    clicked,
-    closedScreenshots: closedShots,
-    consoleErrors: session.watched.consoleErrors,
-    openScreenshots: openShots,
-    pageErrors: session.watched.pageErrors,
-    path: routePath,
-    selectors: matches,
-    sentAMessage: false,
-    state,
-    status,
-  };
-
-  await session.context.close();
-
-  return report;
 };
 
 /** @param {VerifierBrowser} browser
@@ -683,6 +695,10 @@ const run = async () => {
   if (command === "api") {
     const report = await apiAll();
 
+    await writeText(
+      path.join(SCREENS, "report-api.json"),
+      JSON.stringify(report, null, 2)
+    );
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 
     return;
