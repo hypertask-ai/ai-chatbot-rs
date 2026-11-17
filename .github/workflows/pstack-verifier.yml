@@ -28,33 +28,28 @@ jobs:
       codex: ${{ steps.pick.outputs.codex }}
       claude: ${{ steps.pick.outputs.claude }}
     steps:
+      - name: Check out the verifier gate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js 24.18.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.18.0
+
       - name: Read which verifier setting exists
         id: pick
         env:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
           CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: |
-          set -euo pipefail
-          codex=no
-          claude=no
-          if [ -n "${CODEX_AUTH_JSON:-}" ] || [ -n "${CODEX_VERIFIER_KEY:-}" ]; then codex=yes; fi
-          if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then claude=yes; fi
-          if [ "$codex" = "no" ] && [ "$claude" = "no" ]; then
-            engine=none
-            echo "::notice title=Verifier skipped::skipped: no verifier setting. The pstack-verifier check stays neutrally skipped. Add the repository secret CODEX_AUTH_JSON with a Codex plan login file, or CODEX_VERIFIER_KEY with a Codex API key, or CLAUDE_CODE_OAUTH_TOKEN from the Claude plan."
-          elif [ "$codex" = "yes" ]; then
-            engine=codex
-          else
-            engine=claude
-          fi
-          printf 'engine=%s\ncodex=%s\nclaude=%s\n' "$engine" "$codex" "$claude" >> "$GITHUB_OUTPUT"
-          printf 'engine: %s\n' "$engine" >> "$GITHUB_STEP_SUMMARY"
+        run: node verify/pick-engine.mjs
 
   pstack-verifier:
     name: pstack-verifier
     needs: engine
-    if: needs.engine.outputs.engine != 'none'
+    if: always() && needs.engine.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -63,6 +58,23 @@ jobs:
       RUN_ID: ${{ github.run_id }}
       LIVE_URL: https://help.hypertask.ai
     steps:
+      - name: Check out the verifier gate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js 24.18.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.18.0
+
+      - name: Fail when no verifier setting exists
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+          CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: node verify/pick-engine.mjs --require
+
       - name: Resolve the pull request, its head and its base
         id: target
         env:
@@ -122,7 +134,7 @@ jobs:
 
       - name: Check the diff reader on a fixture
         if: steps.target.outputs.go == 'yes'
-        run: node --test verify/diff.test.mjs
+        run: node --test verify/pick-engine.test.mjs verify/diff.test.mjs
 
       - name: Enable corepack pnpm
         if: steps.target.outputs.go == 'yes'
