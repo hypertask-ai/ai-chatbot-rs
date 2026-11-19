@@ -39,7 +39,15 @@ interface ParentSessionMessage {
   readonly visitorSecret?: string;
 }
 
-type ParentMessage = ParentCloseMessage | ParentSessionMessage;
+interface ParentOpenArticleMessage {
+  readonly slug: string;
+  readonly type: "help-open-article";
+}
+
+type ParentMessage =
+  | ParentCloseMessage
+  | ParentOpenArticleMessage
+  | ParentSessionMessage;
 
 interface SessionInput {
   readonly conversationId: string;
