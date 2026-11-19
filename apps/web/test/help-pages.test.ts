@@ -231,6 +231,7 @@ describe("help pages recorded from the old site", () => {
         ...recordedArticles.map((article) => `/help/${article.slug}`),
       ]) {
         const served = yield* pageAt(pathname);
+
         const escaping = internalHrefsOf(withoutCode(bodyOf(served))).filter(
           (href) => !underSiteBasePath(href)
         );

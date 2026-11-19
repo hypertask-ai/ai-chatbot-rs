@@ -1,4 +1,4 @@
-import { sitePath } from "../site-base-path.js";
+import { sitePath } from "../../site-base-path.js";
 
 export const appOrigin = "https://hypertask.ai";
 
