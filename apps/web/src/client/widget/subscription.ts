@@ -4,13 +4,16 @@ import { streamFromEvent } from "foldkit/dom";
 import { Message } from "./message.js";
 import type { AppMessage } from "./message.js";
 import type { AppModel } from "./model.js";
+import { isTrustedParentOrigin } from "./parent-origin.js";
 
 const hostMessages = streamFromEvent({
   mapEvent: (event) =>
     Message.ReceivedHostMessage({
       data: event.data,
-      fromParent: event.source === window.parent,
       sameOrigin: event.origin === window.location.origin,
+      trustedParent:
+        event.source === window.parent &&
+        isTrustedParentOrigin(event.origin, window.location.origin),
     }),
   target: () => window,
   type: "message",

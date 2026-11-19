@@ -13,7 +13,7 @@ import {
 } from "./widget-fake-dom.js";
 import type { FakeElement } from "./widget-fake-dom.js";
 
-const script = widgetLoaderScript("https://chat.test");
+const script = widgetLoaderScript();
 
 const origin = "https://chat.test";
 
@@ -51,6 +51,17 @@ describe("widget loader", () => {
     expect(script).toContain("data-mode");
     expect(script).toContain("hypertask-chat-docked");
     expect(script).toContain("--hypertask-chat-dock-width");
+  });
+
+  it("takes its own origin and prefix from the script tag it runs in", () => {
+    const run = runWidgetLoader(script, {
+      scriptSrc: `${origin}/ratstack/widget/widget.js`,
+    });
+
+    handler(element(run, "chat-widget-btn"), "click")();
+
+    expect(run.frames[0]?.src).toBe(`${origin}/ratstack/widget/chat`);
+    expect(displayOf(element(run, "chat-widget-iframe"))).toBe("block");
   });
 
   it("waits for the launcher and keeps host storage untouched until the frame boots", () => {
@@ -344,5 +355,20 @@ describe("widget loader", () => {
         (message) => message.type === "chat-widget-closed"
       )
     ).toHaveLength(1);
+  });
+
+  it("names the frame origin on every message it sends into the frame", () => {
+    const run = runWidgetLoader(script);
+
+    handler(element(run, "chat-widget-btn"), "click")();
+    handler(frame(run), "load")();
+
+    const posted = frame(run).postedTo;
+
+    expect(posted.length).toBeGreaterThan(0);
+    expect([...new Set(posted.map((each) => each.targetOrigin))]).toEqual([
+      origin,
+    ]);
+    expect(script).toContain("postMessage(message, CHAT_ORIGIN)");
   });
 });

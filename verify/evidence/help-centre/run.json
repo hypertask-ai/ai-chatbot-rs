@@ -1,0 +1,63 @@
+{
+  "actions": [],
+  "addedInNewLinks": [],
+  "addedInNewText": [
+    "Understand what wakes an agent, what Hypertask sends, how to verify it, and how to work without a public URL.",
+    "Manage your incoming notifications, Snooze, and Important section."
+  ],
+  "changedText": [
+    "/help/docs-features-inbox: \"Inbox & NotificationsBoards & ticketsManage your incoming notifications, Snooze, Important, and Decisions.\" became \"Inbox & NotificationsBoards & ticketsManage your incoming notifications, Snooze, and Important section.\"",
+    "/help/docs-mcp-agent-webhooks: \"Agent webhooksAgentsGet a signed webhook when a task changes in your team, with no agent, or wake an agent. Covers verification and working without a public URL.\" became \"Agent webhooksAgentsUnderstand what wakes an agent, what Hypertask sends, how to verify it, and how to work without a public URL.\""
+  ],
+  "evidence": "/tmp/ratstack/evidence/verify-ai-chatbot-rs",
+  "expected": 200,
+  "feature": "help-centre",
+  "headTags": {
+    "old": {
+      "headers": {
+        "cache-control": "",
+        "content-type": "text/html; charset=UTF-8",
+        "x-robots-tag": ""
+      },
+      "status": 200,
+      "tags": {
+        "canonical": null,
+        "description": null,
+        "robots": null,
+        "title": "Help Center - Hypertask"
+      },
+      "url": "https://help.hypertask.ai/help"
+    },
+    "preview": {
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-type": "text/html",
+        "x-robots-tag": "noindex"
+      },
+      "status": 200,
+      "tags": {
+        "canonical": null,
+        "description": null,
+        "robots": "noindex",
+        "title": "Help Center - Hypertask"
+      },
+      "url": "https://help.hypertask.ai/ratstack/help/"
+    }
+  },
+  "missingFromNewLinks": [],
+  "missingFromNewText": [
+    "Get a signed webhook when a task changes in your team, with no agent, or wake an agent. Covers verification and working without a public URL.",
+    "Manage your incoming notifications, Snooze, Important, and Decisions."
+  ],
+  "newStatus": 200,
+  "old": "https://help.hypertask.ai",
+  "oldStatus": 200,
+  "path": "/help",
+  "preview": "https://help.hypertask.ai/ratstack",
+  "reasons": [
+    "2 lines of the old page are missing from the preview",
+    "2 links of the preview say something different from the old page"
+  ],
+  "stamp": "2026-11-19T19-33-47-563Z",
+  "verdict": "FAIL"
+}

@@ -47,6 +47,10 @@
       "cache": false,
       "outputs": []
     },
+    "//#test:verify": {
+      "cache": false,
+      "outputs": []
+    },
     "check": {
       "dependsOn": [
         "//#lockfile:check",

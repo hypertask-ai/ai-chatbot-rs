@@ -71,7 +71,6 @@ export const Message = defineMessageUnion({
     conversationId: Schema.String,
     sheet: Schema.Boolean,
     visitorId: Schema.String,
-    visitorSecret: Schema.String,
   },
   OpenedCitedArticle: { slug: Schema.String },
   OpenedLightbox: { dataUrl: Schema.String },
@@ -87,8 +86,8 @@ export const Message = defineMessageUnion({
   },
   ReceivedHostMessage: {
     data: Schema.Unknown,
-    fromParent: Schema.Boolean,
     sameOrigin: Schema.Boolean,
+    trustedParent: Schema.Boolean,
   },
   RejectedAttachment: {},
   RemovedAttachment: {},

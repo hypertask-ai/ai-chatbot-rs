@@ -125,8 +125,8 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: imageDataUrl, type: "help-attachment" },
-          fromParent: true,
           sameOrigin: true,
+          trustedParent: true,
         })
       ),
       sceneExpect(selector("#attachmentPreview")).toExist(),
@@ -143,8 +143,8 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: imageDataUrl, type: "help-attachment" },
-          fromParent: true,
           sameOrigin: true,
+          trustedParent: true,
         })
       ),
       type(box, "What is this?"),
@@ -167,15 +167,15 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: imageDataUrl, type: "help-attachment" },
-          fromParent: true,
           sameOrigin: false,
+          trustedParent: true,
         })
       ),
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { dataUrl: "https://evil.test/x.png", type: "help-attachment" },
-          fromParent: true,
           sameOrigin: true,
+          trustedParent: true,
         })
       ),
       sceneExpect(selector("#attachmentPreview")).toBeAbsent()
@@ -189,8 +189,8 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { type: "chat-widget-nothing" },
-          fromParent: true,
           sameOrigin: true,
+          trustedParent: true,
         })
       ),
       sceneExpect(role("heading", { name: "Hi, how can we help?" })).toExist()
@@ -204,8 +204,8 @@ describe("chat widget page", () => {
       Subscription.emit(
         Message.ReceivedHostMessage({
           data: { isMobile: true, pinned: true, type: "chat-widget-pinned" },
-          fromParent: true,
           sameOrigin: true,
+          trustedParent: true,
         })
       ),
       Command.expectExact(

@@ -1,0 +1,32 @@
+{
+  "old": {
+    "headers": {
+      "cache-control": "",
+      "content-type": "text/html; charset=UTF-8",
+      "x-robots-tag": ""
+    },
+    "status": 200,
+    "tags": {
+      "canonical": null,
+      "description": null,
+      "robots": null,
+      "title": "Help Center - Hypertask"
+    },
+    "url": "https://help.hypertask.ai/help"
+  },
+  "preview": {
+    "headers": {
+      "cache-control": "public, max-age=0, must-revalidate",
+      "content-type": "text/html",
+      "x-robots-tag": "noindex"
+    },
+    "status": 200,
+    "tags": {
+      "canonical": null,
+      "description": null,
+      "robots": "noindex",
+      "title": "Help Center - Hypertask"
+    },
+    "url": "https://help.hypertask.ai/ratstack/help/"
+  }
+}
