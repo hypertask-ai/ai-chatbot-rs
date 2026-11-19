@@ -1,6 +1,7 @@
 import * as Cloudflare from "@alchemy.run/cloudflare";
 
 import { siteAssetHeaders, siteBasePath } from "./site-base-path.js";
+import { widgetScriptAssetHeaders } from "./widget/embed.js";
 
 export const publishHostname = "help.hypertask.ai";
 
@@ -14,11 +15,9 @@ const previewWorker = {
   routes: [{ pattern: publishRoutePattern, zoneName: "hypertask.ai" }],
 };
 
-const headers = siteAssetHeaders();
+const headers = `${siteAssetHeaders() ?? ""}${widgetScriptAssetHeaders}`;
 
-export class Website extends Cloudflare.Website.Foldkit<Website>()(
-  "Website",
-  headers === undefined
-    ? previewWorker
-    : { ...previewWorker, assets: { headers } }
-) {}
+export class Website extends Cloudflare.Website.Foldkit<Website>()("Website", {
+  ...previewWorker,
+  assets: { headers },
+}) {}

@@ -7,7 +7,12 @@ import {
 } from "foldkit/experimental/server";
 
 import { Flags, initialModel } from "./client/help/index.js";
+import {
+  Flags as WidgetFlags,
+  initialModel as initialWidgetModel,
+} from "./client/widget/index.js";
 import { view } from "./features/help/index.js";
+import { view as widgetView } from "./features/widget/index.js";
 import type { HelpRoute } from "./server/help-pages.js";
 import { helpPageFlags, helpRouteOf } from "./server/help-pages.js";
 import {
@@ -20,6 +25,14 @@ import {
   siteRobotsMeta,
   stripBasePath,
 } from "./site-base-path.js";
+import {
+  widgetChatHeaders,
+  widgetChatPath,
+  widgetScriptHeaders,
+  widgetScriptPath,
+} from "./widget/embed.js";
+import { widgetLoaderScript } from "./widget/loader.js";
+import { widgetPageFlags } from "./widget/params.js";
 
 const headMarkup = [
   `<link rel="icon" type="image/png" href="${siteBasePath}/glyph-white.png">`,
@@ -76,6 +89,19 @@ const unsupportedMethod = () => {
   );
 };
 
+const withWidgetChatHeaders = (): Headers => {
+  const headers = noindexHeaders();
+
+  for (const [name, value] of Object.entries(widgetChatHeaders)) {
+    headers.set(name, value);
+  }
+
+  return headers;
+};
+
+const routePath = (pathname: string): string | undefined =>
+  pathname === "/" ? "/" : stripBasePath(pathname);
+
 const underBasePath = (pathname: string): boolean =>
   siteBasePath !== "" &&
   (pathname === siteBasePath || pathname.startsWith(`${siteBasePath}/`));
@@ -116,10 +142,50 @@ const renderHelpPage = Effect.fn("site.renderHelpPage")(
   }
 );
 
+const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
+  request: Request,
+  pathname: string
+) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return unsupportedMethod();
+  }
+
+  if (pathname === widgetScriptPath) {
+    return Responded(
+      new Response(request.method === "HEAD" ? null : widgetLoaderScript(), {
+        headers: widgetScriptHeaders,
+        status: 200,
+      })
+    );
+  }
+
+  const flags = widgetPageFlags(new URL(request.url).search);
+
+  const application = yield* renderToString(
+    {
+      Flags: WidgetFlags,
+      init: (page) => ({ model: initialWidgetModel(page) }),
+      view: widgetView,
+    },
+    { flags }
+  );
+
+  return Rendered(application, {
+    headers: withWidgetChatHeaders(),
+    status: 200,
+  });
+});
+
 const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   request: Request
 ) {
   const { pathname } = new URL(request.url);
+  const route = routePath(pathname);
+
+  if (route === widgetScriptPath || route === widgetChatPath) {
+    return yield* widgetRoutes(request, route);
+  }
+
   const page = pageUnder(pathname);
 
   if (page === null) {

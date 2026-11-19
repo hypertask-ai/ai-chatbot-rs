@@ -255,6 +255,8 @@ export {
   type HandoffEmailOperations,
 } from "./handoff-email.js";
 
+export { shouldOfferHandoff, type HandoffOfferInput } from "./handoff-offer.js";
+
 export { PromptLibrary, getPrompt, listPrompts } from "./prompts.js";
 
 export { CafeDataError } from "./cafe-data-error.js";
