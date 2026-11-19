@@ -10,12 +10,12 @@ import {
   initialModel,
 } from "../src/client/help/index.js";
 import { readerStep } from "../src/client/help/reader.js";
-import { sitePath } from "../src/site-base-path.js";
 import { renderDocument, renderPage } from "../src/entry.server.js";
 import { view } from "../src/features/help/index.js";
 import { helpPageFlags } from "../src/server/help-pages.js";
 import { helpReaderSlugOf } from "../src/server/help-reader.js";
 import { recordedHelpArticles } from "../src/server/recorded-help-articles.js";
+import { sitePath } from "../src/site-base-path.js";
 import recordedAnswers from "./fixtures/help-article-answers.json";
 import liveArticleAiFeatures from "./fixtures/live/help-article-docs-features-ai-features.json";
 import liveArticlePricing from "./fixtures/live/help-article-pricing-plans.json";
