@@ -3,7 +3,7 @@ export { AnthropicConfig } from "./anthropic-config.js";
 export { isRetryableAnthropicFailure } from "./anthropic-failure.js";
 
 export {
-  ANTHROPIC_MESSAGES_URL,
+  anthropicMessagesUrl,
   answerModelLayer,
 } from "./anthropic-messages.js";
 

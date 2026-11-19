@@ -6,9 +6,18 @@
   }
 
   html {
-    background: #ffffff;
-    color: #111111;
-    color-scheme: light;
+    background: #0a0a0b;
+    color: #f4f4f7;
+    color-scheme: dark;
+  }
+
+  :where(.rat-help),
+  :where(.rat-help) *,
+  :where(.rat-help) *::before,
+  :where(.rat-help) *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
   body {

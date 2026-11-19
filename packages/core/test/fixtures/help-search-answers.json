@@ -1,0 +1,246 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai/api/articles/search/:query",
+  "method": "curl, GET only, no cookies and no visitor data",
+  "queries": [
+    {
+      "query": "voice",
+      "matches": [
+        {
+          "id": "11625997",
+          "title": "Voice Dictation Meets AI: Speak Your Way to Perfect Comments",
+          "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+          "excerpt": "Learn how to use Hypertask's voice dictation features to create perfect comments using speech-to-text and AI optimization.",
+          "category": "cat-12130247"
+        },
+        {
+          "id": "11204658",
+          "title": "Voice Transcription: Dictate Comments and Descriptions with Whisper v2",
+          "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+          "excerpt": "Learn how to use Hypertask's voice transcription feature powered by Whisper v2 for dictating comments and descriptions.",
+          "category": "cat-12130247"
+        },
+        {
+          "id": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits",
+          "slug": "pricing-plans",
+          "excerpt": "Free is $0 forever, with unlimited members, unlimited open tickets and up to 3 owned boards. Paid plans per user per month: BYOK $10 monthly or $8 billed yearly, Pro $20 monthly or $16 billed yearly. Paid plans come with a 14-day trial. Upgrade in Settings > Plans.",
+          "category": "cat-12128993"
+        },
+        {
+          "id": "docs-features-appearance",
+          "title": "Appearance & AI Models",
+          "slug": "docs-features-appearance",
+          "excerpt": "Customize themes, icons, fonts, and select AI models for Hypertask.",
+          "category": "Settings & Preferences"
+        },
+        {
+          "id": "docs-features-keyboard-shortcuts",
+          "title": "Keyboard Shortcuts",
+          "slug": "docs-features-keyboard-shortcuts",
+          "excerpt": "Complete keyboard shortcut reference for Windows, Linux, and Mac.",
+          "category": "Keyboard Shortcuts"
+        },
+        {
+          "id": "docs-features-agent-chat",
+          "title": "Agent Chat",
+          "slug": "docs-features-agent-chat",
+          "excerpt": "Talk to agents on your phone or work with your board's agents in a shared room.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-features-billing",
+          "title": "Billing & Seat Management",
+          "slug": "docs-features-billing",
+          "excerpt": "Add and manage seat licenses, view cost forecasts, and test billing flows safely.",
+          "category": "Collaboration & billing"
+        }
+      ]
+    },
+    {
+      "query": "zzzqx",
+      "matches": []
+    },
+    {
+      "query": "q",
+      "matches": []
+    },
+    {
+      "query": "a",
+      "matches": []
+    },
+    {
+      "query": "cafe",
+      "matches": []
+    },
+    {
+      "query": "pricing-plans",
+      "matches": [
+        {
+          "id": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits",
+          "slug": "pricing-plans",
+          "excerpt": "Free is $0 forever, with unlimited members, unlimited open tickets and up to 3 owned boards. Paid plans per user per month: BYOK $10 monthly or $8 billed yearly, Pro $20 monthly or $16 billed yearly. Paid plans come with a 14-day trial. Upgrade in Settings > Plans.",
+          "category": "cat-12128993"
+        },
+        {
+          "id": "docs-mcp-workflows",
+          "title": "Agent Workflows",
+          "slug": "docs-mcp-workflows",
+          "excerpt": "Patterns for AI agents working with Hypertask tasks.",
+          "category": "Agents"
+        },
+        {
+          "id": "10895715",
+          "title": "Using the Forward Slash Menu in Task Descriptions and Comments",
+          "slug": "using-the-forward-slash-menu-in-task-descriptions-and-comments",
+          "excerpt": "The forward slash menu in Hypertask provides quick access to formatting options and AI-powered assistance while editing task descriptions or comments on the task detail page.",
+          "category": "cat-12130036"
+        },
+        {
+          "id": "docs-features-appearance",
+          "title": "Appearance & AI Models",
+          "slug": "docs-features-appearance",
+          "excerpt": "Customize themes, icons, fonts, and select AI models for Hypertask.",
+          "category": "Settings & Preferences"
+        },
+        {
+          "id": "docs-features-billing",
+          "title": "Billing & Seat Management",
+          "slug": "docs-features-billing",
+          "excerpt": "Add and manage seat licenses, view cost forecasts, and test billing flows safely.",
+          "category": "Collaboration & billing"
+        },
+        {
+          "id": "docs-features-ai-chat-capabilities",
+          "title": "What AI chat can do",
+          "slug": "docs-features-ai-chat-capabilities",
+          "excerpt": "Compare built-in chat, connected agents, and the CLI, including permissions and limits.",
+          "category": "Features & How-To"
+        }
+      ]
+    },
+    {
+      "query": "slack",
+      "matches": [
+        {
+          "id": "docs-features-slack",
+          "title": "Slack",
+          "slug": "docs-features-slack",
+          "excerpt": "The Slack app is not available yet.",
+          "category": "Collaboration & billing"
+        },
+        {
+          "id": "docs-changelog-index",
+          "title": "Changelog",
+          "slug": "docs-changelog-index",
+          "excerpt": "Shipped improvements to Hypertask.",
+          "category": "Changelog"
+        },
+        {
+          "id": "docs-features-board-settings",
+          "title": "Board Settings",
+          "slug": "docs-features-board-settings",
+          "excerpt": "Manage planning, notifications, auto-archive, staleness detection, time tracking, and per-column auto-assign rules.",
+          "category": "Boards & tickets"
+        },
+        {
+          "id": "docs-features-collaboration",
+          "title": "Collaboration",
+          "slug": "docs-features-collaboration",
+          "excerpt": "Share a board with Admins and Members. There is no Viewer role. Invite a client to one board, and see who manages billing.",
+          "category": "Collaboration & billing"
+        },
+        {
+          "id": "docs-features-tasks",
+          "title": "Tasks",
+          "slug": "docs-features-tasks",
+          "excerpt": "Create, assign, and manage tasks with rich fields, priorities, relations, and subtasks.",
+          "category": "Boards & tickets"
+        },
+        {
+          "id": "docs-features-search",
+          "title": "Search",
+          "slug": "docs-features-search",
+          "excerpt": "Search across tasks with operator autocomplete, filter suggestions, and a rich tips panel.",
+          "category": "Boards & tickets"
+        },
+        {
+          "id": "docs-features-integrations",
+          "title": "Integrations",
+          "slug": "docs-features-integrations",
+          "excerpt": "What Hypertask connects to today, including Cursor and Codex, and what is not available yet.",
+          "category": "Collaboration & billing"
+        }
+      ]
+    },
+    {
+      "query": "webhook",
+      "matches": [
+        {
+          "id": "docs-mcp-agent-webhooks",
+          "title": "Agent webhooks",
+          "slug": "docs-mcp-agent-webhooks",
+          "excerpt": "Understand what wakes an agent, what Hypertask sends, how to verify it, and how to work without a public URL.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-mcp-overview",
+          "title": "MCP Integration",
+          "slug": "docs-mcp-overview",
+          "excerpt": "Connect AI agents to Hypertask via the Model Context Protocol.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-mcp-workflows",
+          "title": "Agent Workflows",
+          "slug": "docs-mcp-workflows",
+          "excerpt": "Patterns for AI agents working with Hypertask tasks.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-api-rest-api",
+          "title": "REST API",
+          "slug": "docs-api-rest-api",
+          "excerpt": "Complete reference for Hypertask's public REST API endpoints.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-api-tools-reference",
+          "title": "MCP Tools Reference",
+          "slug": "docs-api-tools-reference",
+          "excerpt": "Every tool the Hypertask MCP server exposes, with its parameters.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-cli-commands",
+          "title": "CLI Commands",
+          "slug": "docs-cli-commands",
+          "excerpt": "Every command exposed by the released Hypertask CLI, generated from its help.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-features-agent-chat",
+          "title": "Agent Chat",
+          "slug": "docs-features-agent-chat",
+          "excerpt": "Talk to agents on your phone or work with your board's agents in a shared room.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-mcp-agent-sdk",
+          "title": "Agent SDK",
+          "slug": "docs-mcp-agent-sdk",
+          "excerpt": "Build custom agents with the Hypertask Agent SDK, inspired by Linear and Plane's patterns.",
+          "category": "Agents"
+        },
+        {
+          "id": "docs-features-integrations",
+          "title": "Integrations",
+          "slug": "docs-features-integrations",
+          "excerpt": "What Hypertask connects to today, including Cursor and Codex, and what is not available yet.",
+          "category": "Collaboration & billing"
+        }
+      ]
+    }
+  ]
+}

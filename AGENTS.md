@@ -1,6 +1,6 @@
 # Agent instructions
 
-For a non-trivial task, start with `skills/rat-stack-mode`.
+For a non-trivial task, start with `skills/rat-stack-mode`. To prove a change to the help site looks, reads and behaves like the old one, use the verification skill at [`.claude/skills/verify-ai-chatbot-rs`](./.claude/skills/verify-ai-chatbot-rs/SKILL.md).
 
 This file is the repo law for agents and contributors. It holds commands, validation rules, architecture constraints, and project stop rules. Read `VISION.md` for intent before planning substantial work. `VISION.md` does not override this file. Pi sessions also load `.pi/APPEND_SYSTEM.md` and the repo-local extension `.pi/extensions/project.ts`.
 
@@ -27,6 +27,8 @@ The base Effect plugin owns diagnostic severity. Child configs may add exact `al
 
 ## Packages
 
+This is the template's package inventory. The workspace keeps the `@rat-stack/` names until a separate ticket renames the scope, so a name below is the template's, not the help product's. Each role says what this site keeps that package for. The clean-up of the packages the site never wires in belongs to step 28 (HTPR-9179), not here.
+
 - **`@rat-stack/capability`**:
   - Path: `packages/capability`
   - Role: `defineContract`, `implement`, and the `toCommand`, `toHttpApi`, `toToolkit`, `toRpc`, and `toCodeMode` projections
@@ -35,13 +37,16 @@ The base Effect plugin owns diagnostic severity. Child configs may add exact `al
   - Role: Shared contracts, handlers, and lifecycle machines kept for the help site
 - **`@rat-stack/database`**:
   - Path: `packages/database`
-  - Role: Database cartridge: the `RunLog` service and the `DatabaseVendor` choice (D1 or Hyperdrive Postgres), with each vendor's schema, migrations, and resources. Kept for the help site's chat and article data. Not wired into the Stack yet
+  - Role: Database cartridge: the `RunLog` service, the `HelpArticleStore` adapter, and the `DatabaseVendor` choice (D1 or Hyperdrive Postgres), with each vendor's schema, migrations, and resources. D1 holds the help site's `articles`, `conversations`, `messages`, and `chat_response_cache` tables. Kept for the help site's chat and article data. Not wired into the Stack yet
 - **`@rat-stack/flags`**:
   - Path: `packages/flags`
   - Role: Typed flags cartridge with the template's default Durable Object ledger (`src/cloudflare-ledger.ts`). Kept as the Durable Object example the live chat room follows. Not wired into the Stack yet
 - **`@rat-stack/haiku`**:
   - Path: `packages/haiku`
   - Role: Anthropic Messages adapter behind the `AnswerModel` port: one Haiku call over the Cloudflare AI Gateway and the stream reader for its answer. Takes `ANTHROPIC_API_KEY` through `AnthropicConfig`. Not wired into the Stack yet
+- **`@rat-stack/telegram`**:
+  - Path: `packages/telegram`
+  - Role: Help Desk bot adapter behind the `CustomerAlerts` port. Sends the new conversation, handoff request and new customer message alerts with the old text and the admin chat link, skips eval traffic before any request, and reads `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` through `TelegramConfig`. Not wired into the Stack yet
 - **`@rat-stack/web`**:
   - Path: `apps/web`
   - Role: Foldkit site on Vite, deployed through Alchemy's `Cloudflare.Website.Foldkit` as `Website` (`apps/web/src/website.ts`). One home shell until the help pages move. Include it with `const website = yield* Website;`
@@ -103,15 +108,25 @@ Run `pnpm fix` only when you intend to rewrite files. Finish with `pnpm turbo ru
 
 ## Deploy
 
-Follow [ship](/skills/ship) and `skills/ship/references/project.md` for deployment commands, approval, checks, and recovery.
+Nothing is built, tested or deployed on our servers. GitHub Actions runs the gate on every pull request and every merge, and a deploy runs from GitHub on a GitHub-hosted runner. Never deploy from this server or from a laptop.
 
-## Release the ratstack package
+The old Worker keeps serving help.hypertask.ai until HTPR-9178 switches the address. Deploying to the Hypertask Cloudflare account needs Valentin's approval first, every time, and the step that owns deploy (HTPR-9176) writes the procedure. `skills/ship/references/project.md` still describes the template's deploy driver, which this project does not carry, so read it for the approval rules and not for a command to run.
 
-- `.github/workflows/ratstack-publish.yml` publishes `ratstack` to npm with trusted publishing (OIDC). No npm token exists in the repo or its secrets.
-- Bump `apps/cli/npm/ratstack/package.json` and `apps/cli/src/version.ts` together. The e2e test fails when they differ.
-- Merge to `main`, then push the tag `ratstack-v<version>` on that merged commit. The workflow refuses a tag that does not match the version or is not on `main`.
-- The workflow runs the full gate, then `npm publish` from `apps/cli/dist/npm`. npm adds provenance.
-- The npm package settings name this repo, `ratstack-publish.yml`, and the `npm` environment as the trusted publisher. Changing the workflow filename breaks publishing.
+The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `main` on every push, and by hand through workflow dispatch, to https://help.hypertask.ai/ratstack. It uses the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets of the `ratstack-publish` GitHub environment through Alchemy's CI credential path, so the runner holds no profile, and only `main` may use that environment, so a branch push can never read them. It names one Worker, `help-hypertask-ratstack`, and one route, `help.hypertask.ai/ratstack*`. It never names the old project and declares no database, bucket, key store or DNS record.
+
+## Publish rules
+
+| Rule | Enforced by |
+| --- | --- |
+| The preview answers under `${siteBasePath}` only, and every address the build emits stays inside it, from one value in `apps/web/src/site-base-path.ts`. | `apps/web/test/site-base-output.test.ts` walks every emitted HTML, CSS, JS and JSON file; `apps/web/test/site-base-path.test.ts` pins the value and the route pattern. |
+| Every response under the preview path says `X-Robots-Tag: noindex` and every page carries the robots meta tag, and both disappear when the base path becomes empty at the cutover. | `siteRobotsMeta` and `siteAssetHeaders` in `apps/web/src/site-base-path.ts`, tested in `apps/web/test/site-base-path.test.ts` and read by GET in the last step of `.github/workflows/publish-ratstack.yml`. |
+| A publish can only create or update the preview Worker, its one route and its own Alchemy state store. | `apps/infra/test/publish-scope.test.ts` compiles the published stack without a cloud call and requires exactly one resource, `Website`. |
+| The old site keeps answering exactly what it answered before the deploy. | The record and smoke steps of `.github/workflows/publish-ratstack.yml` compare https://help.hypertask.ai/ before and after the deploy. |
+| Every workflow file is valid, so GitHub starts every run instead of rejecting the file before its first job and listing the workflow by its path. | The `Lint every workflow file with actionlint` step in `.github/workflows/ci.yml` runs actionlint `1.7.7` over every file under `.github/workflows/`, with the release tarball's sha256 pinned in the step. |
+
+## Release a package
+
+The template published the `ratstack` command line package from `.github/workflows/ratstack-publish.yml`. That workflow and `apps/cli` are gone, so this project publishes no package. Publishing one would need its own ticket.
 
 ## Fence (cheating is uncomfortable)
 
@@ -150,11 +165,57 @@ Mirrors are reference material, not runtime dependencies. Exclude them from type
 
 Preserve existing work. Inspect status before editing, stage only files changed for the current task, and do not commit generated output, secrets, or populated `.agent_sources/github.com/` trees. Use the repository's existing source-control tool; do not initialize or migrate one without approval. Never pass `--no-verify` to git.
 
-`.shitrat/public-allow.json` tells the ShitRat public-push guard that `.brain/` is public content here, because the site is built from it. A child project owns that file: narrow or delete it the day its `.brain` holds anything that isn't meant to be public.
+`.shitrat/public-allow.json` tells the ShitRat public-push guard that `.brain/` is public content here. That file ships from the template and this project has not changed it. The help site publishes nothing from `.brain`, so anything that must never publish stays out of it, and the file narrows or goes when a step decides what this site serves from `.brain`.
 
 ## Project law
 
-A child project replaces this section on day one with its own product rules. These rules describe the rat-stack template, not the product in a clone. Keep durable product intent in `VISION.md`.
+Product rules for help.hypertask.ai. Product intent lives in `VISION.md`. The engineering rules after them are the template's fence and stay as they ship.
+
+- Every live address stays. `/help` and `/help/<slug>`, `/admin` and its API, `/widget/widget.js`, `/widget/chat`, `/api/chat/*`, `/api/articles/*`, `/api/help-reader/<slug>` and `/health`. `/`, `/en` and `/en/*` keep redirecting to `/help`. A change that moves, renames or drops one of these is a bug, not a cleanup.
+- The help site keeps its own look. Colours, fonts, sizes, corners and the page frame come from the old Worker's theme and arrive with the look steps (HTPR-9170, HTPR-9171, HTPR-9172). Never take Rat Stack's hot pink accent, never take Foldkit's default look, and never invent a value.
+- Chat answers come from Claude Haiku 5.5 and nothing else. `ANTHROPIC_MODEL` must be `claude-haiku-5-5`, and any other value fails closed with no fallback. The Worker calls the Anthropic Messages API through the Cloudflare AI Gateway named `hypertask-ai`. The Workers AI binding stays in place and chat does not call it.
+- Conversation states are `bot`, `handoff_requested`, `human` and `closed`, and nothing jumps. A one minute repeat of the same request sends no second alert. A conversation reaches `handoff_requested` only when the visitor profile holds a name, a valid email and an account type; `/api/chat/handoff` answers `profile_incomplete` with the `missing` list otherwise.
+- The assistant collects a profile through the markers `[PROFILE_NAME: …]`, `[PROFILE_EMAIL: …]` and `[PROFILE_ACCOUNT: none|free|paid]`. The server parses them, stores a validated email, and strips them from what the visitor sees. A marker on screen is a bug.
+- The admin pages sit behind the Cloudflare login. The Access check fails closed when its team domain or audience is unset, so never replace it with a password and never leave it open. A visitor reads their own conversation and no other, and a guessable conversation id is not a key: the visitor secret hash is.
+- Fathom runs on the public help and article pages and nowhere else. It never loads inside the chat widget or the admin dashboard.
+- Chat and widget calls are allowed from `https://hypertask.ai`, `https://www.hypertask.ai` and `https://docs.hypertask.ai`, and framing follows the same list. Never widen it to a wildcard.
+- The rate limits stay: 30 messages per visitor per minute on the chat endpoint and 3 new conversations per minute. They are what stops the spam run this site already took.
+- The live data stays where it is. The new Worker adopts the same database and the same conversations, and no step copies, rewrites or deletes a customer message. A migration runs where the data already lives.
+- Help articles come from docs.hypertask.ai and sync into the article table, with `--prune` removing what upstream no longer has. Never hand-write an article that the docs repository owns.
+- Nothing in this repository holds a key, a token, an internal host name, a Cloudflare account id, a database id or customer data. The old repository's `scripts/fetch-articles.js` and `mcp/index.js` carry such values in code; they are not copied here and nothing from them is quoted.
+- A change is done when the GitHub run for the head commit is green and the page shows the change. A merge with a red run is not done.
+
+### Two Telegram bots
+
+This project uses **two different Telegram bots** for different purposes:
+
+| Purpose | Bot | Env Vars |
+| --- | --- | --- |
+| **Code updates** (commits, deploys) | Claude Code Updates | `TELEGRAM_TINYDICTATION_BOT_TOKEN` / `TELEGRAM_TINYDICTATION_CHAT_ID` |
+| **Customer messages** (from the chatbot) | Hypertask Help Desk | `TELEGRAM_HYPERTASK_BOT_TOKEN` / `TELEGRAM_HYPERTASK_CHAT_ID` |
+
+**DO NOT confuse these.** Code changes go to Claude Code Updates. Customer support messages from the chatbot functionality go to Hypertask Help Desk.
+
+The Worker binds the Help Desk bot as `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`, so a customer alert goes out through the Worker's own binding and never through the updates bot.
+
+Code updates use this format, and a new help article always carries its direct link:
+
+```text
+📦 [PROJECT NAME] v[VERSION]
+
+[Title: What this update does]
+
+Changes:
+• [Change 1]
+• [Change 2]
+
+📄 New article: [Article Title]
+🔗 https://help.hypertask.ai/help/[slug]
+
+🔗 [GitHub URL to commit/PR]
+```
+
+**NEVER send an update without clickable URLs** (commit, PR, and article links when applicable).
 
 - One contract, every surface. Define schemas and metadata with `defineContract`; bind a server-side handler with `implement` and add the capability to `capabilities`. CLI, HTTP, MCP, RPC, and code mode are projections in `packages/capability`. Do not add a command, route, or tool handler that bypasses a capability.
 - Schemas are the contract. Input, output, and failure are Effect `Schema`; JSON Schema, OpenAPI, and the code-mode declarations are derived from them, never hand-written.
@@ -175,9 +236,29 @@ A child project replaces this section on day one with its own product rules. The
 - Hot pink is the only accent. `--accent` (#ff1493) marks borders, rules and focus rings; `--accent-text` (#c8006e, 5.7:1 on white) is the only pink text. Use it for at most one thing per screen, plus focus. News chrome uses no pink. The allowed selectors cover `:focus-visible` and copy controls; links, headings, tables and tier cells never use it. `apps/site/test/accent.test.ts` holds the allowed selectors.
 - Pins stay exact. A vendored dependency carries a matching `minimumReleaseAgeExclude` entry and a removal rule in `vendor/README.md`.
 
+### One owner per rule
+
+A rule with a single owner names that owner and the file that enforces it. A new case joins the owner instead of growing a second copy.
+
+| Rule | One owner | Enforced by |
+| --- | --- | --- |
+| Strip HTML tags with the tokenizer, never with a regex. A regex misses upper case tags such as `<SCRIPT>`. | `plainTextOf` and `withoutElements` in `packages/core/src/help-article-html.ts` | `packages/core/test/tag-stripping-owner.test.ts` |
+
 ## Architecture
 
-A child project replaces this section on day one with its own architecture. Record module boundaries, dependency direction, data ownership, and state-machine seams here. Link deeper docs instead of duplicating them.
+Where the help site's parts live, and which way the imports run.
+
+- One Worker serves everything: the help centre, the articles, the widget, the API and the admin dashboard. `apps/web` holds the Foldkit pages, the widget script and the StyleX styles. `apps/infra/alchemy.run.ts` declares the Worker, its bindings and its resources, and every cloud resource is declared there rather than clicked in a dashboard. `packages/core` and `packages/capability` own the shared contracts and their handlers.
+- `packages/database` is the cartridge for the chat and article data, with D1 and Hyperdrive Postgres as the two vendor choices. It stays unwired until the data step (HTPR-9155) picks the vendor, and it is the only place that talks to the tables.
+- `packages/flags` ships the template's Durable Object ledger (`src/cloudflare-ledger.ts`). The live chat room follows it (HTPR-9168), because Rat Stack has no connection route of its own. Bindings keep their live names, `CHAT_ROOM` for the room and `DB` for the database, so the admin panel and the Worker agree.
+- Data is three D1 tables. `articles` holds the knowledge base, `conversations` holds a session with its visitor profile and status plus the `is_eval` marker, and `messages` holds the history with the role and the token usage. The schema moves with the data step and keeps every column the admin reads.
+- The help page and the widget are one chat. `/widget/widget.js` renders the launcher or the docked panel, `/widget/chat` frames the same conversation, and both call `/api/chat/message`. The widget marks `html` and `body` with `hypertask-chat-docked` and sets `--hypertask-chat-dock-width` while the panel is open.
+- The answer path is rate limits, answer cache, article retrieval and history load in parallel, then one model call that streams over SSE. Retrieval is one D1 batch, not a round trip per keyword, and the response carries `Server-Timing` for each stage. The streaming slice (HTPR-9161) proves it first because Rat Stack has no streaming route.
+- Conversation status and the Haiku retries are state machines (HTPR-9166), started with `createEffectActor`. No status change happens in a route handler outside the machine.
+- Articles arrive through the docs sync (HTPR-9169), which reads the docs repository's content folder and upserts by slug. The sync is the only writer of `articles` apart from the seed.
+- The support MCP tools (HTPR-9173) read the database through the D1 REST API and write through the admin API, from outside the Worker. They carry no credential in the repository.
+
+The template's reference bullets below describe packages this project cut on day one (HTPR-9150) or keeps for a later step, so `apps/cli`, `apps/site`, `apps/events`, `apps/auth` and their friends are not in this tree and are not coming back. Read them for the shape they name. Step 28 (HTPR-9179) owns removing what no longer applies.
 
 - `rat-stack-boundaries/no-core-adapters` keeps provider adapters out of core. Core owns job-shaped ports; adapter packages implement them, and apps provide them at composition. `packages/subscriber-delivery` implements subscriber intake and confirmation; `packages/core/test/boundaries-rule.test.ts` checks the boundary.
 - `rat-stack-boundaries/no-cross-layer-imports` enforces dependency direction: `apps/cli` → `packages/core` → `packages/capability` → Effect/XState. Packages do not import apps; `packages/capability` does not import domain code; `apps/infra` owns its Stack wiring. `core` owns shared contracts and the `inspectFile` handler; each capability's owner keeps its handler beside its data or infrastructure. Core depends on `capability` for `defineContract` and `implement`.
@@ -218,7 +299,7 @@ Never end a turn "waiting" without a wake. Procedure: `skills/rat-stack-mode/pri
 
 ## Boundaries and sign-off
 
-A child project replaces this section on day one with its own boundaries. This section names changes agents may make directly and changes that need owner approval.
+What an agent may change in the help project directly, and what waits for Valentin.
 
-- Safe by default: adding a capability in `packages/core` and wiring it into `capabilities`; new or tightened tests; a targeted diagnostic override with a written reason; README, AGENTS.md, and `.brain/` edits; tightening a lint rule; removing a surface by following Keep or cut; any change under `apps/infra`, and `pnpm infra:deploy` once `pnpm infra:plan` shows only the intended diff and the gate passes, followed by `pnpm site:smoke`.
-- Needs owner sign-off: adding or changing a dependency version (pins are exact and CI installs cold); any edit to `oxlint.config.ts`, the diagnostics map in `tsconfig.base.json`, `lefthook.yml`, or `scripts/vcs-command-policy.js` that loosens the fence; `pnpm infra:destroy`, and a deploy whose plan replaces or deletes a resource; widening sandbox permissions or adding a runtime that reaches the network; exposing `serve` or `mcp` beyond localhost; vendoring a package as a `file:` tarball; deleting `.agent_sources/` or `vendor/`.
+- Safe by default: a copy fix on a help page or an article that keeps its address; a new or tighter test; README, AGENTS.md, VISION.md and `.brain/` edits; a targeted diagnostic override with a written reason; tightening a lint rule; a new capability in `packages/core` wired into `capabilities`.
+- Needs owner sign-off: adding or changing a dependency version (pins are exact and CI installs cold); any edit to `oxlint.config.ts`, the diagnostics map in `tsconfig.base.json`, `lefthook.yml`, or `scripts/vcs-command-policy.js` that loosens the fence; a deploy, and any plan that replaces, deletes or orphans a resource; switching help.hypertask.ai to this Worker; moving, renaming or dropping a live address, a redirect, an allowed origin, a rate limit, an environment variable or the model; changing the theme, fonts or layout; changing either Telegram bot or what gets sent to it; cutting a package before step 28; vendoring a package as a `file:` tarball; deleting `.agent_sources/` or `vendor/`; any change that costs money.

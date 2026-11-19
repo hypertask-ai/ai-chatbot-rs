@@ -15,6 +15,14 @@ import {
   CafeProjectList,
   CafeProjectQuery,
 } from "./cafe.js";
+import { HelpArticleNotFound } from "./help-article-not-found.js";
+import {
+  HelpArticle,
+  HelpArticleMatch,
+  HelpArticlePane,
+  HelpArticleSummary,
+} from "./help-article.js";
+import { HelpRetrievalAnswer } from "./help-search.js";
 import { NoPath } from "./no-path.js";
 import { FileStatsError, FileStatsSchema } from "./stats.js";
 import { UnknownPage } from "./unknown-page.js";
@@ -42,6 +50,18 @@ export {
 } from "./chat-contracts.js";
 
 export { UnknownPrompt } from "./unknown-prompt.js";
+
+export {
+  HelpArticle,
+  HelpArticleMatch,
+  HelpArticlePane,
+  HelpArticleSummary,
+  HelpArticleTimestamp,
+} from "./help-article.js";
+
+export { HelpArticleNotFound } from "./help-article-not-found.js";
+
+export { HelpRetrievalAnswer, HelpRetrievalArticle } from "./help-search.js";
 
 export { UnknownPerson } from "./unknown-person.js";
 
@@ -309,6 +329,71 @@ export const inspectFileContract = defineContract("inspectFile", {
     path: Schema.String.annotate({ description: "File to inspect" }),
   }),
   output: FileStatsSchema,
+});
+
+export const listHelpArticlesContract = defineContract("listHelpArticles", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "List every help article in the order the old article list uses",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/api/articles" },
+  input: Schema.Struct({}),
+  output: Schema.Array(HelpArticleSummary),
+});
+
+export const readHelpArticleContract = defineContract("readHelpArticle", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "Read one help article by its slug",
+  failure: HelpArticleNotFound,
+  http: { method: "GET", path: "/api/articles/:slug" },
+  input: Schema.Struct({ slug: Schema.String }),
+  output: HelpArticle,
+});
+
+export const searchHelpArticlesContract = defineContract("searchHelpArticles", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "Search help articles by keyword and keep the ten best matches",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/api/articles/search/:query" },
+  input: Schema.Struct({ query: Schema.String }),
+  output: Schema.Array(HelpArticleMatch),
+});
+
+export const readHelpArticlePaneContract = defineContract(
+  "readHelpArticlePane",
+  {
+    annotations: { idempotent: true, readOnly: true },
+    description:
+      "Read one help article as the reading pane, with the pricing plans block",
+    failure: HelpArticleNotFound,
+    http: { method: "GET", path: "/api/help-reader/:slug" },
+    input: Schema.Struct({ slug: Schema.String }),
+    output: HelpArticlePane,
+  }
+);
+
+export const debugHelpRetrievalContract = defineContract("debugHelpRetrieval", {
+  annotations: { idempotent: true, readOnly: true },
+  description:
+    "Answer the articles the help chat retrieves for a question, in rank order",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/api/chat/debug-rag" },
+  input: Schema.Struct({ q: Schema.optional(Schema.String) }),
+  output: HelpRetrievalAnswer,
+});
+
+// oxlint-disable-next-line sort-keys -- The old worker sends status before service and the recorded answer compares the encoded body.
+export const HealthOutput = Schema.Struct({
+  status: Schema.Literals(["ok"]),
+  service: Schema.Literals(["ai-chatbot"]),
+});
+
+export const healthContract = defineContract("health", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "Report that the help site worker is serving",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/health" },
+  input: Schema.Struct({}),
+  output: HealthOutput,
 });
 
 export const PromptSlug = Schema.String.check(
