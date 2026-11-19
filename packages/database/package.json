@@ -21,6 +21,16 @@
       "import": "./dist/d1.js",
       "default": "./dist/d1.js"
     },
+    "./admin-conversation": {
+      "types": "./src/admin-conversation.ts",
+      "import": "./dist/admin-conversation.js",
+      "default": "./dist/admin-conversation.js"
+    },
+    "./admin-conversation-vendor": {
+      "types": "./src/admin-conversation-vendor.ts",
+      "import": "./dist/admin-conversation-vendor.js",
+      "default": "./dist/admin-conversation-vendor.js"
+    },
     "./help-article-vendor": {
       "types": "./src/help-article-vendor.ts",
       "import": "./dist/help-article-vendor.js",

@@ -3,6 +3,7 @@ import type { Html, HtmlBuilder } from "foldkit/html";
 import type { AppMessage } from "../../client/help/message.js";
 import { Message } from "../../client/help/message.js";
 import type { HelpPageValue } from "../../client/help/model.js";
+import { sitePath } from "../../site-base-path.js";
 import { classes, styleClass } from "./class-names.js";
 import {
   appOrigin,
@@ -32,7 +33,7 @@ type Builder = HtmlBuilder<AppMessage>;
 
 type ArticlePage = Extract<HelpPageValue, { readonly page: "article" }>;
 
-const wordmarkUrl = "/hypertask_white.png";
+const wordmarkUrl = sitePath("/hypertask_white.png");
 
 const feedbackLabel = (
   icon: Html,

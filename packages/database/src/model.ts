@@ -35,11 +35,21 @@ export const ListRecentRunsInputSchema = Schema.Struct({
 export type ListRecentRunsInput = typeof ListRecentRunsInputSchema.Type;
 
 export const DatabaseOperationSchema = Schema.Literals([
+  "archiveAdminConversations",
+  "listAdminConversations",
+  "listAdminMessages",
+  "listCustomerConversations",
   "listHelpArticles",
   "listRecent",
+  "readAdminConversation",
+  "readAdminUsage",
   "readHelpArticle",
   "record",
   "searchHelpArticles",
+  "setAdminArchived",
+  "setAdminMessage",
+  "setAdminStatus",
+  "touchAdminConversation",
 ]);
 
 export type DatabaseOperation = typeof DatabaseOperationSchema.Type;

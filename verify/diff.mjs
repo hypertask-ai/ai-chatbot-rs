@@ -28,6 +28,25 @@ const DIFF_FLAGS = [
 const USAGE =
   "usage: node verify/diff.mjs --base <sha> --head <sha> --out <dir> [--limit <bytes>] [--repo <dir>]";
 
+const blockedGitEnv = new Set([
+  "GIT_DIR",
+  "GIT_WORK_TREE",
+  "GIT_INDEX_FILE",
+  "GIT_OBJECT_DIRECTORY",
+  "GIT_COMMON_DIR",
+  "GIT_PREFIX",
+]);
+
+/**
+ * @returns {NodeJS.ProcessEnv}
+ */
+export const checkoutEnv = () =>
+  Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([name, value]) => value !== undefined && !blockedGitEnv.has(name)
+    )
+  );
+
 /**
  * @param {string} cwd
  * @param {string[]} args
@@ -37,6 +56,7 @@ const git = (cwd, args) => {
   const result = spawnSync("git", args, {
     cwd,
     encoding: "utf-8",
+    env: checkoutEnv(),
     maxBuffer: MAX_BUFFER_BYTES,
   });
 
@@ -64,6 +84,7 @@ const hasCommit = (cwd, sha) => {
   const result = spawnSync("git", ["cat-file", "-e", `${sha}^{commit}`], {
     cwd,
     encoding: "utf-8",
+    env: checkoutEnv(),
     maxBuffer: MAX_BUFFER_BYTES,
   });
 
@@ -99,6 +120,7 @@ const mergeBaseOf = (cwd, base, head) => {
   const result = spawnSync("git", ["merge-base", base, head], {
     cwd,
     encoding: "utf-8",
+    env: checkoutEnv(),
     maxBuffer: MAX_BUFFER_BYTES,
   });
 
@@ -148,6 +170,7 @@ const writeDiff = (cwd, range, file) => {
   try {
     const result = spawnSync("git", [...DIFF_FLAGS, ...range], {
       cwd,
+      env: checkoutEnv(),
       maxBuffer: MAX_BUFFER_BYTES,
       stdio: ["ignore", descriptor, "inherit"],
     });

@@ -2,6 +2,7 @@ import type { Html, HtmlBuilder } from "foldkit/html";
 
 import type { AppMessage } from "../../client/help/message.js";
 import type { HelpPageValue } from "../../client/help/model.js";
+import { sitePath } from "../../site-base-path.js";
 import { classes, styleClass } from "./class-names.js";
 import {
   allArticlesLabel,
@@ -38,7 +39,7 @@ type Builder = HtmlBuilder<AppMessage>;
 
 type HelpCenterPage = Extract<HelpPageValue, { readonly page: "home" }>;
 
-const glyphUrl = "/glyph-white.png";
+const glyphUrl = sitePath("/glyph-white.png");
 
 const topicHref = (title: string) =>
   `?category=${encodeURIComponent(title)}#all`;

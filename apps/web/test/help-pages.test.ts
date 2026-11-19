@@ -9,6 +9,7 @@ import { renderDocument } from "../src/entry.server.js";
 import { view } from "../src/features/help/index.js";
 import { helpPageFlags, helpRouteOf } from "../src/server/help-pages.js";
 import { recordedHelpArticles } from "../src/server/recorded-help-articles.js";
+import { siteBasePath } from "../src/site-base-path.js";
 import liveArticleAiFeatures from "./fixtures/live/help-article-docs-features-ai-features.json";
 import liveArticlePricing from "./fixtures/live/help-article-pricing-plans.json";
 import liveArticleTaskWriter from "./fixtures/live/help-article-using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj.json";
@@ -84,13 +85,23 @@ const valuesOf = (
 const headingsOf = (html: string): readonly string[] =>
   valuesOf(withoutCode(html), patterns.heading, "heading").map(textOf);
 
+const underSiteBasePath = (href: string): boolean =>
+  href === siteBasePath || href.startsWith(`${siteBasePath}/`);
+
+const withoutSiteBasePath = (href: string): string =>
+  underSiteBasePath(href) ? href.slice(siteBasePath.length) || "/" : href;
+
 const hrefsOf = (html: string): readonly string[] =>
   valuesOf(html, patterns.href, "href").map(decodeEntities);
+
+const internalHrefsOf = (html: string): readonly string[] =>
+  hrefsOf(html).filter((href) => href.startsWith("/"));
 
 const sourcesOf = (html: string): readonly string[] =>
   valuesOf(html, patterns.image, "src")
     .map(decodeEntities)
-    .map((source) => selfHostedImages.get(source) ?? source);
+    .map((source) => selfHostedImages.get(source) ?? source)
+    .map(withoutSiteBasePath);
 
 const withLiveRelated = (
   flags: HelpPageValue,
@@ -146,7 +157,9 @@ const expectSamePage = (served: string, live: string): void => {
   expect(titleOf(served)).toBe(titleOf(live));
   expect(textOf(servedBody)).toBe(textOf(liveBody));
   expect(headingsOf(servedBody)).toEqual(headingsOf(liveBody));
-  expect(hrefsOf(servedBody)).toEqual(hrefsOf(liveBody));
+  expect(hrefsOf(servedBody).map(withoutSiteBasePath)).toEqual(
+    hrefsOf(liveBody)
+  );
   expect(sourcesOf(servedBody)).toEqual(sourcesOf(liveBody));
 };
 
@@ -205,8 +218,25 @@ describe("help pages recorded from the old site", () => {
       expect(served).not.toContain("fonts.googleapis.com");
       expect(served).not.toContain("fonts.gstatic.com");
       expect(served).not.toContain("hypertask.ai/glyph-white.png");
-      expect(served).toContain('href="/glyph-white.png"');
-      expect(served).toContain('src="/hypertask_white.png"');
+      expect(served).toContain(`href="${siteBasePath}/glyph-white.png"`);
+      expect(served).toContain(`src="${siteBasePath}/hypertask_white.png"`);
+    })
+  );
+
+  it.effect("keeps every address on the pages inside the base path", () =>
+    Effect.gen(function* basePath() {
+      for (const pathname of [
+        "/help",
+        "/help/pricing-plans",
+        ...recordedArticles.map((article) => `/help/${article.slug}`),
+      ]) {
+        const served = yield* pageAt(pathname);
+        const escaping = internalHrefsOf(withoutCode(bodyOf(served))).filter(
+          (href) => !underSiteBasePath(href)
+        );
+
+        expect(escaping, pathname).toStrictEqual([]);
+      }
     })
   );
 
