@@ -6,14 +6,24 @@ import { renderToString } from "foldkit/experimental/server";
 import { Flags, initialModel } from "../src/client/help/index.js";
 import type { HelpPageValue } from "../src/client/help/index.js";
 import { renderDocument } from "../src/entry.server.js";
+import { articleTitleSuffix } from "../src/features/help/copy.js";
 import { view } from "../src/features/help/index.js";
 import { helpPageFlags, helpRouteOf } from "../src/server/help-pages.js";
-import { recordedHelpArticles } from "../src/server/recorded-help-articles.js";
+import {
+  recordedArticlePaths,
+  recordedHelpArticles,
+} from "../src/server/recorded-help-articles.js";
 import { siteBasePath } from "../src/site-base-path.js";
-import liveArticleAiFeatures from "./fixtures/live/help-article-docs-features-ai-features.json";
-import liveArticlePricing from "./fixtures/live/help-article-pricing-plans.json";
-import liveArticleTaskWriter from "./fixtures/live/help-article-using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj.json";
-import liveArticleVoice from "./fixtures/live/help-article-voice-dictation-meets-ai-speak-your-way-to-perfect-comments.json";
+import liveArticleDocsFeaturesAiFeatures from "./fixtures/live/help-article-docs-features-ai-features.json";
+import liveArticleDocsFeaturesBoards from "./fixtures/live/help-article-docs-features-boards.json";
+import liveArticleDocsFeaturesKeyboardShortcuts from "./fixtures/live/help-article-docs-features-keyboard-shortcuts.json";
+import liveArticleDocsFeaturesTasks from "./fixtures/live/help-article-docs-features-tasks.json";
+import liveArticleDocsGettingStartedIntroduction from "./fixtures/live/help-article-docs-getting-started-introduction.json";
+import liveArticleHowToCreateTasks from "./fixtures/live/help-article-how-to-create-tasks-in-hypertasks.json";
+import liveArticlePricingPlans from "./fixtures/live/help-article-pricing-plans.json";
+import liveArticleTroubleshootingEmailLoginMagicLink from "./fixtures/live/help-article-troubleshooting-email-login-magic-link.json";
+import liveArticleUsingTheAiTaskWriter from "./fixtures/live/help-article-using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj.json";
+import liveArticleVoiceDictation from "./fixtures/live/help-article-voice-dictation-meets-ai-speak-your-way-to-perfect-comments.json";
 import liveHelpCenter from "./fixtures/live/help-center.json";
 
 const assets = {
@@ -166,23 +176,53 @@ const expectSamePage = (served: string, live: string): void => {
 const recordedArticles = [
   {
     label: "the article with an image",
-    live: liveArticleTaskWriter.body,
+    live: liveArticleUsingTheAiTaskWriter.body,
     slug: "using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj",
   },
   {
     label: "the article with code",
-    live: liveArticleVoice.body,
+    live: liveArticleVoiceDictation.body,
     slug: "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
   },
   {
     label: "the long article",
-    live: liveArticleAiFeatures.body,
+    live: liveArticleDocsFeaturesAiFeatures.body,
     slug: "docs-features-ai-features",
   },
   {
     label: "the article with the plans block",
-    live: liveArticlePricing.body,
+    live: liveArticlePricingPlans.body,
     slug: "pricing-plans",
+  },
+  {
+    label: "the tasks article",
+    live: liveArticleDocsFeaturesTasks.body,
+    slug: "docs-features-tasks",
+  },
+  {
+    label: "the introduction article",
+    live: liveArticleDocsGettingStartedIntroduction.body,
+    slug: "docs-getting-started-introduction",
+  },
+  {
+    label: "the intercom task creation article",
+    live: liveArticleHowToCreateTasks.body,
+    slug: "how-to-create-tasks-in-hypertasks",
+  },
+  {
+    label: "the email login article",
+    live: liveArticleTroubleshootingEmailLoginMagicLink.body,
+    slug: "troubleshooting-email-login-magic-link",
+  },
+  {
+    label: "the boards article",
+    live: liveArticleDocsFeaturesBoards.body,
+    slug: "docs-features-boards",
+  },
+  {
+    label: "the keyboard shortcuts article",
+    live: liveArticleDocsFeaturesKeyboardShortcuts.body,
+    slug: "docs-features-keyboard-shortcuts",
   },
 ];
 
@@ -210,6 +250,33 @@ describe("help pages recorded from the old site", () => {
       })
     );
   }
+
+  it.effect("answers every article the old site lists", () =>
+    Effect.gen(function* everyArticle() {
+      for (const pathname of recordedArticlePaths) {
+        const route = helpRouteOf(pathname);
+
+        if (route === null) {
+          throw new Error(`No help route answers ${pathname}`);
+        }
+
+        const flags = yield* helpPageFlags(route).pipe(
+          Effect.provide(recordedHelpArticles)
+        );
+
+        if (flags === null || flags.page !== "article") {
+          throw new Error(`No article answers ${pathname}`);
+        }
+
+        const served = yield* pageAt(pathname);
+
+        expect(textOf(titleOf(served)), pathname).toBe(
+          `${flags.article.title} - ${articleTitleSuffix}`
+        );
+        expect(textOf(bodyOf(served)), pathname).toContain(flags.article.title);
+      }
+    })
+  );
 
   it.effect("serves the fonts and images from this site", () =>
     Effect.gen(function* selfHosted() {
