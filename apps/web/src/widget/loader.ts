@@ -1,4 +1,5 @@
 import { launcherCopy, widgetCopy } from "./copy.js";
+import { widgetChatPath } from "./embed.js";
 import {
   dockCollapsedValue,
   hostStorageKeys,
@@ -15,7 +16,9 @@ type ScriptValue =
 
 const json = (value: ScriptValue): string => JSON.stringify(value);
 
-export const widgetLoaderScript = (baseUrl: string): string =>
+const chatSegment = widgetChatPath.slice(widgetChatPath.lastIndexOf("/") + 1);
+
+export const widgetLoaderScript = (): string =>
   String.raw`(function() {
   if (window.ChatWidgetLoaded) return;
   window.ChatWidgetLoaded = true;
@@ -38,6 +41,9 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   var isExpanded = false;
   var scriptEl = document.currentScript;
   var dockMode = !!(scriptEl && scriptEl.getAttribute('data-mode') === 'docked');
+  var scriptUrl = scriptEl && scriptEl.src ? new URL(scriptEl.src) : null;
+  var CHAT_ORIGIN = scriptUrl ? scriptUrl.origin : '';
+  var CHAT_BASE = scriptUrl ? scriptUrl.href.slice(0, scriptUrl.href.lastIndexOf('/') + 1) : '';
 
   function storageGet(key) {
     try { return localStorage.getItem(key) || ''; } catch (err) { return ''; }
@@ -116,7 +122,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   function startIframe() {
     if (iframeStarted) return;
     iframeStarted = true;
-    iframe.src = ${json(baseUrl)} + '/widget/chat' + chatQuery;
+    iframe.src = CHAT_BASE + ${json(chatSegment)} + chatQuery;
   }
 
   function setDesktopStyles() {
@@ -153,7 +159,7 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   }
 
   function tellChat(message) {
-    if (iframeStarted && iframe.contentWindow) iframe.contentWindow.postMessage(message, '*');
+    if (iframeStarted && iframe.contentWindow) iframe.contentWindow.postMessage(message, CHAT_ORIGIN);
   }
 
   var btn = document.createElement('button');
@@ -318,14 +324,14 @@ export const widgetLoaderScript = (baseUrl: string): string =>
   };
 
   window.addEventListener('message', function(e) {
-    if (e.origin !== ${json(baseUrl)} || !iframeStarted) return;
+    if (e.origin !== CHAT_ORIGIN || !iframeStarted) return;
     if (e.data && e.data.type === 'chat-widget-close') {
       if (!usePinned() && !useDock()) closeChat();
     }
     if (e.data && e.data.type === 'chat-widget-session') {
       storageSet(HOST_CONV_KEY, e.data.conversationId || '');
       storageSet(HOST_VISITOR_KEY, e.data.visitorId || '');
-      storageSet(HOST_SECRET_KEY, e.data.visitorSecret || '');
+      if (typeof e.data.visitorSecret === 'string' && e.data.visitorSecret !== '') storageSet(HOST_SECRET_KEY, e.data.visitorSecret);
       return;
     }
     if (e.data && e.data.type === 'chat-widget-expand') {

@@ -33,8 +33,8 @@ const booted = Message.ReceivedHostMessage({
     visitorId: "visitor-from-host",
     visitorSecret: "secret-9",
   },
-  fromParent: true,
   sameOrigin: true,
+  trustedParent: true,
 });
 
 describe("chat widget state", () => {
@@ -116,7 +116,6 @@ describe("chat widget state", () => {
         StoreSession({
           conversationId: "conv-9",
           visitorId: "visitor-from-host",
-          visitorSecret: "secret-9",
         }),
         SyncChrome({ docked: false, pinned: false, sheet: false })
       ),
@@ -124,7 +123,6 @@ describe("chat widget state", () => {
         StoreSession({
           conversationId: "conv-9",
           visitorId: "visitor-from-host",
-          visitorSecret: "secret-9",
         }),
         Message.CompletedStoreSession()
       ),
@@ -152,8 +150,8 @@ describe("chat widget state", () => {
       message(
         Message.ReceivedHostMessage({
           data: { docked: true, isMobile: true, type: "chat-widget-docked" },
-          fromParent: true,
           sameOrigin: true,
+          trustedParent: true,
         })
       ),
       model((next) => {

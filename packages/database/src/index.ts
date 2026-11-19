@@ -17,6 +17,14 @@ export {
 
 export { InvalidDatabaseInput } from "./invalid-database-input.js";
 
+export { HelpArticleStoreLayer } from "./help-article-vendor.js";
+
+export { adminConversationLayer, queryFailure } from "./admin-conversation.js";
+
+export type { AdminConversationQueries } from "./admin-conversation.js";
+
+export { AdminConversationStoreLayer } from "./admin-conversation-vendor.js";
+
 export type {
   DatabaseOperation,
   ListRecentRunsInput,

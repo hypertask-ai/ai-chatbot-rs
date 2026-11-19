@@ -1,3 +1,5 @@
+import { siteBasePath, sitePath } from "../site-base-path.js";
+
 export const widgetEmbedOrigins = [
   "https://hypertask.ai",
   "https://www.hypertask.ai",
@@ -19,3 +21,10 @@ export const widgetScriptHeaders = {
 export const widgetChatPath = "/widget/chat";
 
 export const widgetScriptPath = "/widget/widget.js";
+
+export const widgetScriptAssetPath = `${siteBasePath}${widgetScriptPath}`;
+
+export const isWidgetChatPath = (pathname: string): boolean =>
+  pathname === sitePath(widgetChatPath);
+
+export const widgetScriptAssetHeaders = `${widgetScriptAssetPath}\n  Content-Type: ${widgetScriptHeaders["content-type"]}\n  Cache-Control: ${widgetScriptHeaders["cache-control"]}\n`;

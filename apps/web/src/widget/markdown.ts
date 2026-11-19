@@ -13,11 +13,19 @@ const attr = (value: string): string =>
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 
+const hrefEntities = new Map([
+  ["&amp;", "&"],
+  ["&quot;", '"'],
+  ["&#39;", "'"],
+]);
+
+const hrefEntity = /&(?:amp|quot|#39);/gu;
+
+export const decodeHrefEntities = (value: string): string =>
+  value.replaceAll(hrefEntity, (entity) => hrefEntities.get(entity) ?? entity);
+
 const safeHref = (url: string): string | null => {
-  const href = url
-    .replaceAll("&amp;", "&")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&#39;", "'");
+  const href = decodeHrefEntities(url);
 
   const lower = href.toLowerCase().replaceAll(/\s/gu, "");
 
@@ -31,7 +39,7 @@ const safeHref = (url: string): string | null => {
 };
 
 const helpSlugFromUrl = (href: string): string | null => {
-  const decoded = href.replaceAll("&amp;", "&");
+  const decoded = decodeHrefEntities(href);
 
   const match =
     /^(?:https?:\/\/help\.hypertask\.ai)?\/help\/(?<slug>[^/?#]+)\/?$/iu.exec(

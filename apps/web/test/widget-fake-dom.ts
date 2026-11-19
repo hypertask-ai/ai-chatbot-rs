@@ -55,7 +55,7 @@ export interface FakeElement {
     toggle: (name: string, force?: boolean) => void;
   };
   contentWindow?: {
-    postMessage: (message: PostedMessage) => void;
+    postMessage: (message: PostedMessage, targetOrigin: string) => void;
   };
   getAttribute: (name: string) => string | null;
   handlers: Map<string, Listener>;
@@ -63,6 +63,7 @@ export interface FakeElement {
   innerHTML: string;
   messages: PostedMessage[];
   parentElement: FakeElement | null;
+  postedTo: { message: PostedMessage; targetOrigin: string }[];
   querySelector: (selector: string) => FakeElement;
   removeChild: (child: FakeElement) => void;
   selectors: Map<string, FakeElement>;
@@ -99,6 +100,7 @@ export type LoaderOptions = Readonly<{
   dock?: boolean;
   height?: number;
   pinned?: boolean;
+  scriptSrc?: string;
   stored?: Readonly<Record<string, string>>;
   width?: number;
 }>;
@@ -148,6 +150,7 @@ const makeElement = (tag: string, elements: Map<string, FakeElement>) => {
     innerHTML: "",
     messages: [],
     parentElement: null,
+    postedTo: [],
     querySelector: (selector) => {
       const existing = element.selectors.get(selector);
 
@@ -201,8 +204,9 @@ const makeElement = (tag: string, elements: Map<string, FakeElement>) => {
 
   if (tag === "iframe") {
     element.contentWindow = {
-      postMessage(message) {
+      postMessage(message, targetOrigin) {
         element.messages.push(message);
+        element.postedTo.push({ message, targetOrigin });
       },
     };
   }
@@ -268,6 +272,7 @@ export const runWidgetLoader = (
     },
     currentScript: {
       getAttribute: () => (options.dock === true ? "docked" : null),
+      src: options.scriptSrc ?? "https://chat.test/widget/widget.js",
     },
     documentElement,
     getElementById: (id: string) =>
@@ -303,6 +308,7 @@ export const runWidgetLoader = (
   };
 
   runInNewContext(script, {
+    URL,
     document,
     encodeURIComponent,
     history,

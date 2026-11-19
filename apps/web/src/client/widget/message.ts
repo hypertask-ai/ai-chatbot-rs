@@ -71,7 +71,6 @@ export const Message = defineMessageUnion({
     conversationId: Schema.String,
     sheet: Schema.Boolean,
     visitorId: Schema.String,
-    visitorSecret: Schema.String,
   },
   OpenedLightbox: { dataUrl: Schema.String },
   OpenedMenu: {},
@@ -79,8 +78,8 @@ export const Message = defineMessageUnion({
   PickedSuggestion: { text: Schema.String },
   ReceivedHostMessage: {
     data: Schema.Unknown,
-    fromParent: Schema.Boolean,
     sameOrigin: Schema.Boolean,
+    trustedParent: Schema.Boolean,
   },
   RejectedAttachment: {},
   RejectedMenuSessions: {},
