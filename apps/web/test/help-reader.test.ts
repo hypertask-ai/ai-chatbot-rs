@@ -26,6 +26,7 @@ import { helpArticleSlugOf } from "../src/client/help/reader-link.js";
 import { readerHidesLibrary, readerStep } from "../src/client/help/reader.js";
 import { update } from "../src/client/help/update.js";
 import { view } from "../src/features/help/index.js";
+import { sitePath } from "../src/site-base-path.js";
 
 const origin = "https://help.hypertask.ai";
 
@@ -228,6 +229,13 @@ describe("what the old page counted as an article link", () => {
   ])[] = [
     ["a card on the page", "/help/pricing-plans", null, "pricing-plans"],
     [
+      "a card under the site base path",
+      sitePath("/help/pricing-plans"),
+      null,
+      "pricing-plans",
+    ],
+    ["the help center under the site base path", sitePath("/help"), null, null],
+    [
       "a link with a trailing slash",
       "/help/pricing-plans/",
       null,
@@ -340,7 +348,7 @@ describe("the reader on the page", () => {
       sceneExpect(selector("#libraryView")).toBeVisible(),
       sceneExpect(selector("#all a")).toHaveAttr(
         "href",
-        "/help/docs-connect-an-agent"
+        sitePath("/help/docs-connect-an-agent")
       )
     );
   });
