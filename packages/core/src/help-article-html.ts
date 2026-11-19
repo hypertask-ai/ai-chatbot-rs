@@ -44,7 +44,249 @@ const escapeHtml = (text: string): string =>
 
 const escapeAttr = (text: string): string => escapeHtml(text);
 
-const stripTags = (value: string): string => value.replaceAll(/<[^>]+>/gu, "");
+const HTML_SPACE = " \t\n\r\f";
+
+const isTagNameStart = (character: string): boolean =>
+  (character >= "A" && character <= "Z") ||
+  (character >= "a" && character <= "z");
+
+const isTagNameCharacter = (character: string): boolean =>
+  isTagNameStart(character) ||
+  (character >= "0" && character <= "9") ||
+  character === "-" ||
+  character === ":";
+
+const startsMarkup = (character: string): boolean =>
+  isTagNameStart(character) ||
+  character === "/" ||
+  character === "!" ||
+  character === "?";
+
+const attributeValueEnd = (value: string, start: number): number => {
+  let index = start;
+
+  while (
+    index < value.length &&
+    HTML_SPACE.includes(characterAt(value, index))
+  ) {
+    index += 1;
+  }
+
+  const quote = characterAt(value, index);
+
+  if (quote === '"' || quote === "'") {
+    const close = value.indexOf(quote, index + 1);
+
+    return close === -1 ? -1 : close + 1;
+  }
+
+  while (index < value.length) {
+    const character = characterAt(value, index);
+
+    if (character === ">" || HTML_SPACE.includes(character)) {
+      return index;
+    }
+
+    index += 1;
+  }
+
+  return -1;
+};
+
+const tagEnd = (value: string, start: number): number => {
+  let index = start;
+
+  while (
+    index < value.length &&
+    isTagNameCharacter(characterAt(value, index))
+  ) {
+    index += 1;
+  }
+
+  while (index < value.length) {
+    const character = characterAt(value, index);
+
+    if (character === ">") {
+      return index + 1;
+    }
+
+    if (character === "=") {
+      index = attributeValueEnd(value, index + 1);
+
+      if (index === -1) {
+        return -1;
+      }
+
+      continue;
+    }
+
+    index += 1;
+  }
+
+  return -1;
+};
+
+const commentEnd = (value: string, start: number): number => {
+  const close = value.indexOf("-->", start + 4);
+
+  return close === -1 ? value.length : close + 3;
+};
+
+const declarationEnd = (value: string, start: number): number => {
+  const close = value.indexOf(">", start + 2);
+
+  return close === -1 ? value.length : close + 1;
+};
+
+const markupEnd = (value: string, start: number): number => {
+  const next = characterAt(value, start + 1);
+
+  if (next === "!") {
+    return value.startsWith("<!--", start)
+      ? commentEnd(value, start)
+      : declarationEnd(value, start);
+  }
+
+  if (next === "?") {
+    return declarationEnd(value, start);
+  }
+
+  if (next === "/") {
+    return isTagNameStart(characterAt(value, start + 2))
+      ? tagEnd(value, start + 2)
+      : declarationEnd(value, start);
+  }
+
+  return isTagNameStart(next) ? tagEnd(value, start + 1) : -1;
+};
+
+const withoutTags = (value: string, separator = ""): string => {
+  const parts: string[] = [];
+  let index = 0;
+
+  while (index < value.length) {
+    const character = characterAt(value, index);
+
+    if (character === "<") {
+      const end = markupEnd(value, index);
+
+      if (end > index) {
+        index = end;
+
+        if (separator !== "") {
+          parts.push(separator);
+        }
+
+        continue;
+      }
+    }
+
+    parts.push(character);
+    index += 1;
+  }
+
+  return parts.join("");
+};
+
+const withoutTagOpenings = (value: string): string => {
+  const parts: string[] = [];
+  let next = "";
+
+  for (let index = value.length - 1; index >= 0; index -= 1) {
+    const character = characterAt(value, index);
+
+    if (character === "<" && startsMarkup(next)) {
+      continue;
+    }
+
+    parts.push(character);
+    next = character;
+  }
+
+  return parts.toReversed().join("");
+};
+
+const tagNameAt = (value: string, start: number): string => {
+  let index = start;
+
+  while (
+    index < value.length &&
+    isTagNameCharacter(characterAt(value, index))
+  ) {
+    index += 1;
+  }
+
+  return value.slice(start, index).toLowerCase();
+};
+
+const closingTagEnd = (
+  value: string,
+  lower: string,
+  start: number,
+  name: string
+): number => {
+  const close = `</${name}`;
+  let index = start;
+
+  while (index < value.length) {
+    const at = lower.indexOf(close, index);
+
+    if (at === -1) {
+      return value.length;
+    }
+
+    const nameEnd = at + close.length;
+    const end = markupEnd(value, at);
+
+    if (end > at && !isTagNameCharacter(characterAt(value, nameEnd))) {
+      return end;
+    }
+
+    index = nameEnd;
+  }
+
+  return value.length;
+};
+
+const isSelfClosing = (value: string, start: number, end: number): boolean =>
+  value.slice(start, end).trimEnd().endsWith("/>");
+
+export const withoutElements = (
+  value: string,
+  names: readonly string[]
+): string => {
+  if (names.length === 0) {
+    return value;
+  }
+
+  const wanted = new Set(names.map((name) => name.toLowerCase()));
+  const lower = value.toLowerCase();
+  const parts: string[] = [];
+  let index = 0;
+
+  while (index < value.length) {
+    if (characterAt(value, index) === "<") {
+      const end = markupEnd(value, index);
+      const name = tagNameAt(value, index + 1);
+
+      if (end > index && wanted.has(name)) {
+        index = isSelfClosing(value, index, end)
+          ? end
+          : closingTagEnd(value, lower, end, name);
+        parts.push(" ");
+        continue;
+      }
+    }
+
+    parts.push(characterAt(value, index));
+    index += 1;
+  }
+
+  return parts.join("");
+};
+
+export const plainTextOf = (value: string, separator = ""): string =>
+  withoutTagOpenings(withoutTags(value, separator));
 
 const normalizeDocPath = (path: string): string =>
   path.replaceAll("\\", "/").replace(/^\.\//u, "");
@@ -227,18 +469,20 @@ const inlineHtmlToMarkdown = (text: string): string =>
     .replaceAll(/<br\s*\/?>/giu, "\n")
     .replaceAll(
       /<a\b[^>]*\bhref\s*=\s*"(?<href>[^"]*)"[^>]*>(?<label>[\s\S]*?)<\/a>/giu,
-      (_match, href: string, label: string) => `[${stripTags(label)}](${href})`
+      (_match, href: string, label: string) =>
+        `[${plainTextOf(label)}](${href})`
     )
     .replaceAll(
       /<a\b[^>]*\bhref\s*=\s*'(?<href>[^']*)'[^>]*>(?<label>[\s\S]*?)<\/a>/giu,
-      (_match, href: string, label: string) => `[${stripTags(label)}](${href})`
+      (_match, href: string, label: string) =>
+        `[${plainTextOf(label)}](${href})`
     )
     .replaceAll(/<\/?(?:strong|b)>/giu, "**")
     .replaceAll(/<\/?(?:em|i)>/giu, "*")
     .replaceAll(
       /<kbd>(?<inner>[\s\S]*?)<\/kbd>/giu,
       (_match, inner: string) =>
-        `${KEY_SENTINEL}K${escapeHtml(stripTags(inner))}${KEY_SENTINEL}`
+        `${KEY_SENTINEL}K${escapeHtml(plainTextOf(inner))}${KEY_SENTINEL}`
     )
     .replaceAll(
       /<code>(?<inner>[\s\S]*?)<\/code>/giu,

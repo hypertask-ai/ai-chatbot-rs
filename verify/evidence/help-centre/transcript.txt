@@ -1,0 +1,16 @@
+pass old: 200 "Help Center - Hypertask" at https://help.hypertask.ai/help.
+pass preview: 200 "Help Center - Hypertask" at https://help.hypertask.ai/ratstack/.
+pass preview-noindex: X-Robots-Tag: noindex on the response and the robots meta tag on the page.
+pass old-indexable: https://help.hypertask.ai/help answers without noindex.
+pass preview-build: app-BXspUfKp.js answered 200 and the page names build bf5d1c8a-3c9f-4cbf-aa43-d6fbde729f11.
+pass publish: run 44592257889 published 1dd53b480ab069f98659ce202e942324de7d037f and main is 1dd53b480ab069f98659ce202e942324de7d037f.
+doctor: ok (6 checks)
+exit=0
+evidence /tmp/ratstack/evidence/verify-ai-chatbot-rs/help-centre/2026-11-19T19-33-47-563Z
+old https://help.hypertask.ai/help answered 200
+preview https://help.hypertask.ai/ratstack/help answered 200
+text: 2 missing, 2 added
+links: 0 missing, 0 added, 2 reworded
+  - 2 lines of the old page are missing from the preview
+  - 2 links of the preview say something different from the old page
+verdict: FAIL

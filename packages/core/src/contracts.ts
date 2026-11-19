@@ -37,6 +37,18 @@ export {
   readFlagLedgerContract,
 } from "./flag-contracts.js";
 
+export {
+  HandoffAnswerSchema,
+  HandoffEmailAnswerSchema,
+  VisitorProfileAnswerSchema,
+  leaveHandoffEmailContract,
+  requestHandoffContract,
+  saveVisitorProfileContract,
+  type HandoffAnswer,
+  type HandoffEmailAnswer,
+  type VisitorProfileAnswer,
+} from "./chat-contracts.js";
+
 export { UnknownPrompt } from "./unknown-prompt.js";
 
 export {
@@ -367,6 +379,21 @@ export const debugHelpRetrievalContract = defineContract("debugHelpRetrieval", {
   http: { method: "GET", path: "/api/chat/debug-rag" },
   input: Schema.Struct({ q: Schema.optional(Schema.String) }),
   output: HelpRetrievalAnswer,
+});
+
+// oxlint-disable-next-line sort-keys -- The old worker sends status before service and the recorded answer compares the encoded body.
+export const HealthOutput = Schema.Struct({
+  status: Schema.Literals(["ok"]),
+  service: Schema.Literals(["ai-chatbot"]),
+});
+
+export const healthContract = defineContract("health", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "Report that the help site worker is serving",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/health" },
+  input: Schema.Struct({}),
+  output: HealthOutput,
 });
 
 export const PromptSlug = Schema.String.check(
