@@ -12,9 +12,15 @@
     "diff.test.mjs",
     "driver.test.mjs",
     "feature-map.test.mjs",
+    "parity-evidence.mjs",
+    "parity-evidence.test.mjs",
     "pick-engine.mjs",
     "pick-engine.test.mjs",
     "seed.mjs",
-    "seed.test.mjs"
+    "seed.test.mjs",
+    "site-doctor.mjs",
+    "site-doctor.test.mjs",
+    "site-head.mjs",
+    "site-head.test.mjs"
   ]
 }

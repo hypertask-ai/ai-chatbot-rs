@@ -36,7 +36,38 @@ const WIDGET_HTML = `<!doctype html>
 
 const HEALTH_BODY = '{"status":"ok","service":"fixture"}';
 
+const SEARCH_HTML = `<!doctype html>
+<html>
+<head><title>Fixture search</title></head>
+<body>
+<h1>Fixture search</h1>
+<a id="reveal" href="#all">All articles</a>
+<input id="fixture-input" type="search" hidden />
+<p id="fixture-echo">no query</p>
+<script>
+const input = document.querySelector("#fixture-input");
+document.querySelector("#reveal").addEventListener("click", () => {
+  input.hidden = false;
+});
+input.addEventListener("input", () => {
+  document.querySelector("#fixture-echo").textContent = input.value;
+});
+</script>
+</body>
+</html>`;
+
 const DriverPage = Schema.Struct({
+  actions: Schema.optional(
+    Schema.Array(
+      Schema.Struct({
+        action: Schema.String,
+        error: Schema.optional(Schema.String),
+        key: Schema.optional(Schema.String),
+        ok: Schema.Boolean,
+        target: Schema.optional(Schema.String),
+      })
+    )
+  ),
   blockedChatSends: Schema.Array(Schema.String),
   error: Schema.optional(Schema.String),
   finalUrl: Schema.optional(Schema.String),
@@ -172,6 +203,13 @@ const server = createServer((request, response) => {
   if (method === "GET" && url === "/widget/chat") {
     response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
     response.end(WIDGET_HTML);
+
+    return;
+  }
+
+  if (method === "GET" && url === "/search-fixture") {
+    response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    response.end(SEARCH_HTML);
 
     return;
   }
@@ -399,6 +437,78 @@ try {
       assertPng(report.openScreenshots.viewport);
       assertPng(report.openScreenshots.full);
       assert.deepEqual(chatPosts, []);
+    } finally {
+      rmSync(screens, { force: true, recursive: true });
+    }
+  });
+
+  await test("click, fill and press run before the page is read", async () => {
+    const { screens, stdout } = await runOk([
+      "page",
+      "--head",
+      head,
+      "--path",
+      "/search-fixture",
+      "--click",
+      "#reveal",
+      "--fill",
+      "#fixture-input=agents",
+      "--press",
+      "End",
+    ]);
+
+    const payload = decodePage(stdout);
+
+    try {
+      const [group] = payload.headReport;
+
+      if (group === undefined) {
+        throw new Error("page report has no path");
+      }
+
+      for (const page of group.pages) {
+        assert.deepEqual(page.actions, [
+          { action: "click", ok: true, target: "#reveal" },
+          { action: "fill", ok: true, target: "#fixture-input" },
+          { action: "press", key: "End", ok: true },
+        ]);
+        assert.match(readFileSync(page.textFile, "utf-8"), /agents/u);
+      }
+    } finally {
+      rmSync(screens, { force: true, recursive: true });
+    }
+  });
+
+  await test("a control the actions cannot reach is reported, not thrown", async () => {
+    const { screens, stdout } = await runOk([
+      "page",
+      "--head",
+      head,
+      "--path",
+      "/help",
+      "--click",
+      "#no-such-control",
+      "--fill",
+      "#no-such-input=agents",
+    ]);
+
+    const payload = decodePage(stdout);
+
+    try {
+      const [group] = payload.headReport;
+
+      if (group === undefined) {
+        throw new Error("page report has no path");
+      }
+
+      for (const page of group.pages) {
+        assert.equal(page.actions?.length, 2);
+        assert.deepEqual(
+          page.actions?.map((entry) => entry.ok),
+          [false, false]
+        );
+        assert.match(page.actions?.[0]?.error ?? "", /TimeoutError/u);
+      }
     } finally {
       rmSync(screens, { force: true, recursive: true });
     }
