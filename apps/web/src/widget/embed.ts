@@ -1,4 +1,4 @@
-import { siteBasePath } from "../site-base-path.js";
+import { siteBasePath, sitePath } from "../site-base-path.js";
 
 export const widgetEmbedOrigins = [
   "https://hypertask.ai",
