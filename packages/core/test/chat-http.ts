@@ -6,6 +6,7 @@ import type { HttpServerRequest } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
 import { ChatClock } from "../src/chat-clock.js";
+import { ChatConfig } from "../src/chat-config.js";
 import {
   ChatConversationStore,
   memoryChatConversations,
@@ -16,6 +17,7 @@ import type {
   ChatConversationSeed,
 } from "../src/chat-conversation-store.js";
 import { leaveHandoffEmail, requestHandoff } from "../src/chat-handoff.js";
+import { listChatSessions, readChatHistory } from "../src/chat-history.js";
 import {
   ChatMessageStore,
   memoryChatMessages,
@@ -51,7 +53,13 @@ const visitorAuthFromRequest = {
 
 export const chatApi = toHttpApi(
   "ChatApi",
-  [saveVisitorProfile, requestHandoff, leaveHandoffEmail],
+  [
+    saveVisitorProfile,
+    requestHandoff,
+    leaveHandoffEmail,
+    readChatHistory,
+    listChatSessions,
+  ],
   { provide: [visitorAuthFromRequest] }
 );
 
@@ -65,7 +73,8 @@ export const serveChat = (
   conversations: ChatConversationOperations,
   messages: ChatMessageOperations,
   alerts: CustomerAlertOperations,
-  teamEmail: HandoffEmailOperations
+  teamEmail: HandoffEmailOperations,
+  adminPassword = ""
 ) =>
   Effect.gen(function* serveChatApi() {
     const services = Layer.mergeAll(
@@ -74,6 +83,7 @@ export const serveChat = (
       Layer.succeed(CustomerAlerts, alerts),
       Layer.succeed(HandoffEmail, teamEmail),
       Layer.succeed(ChatClock, { now: Effect.succeed(CHAT_SECOND) }),
+      ChatConfig.configLayer({ adminPassword, evalIngestSecret: "" }),
       NodeCrypto.layer,
       TestServices
     );
@@ -131,6 +141,35 @@ export const postChat = (
     };
   });
 
+export interface ChatReadRequest {
+  readonly authorization?: string | undefined;
+  readonly headers?: Readonly<Record<string, string>> | undefined;
+  readonly path: string;
+}
+
+export const getChat = (
+  handler: (request: Request) => Promise<Response>,
+  request: ChatReadRequest
+) =>
+  Effect.gen(function* getChatRequest() {
+    const headers = new Headers(request.headers);
+
+    if (request.authorization !== undefined) {
+      headers.set("authorization", request.authorization);
+    }
+
+    const response = yield* Effect.promise(() =>
+      handler(new Request(`http://localhost${request.path}`, { headers }))
+    );
+
+    const text = yield* Effect.promise(() => response.text());
+
+    return {
+      body: text === "" ? undefined : yield* decodeBody(text),
+      status: response.status,
+    };
+  });
+
 export const chatConversationSeed = ({
   id,
   ...overrides
@@ -138,6 +177,7 @@ export const chatConversationSeed = ({
   readonly id: string;
 }): ChatConversationSeed => ({
   archived: false,
+  createdAt: CHAT_SECOND - 100,
   email: undefined,
   hasAccount: "unknown",
   id,
@@ -157,6 +197,7 @@ export const chatConversationRow = (
 
   return {
     archived: seed.archived,
+    createdAt: seed.createdAt,
     email: seed.email,
     hasAccount: seed.hasAccount,
     id: seed.id,
@@ -171,6 +212,7 @@ export const chatConversationRow = (
 export interface ChatMessageSeed {
   readonly content: string;
   readonly conversationId: string;
+  readonly createdAt?: number | undefined;
   readonly role?: ChatMessageRole | undefined;
 }
 
@@ -180,7 +222,7 @@ export const chatMessageSeed = (seed: ChatMessageSeed): ChatMessage => {
   return {
     content: seed.content,
     conversationId: seed.conversationId,
-    createdAt: CHAT_SECOND - 50,
+    createdAt: seed.createdAt ?? CHAT_SECOND - 50,
     id: `${seed.conversationId}:${role}:${seed.content}`,
     role,
   };
@@ -236,7 +278,8 @@ export const recordingTeamEmail = (outcome: boolean) =>
 
 export const chatStack = (
   seed: readonly ChatConversationSeed[],
-  seededMessages: readonly ChatMessage[] = []
+  seededMessages: readonly ChatMessage[] = [],
+  adminPassword = ""
 ) =>
   Effect.gen(function* buildChatStack() {
     const conversations = yield* memoryChatConversations(seed);
@@ -248,7 +291,8 @@ export const chatStack = (
       conversations.operations,
       transcript.operations,
       alerts.operations,
-      teamEmail.operations
+      teamEmail.operations,
+      adminPassword
     );
 
     return { alerts, conversations, handler, teamEmail, transcript };

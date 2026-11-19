@@ -35,6 +35,10 @@ export const handoffEmailTooSoonFailure = {
   error: "Please wait before trying again",
 } as const;
 
+export const chatReadUnauthorizedFailure = { error: "Unauthorized" } as const;
+
+export const chatReadForbiddenFailure = { error: "Forbidden" } as const;
+
 export const handoffProfileIncompleteFailure = (
   missing: readonly MissingProfileField[]
 ) =>
@@ -81,6 +85,14 @@ const HandoffEmailUnauthorized = Schema.Struct({
 const HandoffEmailTooSoon = Schema.Struct({
   error: Schema.Literal("Please wait before trying again"),
 }).annotate({ httpApiStatus: 429 });
+
+export const ChatReadUnauthorized = Schema.Struct({
+  error: Schema.Literal("Unauthorized"),
+}).annotate({ httpApiStatus: 401 });
+
+export const ChatReadForbidden = Schema.Struct({
+  error: Schema.Literal("Forbidden"),
+}).annotate({ httpApiStatus: 403 });
 
 export const VisitorProfileAnswerSchema = Schema.Struct({
   autoPopulated: Schema.Struct({

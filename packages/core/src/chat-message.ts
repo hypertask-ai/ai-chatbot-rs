@@ -370,6 +370,7 @@ const newConversationRow = (
   secretHash: string | undefined
 ) => ({
   archived: state.archived,
+  createdAt: state.updatedAt,
   email: state.profile.email,
   hasAccount: state.profile.account,
   id: ids.conversationId,
