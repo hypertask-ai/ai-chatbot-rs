@@ -109,6 +109,16 @@
       "import": "./dist/help-article-store.js",
       "default": "./dist/help-article-store.js"
     },
+    "./help-category": {
+      "types": "./src/help-category.ts",
+      "import": "./dist/help-category.js",
+      "default": "./dist/help-category.js"
+    },
+    "./help-article-pane": {
+      "types": "./src/help-article-pane.ts",
+      "import": "./dist/help-article-pane.js",
+      "default": "./dist/help-article-pane.js"
+    },
     "./help-plans": {
       "types": "./src/help-plans.ts",
       "import": "./dist/help-plans.js",

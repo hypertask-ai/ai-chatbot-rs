@@ -39,6 +39,10 @@ export {
   type HelpArticleValue,
 } from "./help-article-store.js";
 
+export { helpCategoryName } from "./help-category.js";
+
+export { helpArticlePane } from "./help-article-pane.js";
+
 export {
   expandedHelpQueryTerms,
   helpArticleStem,
@@ -89,6 +93,7 @@ export {
   formatHelpArticleContent,
   isHtmlHelpArticle,
   plainTextOf,
+  withoutElements,
 } from "./help-article-html.js";
 
 export {

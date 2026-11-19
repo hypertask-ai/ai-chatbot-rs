@@ -8,5 +8,17 @@ type UpdateReturn = Update.Return<AppModel, AppMessage>;
 
 export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
   Message.match<UpdateReturn>(message, {
-    Ready: () => ({ model: { ...model, ready: true } }),
+    ArticleFeedbackGiven: ({ sentiment }) => {
+      const isNo = sentiment === "no";
+
+      return {
+        model: {
+          ...model,
+          feedback: {
+            no: model.feedback.no || isNo,
+            yes: model.feedback.yes || !isNo,
+          },
+        },
+      };
+    },
   });
