@@ -30,6 +30,7 @@ import { sessionMenuNow } from "./session-menu-fixture.js";
 
 const flags: WidgetFlags = {
   docked: false,
+  onHelpPage: false,
   pageTitle: "Boards & Sections",
   pageUrl: "https://hypertask.ai/help/boards-sections",
   pinned: false,

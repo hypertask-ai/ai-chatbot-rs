@@ -27,6 +27,7 @@ import { view } from "../src/features/widget/index.js";
 
 const flags = (overrides: Partial<WidgetFlags> = {}): WidgetFlags => ({
   docked: false,
+  onHelpPage: false,
   pageTitle: "Boards & Sections",
   pageUrl: "https://hypertask.ai/help/boards-sections",
   pinned: false,

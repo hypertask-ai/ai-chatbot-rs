@@ -100,12 +100,14 @@ describe("chat widget parity with the old help site", () => {
   it("reads the same query parameters the loader writes", () => {
     expect(widgetPageFlags("")).toEqual({
       docked: false,
+      onHelpPage: false,
       pageTitle: "",
       pageUrl: "",
       pinned: false,
     });
     expect(widgetPageFlags("?context=help&pinned=1")).toEqual({
       docked: false,
+      onHelpPage: true,
       pageTitle: "",
       pageUrl: "",
       pinned: true,
@@ -116,6 +118,7 @@ describe("chat widget parity with the old help site", () => {
       )
     ).toEqual({
       docked: true,
+      onHelpPage: false,
       pageTitle: "Host page",
       pageUrl: "https://host.test/",
       pinned: false,

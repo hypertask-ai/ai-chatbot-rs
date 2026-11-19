@@ -1,15 +1,27 @@
 import { Option, Schema } from "effect";
 import type { Update } from "foldkit";
 
+import {
+  answerActionsCopy,
+  answerRowAfter,
+} from "../../widget/answer-actions.js";
 import type {
   ChatLineValue,
   ChatSessionValue,
 } from "../../widget/chat-sessions.js";
 import { widgetCopy } from "../../widget/copy.js";
+import {
+  emailCardCopy,
+  emailProblem,
+  emailSentMessage,
+} from "../../widget/email-card.js";
+import { sourceLineFor } from "../../widget/source-line.js";
 import { starterSuggestions } from "../../widget/suggestions.js";
 import {
+  OpenCitedArticle,
   PublishSession,
   ReadAttachment,
+  ReportEmailValidity,
   RequestHostClose,
   ScrollToLatest,
   StoreSession,
@@ -18,7 +30,7 @@ import {
 import { HostMessage, Message } from "./message.js";
 import type { AppMessage, HostMessageValue } from "./message.js";
 import { askOf } from "./model.js";
-import type { AppModel, MenuValue } from "./model.js";
+import type { AppModel, MenuValue, TranscriptEntryValue } from "./model.js";
 
 type UpdateReturn = Update.Return<AppModel, AppMessage>;
 
@@ -65,6 +77,7 @@ const submit = (model: AppModel, text: string): UpdateReturn => {
     commands: [ScrollToLatest()],
     model: {
       ...model,
+      answerRowAfter: Option.none(),
       attachment: Option.none(),
       input: "",
       messages: [
@@ -278,6 +291,7 @@ const loadedPastChat = (
     ],
     model: {
       ...model,
+      answerRowAfter: Option.none(),
       conversationId,
       menu: { ...model.menu, kind: "closed" },
       messages: messages.map((line) => ({
@@ -302,6 +316,7 @@ const startedNewConversation = (model: AppModel): UpdateReturn => ({
   ],
   model: {
     ...model,
+    answerRowAfter: Option.none(),
     attachment: Option.none(),
     conversationId: "",
     menu: { ...model.menu, kind: "closed" },
@@ -368,17 +383,104 @@ const hostUpdate = (
 
 export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
   Message.match<UpdateReturn>(message, {
+    AcceptedAnswer: () => {
+      const thanks: AppModel = {
+        ...model,
+        answerRowAfter: Option.none(),
+        messages: [
+          ...model.messages,
+          {
+            content: answerActionsCopy.thanks,
+            imageUrl: Option.none(),
+            role: "bot",
+          },
+        ],
+      };
+
+      return { commands: [ScrollToLatest()], model: thanks };
+    },
+    AskedForPerson: () => {
+      const cleared = { ...model, answerRowAfter: Option.none() };
+
+      if (model.conversationId === "") {
+        return { model: cleared };
+      }
+
+      const next: AppModel = {
+        ...cleared,
+        handoffEmailCard: Option.some({ email: "" }),
+        messages: [
+          ...model.messages,
+          {
+            content: answerActionsCopy.person,
+            imageUrl: Option.none(),
+            role: "user",
+          },
+          {
+            content: answerActionsCopy.handoffIntro,
+            imageUrl: Option.none(),
+            role: "bot",
+          },
+        ],
+      };
+
+      return { commands: [ScrollToLatest()], model: next };
+    },
     AttachedImage: ({ dataUrl }) => ({
       model: { ...model, attachment: Option.some(dataUrl) },
     }),
+    ChangedHandoffEmail: ({ value }) =>
+      Option.isNone(model.handoffEmailCard)
+        ? { model }
+        : {
+            commands: [ReportEmailValidity({ problem: Option.none() })],
+            model: {
+              ...model,
+              handoffEmailCard: Option.some({ email: value }),
+            },
+          },
     ChangedInput: ({ value }) => ({ model: { ...model, input: value } }),
     ClosedLightbox: () => ({ model: { ...model, lightbox: Option.none() } }),
     ClosedPanel: () => ({ commands: [RequestHostClose()], model }),
+    CompletedEmailValidityCheck: () => ({ model }),
     CompletedHostClose: () => ({ model }),
+    CompletedOpenCitedArticle: () => ({ model }),
     CompletedPublishSession: () => ({ model }),
     CompletedScrollToLatest: () => ({ model }),
     CompletedStoreSession: () => ({ model }),
     CompletedSyncChrome: () => ({ model }),
+    HandoffEmailFailed: () => ({
+      model: {
+        ...model,
+        handoffEmailError: Option.some(emailCardCopy.failed),
+        pendingHandoffEmail: Option.none(),
+      },
+    }),
+    HandoffEmailSent: ({ emailed }) =>
+      Option.match(model.handoffEmailCard, {
+        onNone: () => ({ model }),
+        onSome: (card) => {
+          const messages: readonly TranscriptEntryValue[] = [
+            ...model.messages,
+            {
+              content: emailSentMessage(card.email.trim(), emailed),
+              imageUrl: Option.none(),
+              role: "bot",
+            },
+          ];
+
+          return {
+            commands: [ScrollToLatest()],
+            model: {
+              ...model,
+              handoffEmailCard: Option.none(),
+              handoffEmailError: Option.none(),
+              messages,
+              pendingHandoffEmail: Option.none(),
+            },
+          };
+        },
+      }),
     LoadedMenuSessions: ({ now, sessions }) =>
       loadedMenuSessions(model, sessions, now),
     LoadedPastChat: ({ messages }) => loadedPastChat(model, messages),
@@ -398,6 +500,13 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
         model: next,
       };
     },
+    OpenedCitedArticle: ({ slug }) => ({
+      commands: [
+        OpenCitedArticle({ onHelpPage: model.onHelpPage, slug }),
+        ...(model.onHelpPage && !model.pinned ? [RequestHostClose()] : []),
+      ],
+      model,
+    }),
     OpenedLightbox: ({ dataUrl }) => ({
       model: { ...model, lightbox: Option.some(dataUrl) },
     }),
@@ -405,6 +514,36 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
     PickedMenuSession: ({ sessionId, status }) =>
       pickedMenuSession(model, sessionId, status),
     PickedSuggestion: ({ text }) => submit({ ...model, input: text }, text),
+    ReceivedAnswer: ({ answer, sources }) => {
+      if (answer.trim() === "") {
+        return { model };
+      }
+
+      const sourceLine = sourceLineFor(answer, sources);
+
+      const entry: TranscriptEntryValue = {
+        content: answer,
+        imageUrl: Option.none(),
+        role: "bot",
+      };
+
+      const messages: readonly TranscriptEntryValue[] = [
+        ...model.messages,
+        sourceLine === undefined ? entry : { ...entry, sourceLine },
+      ];
+
+      const placement = answerRowAfter(messages.length);
+
+      return {
+        commands: [ScrollToLatest()],
+        model: {
+          ...model,
+          answerRowAfter:
+            placement === null ? Option.none() : Option.some(placement),
+          messages,
+        },
+      };
+    },
     ReceivedHostMessage: ({ data, trustedParent, sameOrigin }) => {
       const host = Schema.decodeUnknownOption(HostMessage)(data);
 
@@ -419,6 +558,35 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
     }),
     StartedNewConversation: () => startedNewConversation(model),
     Submitted: () => submit(model, model.input),
+    SubmittedHandoffEmail: () =>
+      Option.match(model.handoffEmailCard, {
+        onNone: () => ({ model }),
+        onSome: (card) => {
+          const email = card.email.trim();
+          const problem = emailProblem(email);
+
+          if (problem !== null) {
+            return {
+              commands: [
+                ReportEmailValidity({ problem: Option.some(problem) }),
+              ],
+              model,
+            };
+          }
+
+          return Option.isSome(model.pendingHandoffEmail)
+            ? { model }
+            : {
+                model: {
+                  ...model,
+                  pendingHandoffEmail: Option.some({
+                    conversationId: model.conversationId,
+                    email,
+                  }),
+                },
+              };
+        },
+      }),
     TookFile: ({ file }) =>
       file.type.startsWith("image/")
         ? { commands: [ReadAttachment({ file })], model }
