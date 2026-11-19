@@ -21,6 +21,21 @@
       "import": "./dist/d1.js",
       "default": "./dist/d1.js"
     },
+    "./admin-conversation": {
+      "types": "./src/admin-conversation.ts",
+      "import": "./dist/admin-conversation.js",
+      "default": "./dist/admin-conversation.js"
+    },
+    "./admin-conversation-vendor": {
+      "types": "./src/admin-conversation-vendor.ts",
+      "import": "./dist/admin-conversation-vendor.js",
+      "default": "./dist/admin-conversation-vendor.js"
+    },
+    "./help-article-vendor": {
+      "types": "./src/help-article-vendor.ts",
+      "import": "./dist/help-article-vendor.js",
+      "default": "./dist/help-article-vendor.js"
+    },
     "./hyperdrive-postgres": {
       "types": "./src/hyperdrive-postgres.ts",
       "import": "./dist/hyperdrive-postgres.js",
@@ -41,6 +56,7 @@
     "@alchemy.run/drizzle": "2.0.0-beta.85",
     "@alchemy.run/sql": "2.0.0-beta.85",
     "@effect/sql-pg": "4.1.2",
+    "@rat-stack/core": "workspace:*",
     "alchemy": "2.0.0-beta.85",
     "drizzle-orm": "1.0.0-rc.5",
     "effect": "4.1.2",
@@ -51,6 +67,7 @@
     "@effect/platform-node": "4.1.2",
     "@effect/vitest": "4.1.2",
     "@electric-sql/pglite": "0.5.15",
+    "@rat-stack/capability": "workspace:*",
     "@types/node": "24.19.2",
     "@types/pg": "8.23.1",
     "@types/sql.js": "1.4.11",

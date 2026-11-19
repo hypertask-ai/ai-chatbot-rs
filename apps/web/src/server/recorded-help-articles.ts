@@ -41,15 +41,21 @@ const rowWithId = (id: string) => {
   return row;
 };
 
+const ARTICLE_ROW_PREFIX = "/api/articles/";
+
 const isArticleRow = (path: string, status: number): boolean =>
-  path.startsWith("/api/articles/") &&
-  !path.startsWith("/api/articles/search/") &&
+  path.startsWith(ARTICLE_ROW_PREFIX) &&
+  !path.startsWith(`${ARTICLE_ROW_PREFIX}search/`) &&
   status === 200;
 
 export const recordedHelpArticleRows: readonly HelpArticleValue[] =
   recorded.rows
     .filter((row) => isArticleRow(row.path, row.status))
     .map((row) => decodeArticle(row.body));
+
+export const recordedArticlePaths: readonly string[] = recorded.rows
+  .filter((row) => isArticleRow(row.path, row.status))
+  .map((row) => `/help/${row.path.slice(ARTICLE_ROW_PREFIX.length)}`);
 
 export const recordedHelpArticleList: readonly HelpArticleSummaryValue[] =
   decodeSummaries(rowWithId("articles-list").body);

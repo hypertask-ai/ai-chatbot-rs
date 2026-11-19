@@ -15,11 +15,11 @@ const TIMEOUT = 45_000;
 /** @typedef {{ status: () => number }} VerifierResponse */
 /** @typedef {{ evaluate: <Result>(expression: string) => Promise<Result> }} VerifierFrame */
 /** @typedef {{ contentFrame: () => Promise<VerifierFrame | null> }} VerifierElementHandle */
-/** @typedef {{ click: (options?: { timeout?: number }) => Promise<void>; count: () => Promise<number>; elementHandle: () => Promise<VerifierElementHandle | null>; first: () => VerifierLocator; isVisible: () => Promise<boolean> }} VerifierLocator */
+/** @typedef {{ click: (options?: { timeout?: number }) => Promise<void>; count: () => Promise<number>; elementHandle: () => Promise<VerifierElementHandle | null>; fill: (value: string, options?: { timeout?: number }) => Promise<void>; first: () => VerifierLocator; isVisible: () => Promise<boolean> }} VerifierLocator */
 /** @typedef {{ close: () => Promise<void>; newPage: () => Promise<VerifierPage> }} VerifierContext */
 /** @typedef {{ close: () => Promise<void>; newContext: (options: { deviceScaleFactor: number; viewport: { height: number; width: number } }) => Promise<VerifierContext> }} VerifierBrowser */
 /** @typedef {{ chromium: { launch: () => Promise<VerifierBrowser> } }} VerifierChromium */
-/** @typedef {{ evaluate: <Result>(expression: string) => Promise<Result>; goto: (url: string, options?: { timeout?: number; waitUntil?: string }) => Promise<VerifierResponse | null>; locator: (selector: string) => VerifierLocator; on: (event: string, handler: (value: never) => void) => void; route: (pattern: string, handler: (route: VerifierRoute) => Promise<void>) => Promise<void>; screenshot: (options: { fullPage: boolean; path: string }) => Promise<Uint8Array>; title: () => Promise<string>; url: () => string; waitForTimeout: (milliseconds: number) => Promise<void> }} VerifierPage */
+/** @typedef {{ evaluate: <Result>(expression: string) => Promise<Result>; goto: (url: string, options?: { timeout?: number; waitUntil?: string }) => Promise<VerifierResponse | null>; keyboard: { press: (key: string) => Promise<void> }; locator: (selector: string) => VerifierLocator; on: (event: string, handler: (value: never) => void) => void; route: (pattern: string, handler: (route: VerifierRoute) => Promise<void>) => Promise<void>; screenshot: (options: { fullPage: boolean; path: string }) => Promise<Uint8Array>; title: () => Promise<string>; url: () => string; waitForTimeout: (milliseconds: number) => Promise<void> }} VerifierPage */
 /** @typedef {{ height: number; name: string; width: number }} Viewport */
 /** @typedef {{ consoleErrors: string[]; failedRequests: string[]; pageErrors: string[] }} Watch */
 /** @typedef {{ blocked: string[]; context: VerifierContext; page: VerifierPage; watched: Watch }} Session */
@@ -29,7 +29,8 @@ const TIMEOUT = 45_000;
 /** @typedef {{ href: string; text: string }} PageLink */
 /** @typedef {{ label: string; type: string }} PageButton */
 /** @typedef {{ name: string; placeholder: string; tag: string }} PageInput */
-/** @typedef {{ blockedChatSends: string[]; consoleErrors: string[]; error?: string; failedRequests: string[]; finalUrl?: string; fonts?: string[]; headings?: Heading[]; label: string; links?: PageLink[]; pageErrors: string[]; screenshotFull?: string; screenshotViewport?: string; status?: number; textFile?: string; title?: string; url: string; viewport: string; words?: number }} PageReport */
+/** @typedef {{ action: string; error?: string; key?: string; ok: boolean; target?: string }} PageAction */
+/** @typedef {{ blockedChatSends: string[]; actions?: PageAction[]; consoleErrors: string[]; error?: string; failedRequests: string[]; finalUrl?: string; fonts?: string[]; headings?: Heading[]; label: string; links?: PageLink[]; pageErrors: string[]; screenshotFull?: string; screenshotViewport?: string; status?: number; textFile?: string; title?: string; url: string; viewport: string; words?: number }} PageReport */
 /** @typedef {{ addedInHead: string[]; baseStatus: number; headStatus: number; missingFromHead: string[]; path: string }} CompareReport */
 /** @typedef {{ buttons: PageButton[]; found: boolean; inputs: PageInput[]; textExcerpt?: string; words?: number }} FrameState */
 
@@ -111,7 +112,14 @@ Commands:
   api      --head <url> [--base <url>] [--path /health ...]
 
 Flags:
-  SCREENS_DIR points at the screenshot and report directory.`;
+  SCREENS_DIR points at the screenshot and report directory.
+  --click "<selector>" chooses a control after the page loads
+  --fill "<selector>=<value>" types into a control after the page loads
+  --press "<key>" sends a key after the page loads
+
+Clicks run first, then fills, then presses. So
+--click "a[href='#all']" --fill "#searchInput=agents" --press "Escape"
+opens the article browser, searches, and clears the box.`;
 
 const argv = process.argv.slice(2);
 
@@ -128,6 +136,18 @@ const flag = (name) => {
 
   return rest[at + 1] ?? "";
 };
+
+/** @param {string} entry
+ * @returns {{ selector: string, value: string }} */
+const splitFill = (entry) => {
+  const at = entry.indexOf("=");
+
+  return at === -1
+    ? { selector: entry, value: "" }
+    : { selector: entry.slice(0, at), value: entry.slice(at + 1) };
+};
+
+/** @typedef {{ kind: "click", selector: string } | { kind: "fill", selector: string, value: string } | { kind: "press", key: string }} Action */
 
 /** @param {string} name
  * @returns {string[]} */
@@ -160,6 +180,61 @@ const origin = (name) => flag(name).replace(/\/+$/u, "");
 /** @param {string} value
  * @returns {string} */
 const slug = (value) => value.replaceAll(SLUG, "-");
+
+/** @returns {Action[]} */
+const actions = () => [
+  ...flagAll("click")
+    .filter((entry) => entry.length > 0)
+    .map((entry) => ({ kind: "click", selector: entry })),
+  ...flagAll("fill")
+    .filter((entry) => entry.length > 0)
+    .map((entry) => ({ kind: "fill", ...splitFill(entry) })),
+  ...flagAll("press")
+    .filter((entry) => entry.length > 0)
+    .map((entry) => ({ key: entry, kind: "press" })),
+];
+
+/** @param {VerifierPage} page
+ * @param {Action} action
+ * @returns {Promise<PageAction>} */
+const apply = async (page, action) => {
+  if (action.kind === "press") {
+    await page.keyboard.press(action.key);
+
+    return { action: "press", key: action.key, ok: true };
+  }
+
+  if (action.kind === "click") {
+    try {
+      await page.locator(action.selector).first().click({ timeout: 5000 });
+
+      return { action: "click", ok: true, target: action.selector };
+    } catch (error) {
+      return {
+        action: "click",
+        error: String(error).split("\n")[0] ?? "",
+        ok: false,
+        target: action.selector,
+      };
+    }
+  }
+
+  try {
+    await page
+      .locator(action.selector)
+      .first()
+      .fill(action.value, { timeout: 5000 });
+
+    return { action: "fill", ok: true, target: action.selector };
+  } catch (error) {
+    return {
+      action: "fill",
+      error: String(error).split("\n")[0] ?? "",
+      ok: false,
+      target: action.selector,
+    };
+  }
+};
 
 /** @returns {Promise<VerifierBrowser>} */
 const launch = async () => {
@@ -314,6 +389,18 @@ const readPage = async (page, url, label, viewport, runtime) => {
   }
 
   await settle(page);
+  /** @type {PageAction[]} */
+  const acted = [];
+
+  for (const action of actions()) {
+    // oxlint-disable-next-line no-await-in-loop -- The actions run in the order they were given, so a fill lands before the key that clears it.
+    acted.push(await apply(page, action));
+  }
+
+  if (acted.length > 0) {
+    await settle(page);
+  }
+
   /** @type {string} */
   const text = await page.evaluate(VISIBLE_TEXT);
   const title = await page.title();
@@ -331,6 +418,7 @@ const readPage = async (page, url, label, viewport, runtime) => {
   await shoot(page, fullFile, true);
 
   return {
+    actions: acted,
     blockedChatSends: runtime.blocked,
     consoleErrors: runtime.watched.consoleErrors,
     failedRequests: runtime.watched.failedRequests,

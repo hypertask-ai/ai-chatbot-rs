@@ -1,0 +1,7 @@
+AVAILABLE ARTICLES (ONLY link to these - do NOT invent other URLs):
+---
+Title: Install the CLI
+Slug: install-cli
+URL: https://help.hypertask.ai/help/install-cli
+Run the installer from the command line.
+---
