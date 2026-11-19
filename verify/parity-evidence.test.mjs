@@ -28,6 +28,44 @@ import {
   verdictOf,
 } from "./parity-evidence.mjs";
 
+const Facts = Schema.Struct({
+  missingFromNewText: Schema.Array(Schema.String),
+  newStatus: Schema.NullOr(Schema.Number),
+  old: Schema.String,
+  oldStatus: Schema.NullOr(Schema.Number),
+  path: Schema.String,
+  preview: Schema.String,
+  reasons: Schema.Array(Schema.String),
+  verdict: Schema.String,
+});
+
+const HeadTags = Schema.Struct({
+  old: Schema.Struct({
+    tags: Schema.Struct({ robots: Schema.NullOr(Schema.String) }),
+  }),
+  preview: Schema.Struct({
+    status: Schema.Number,
+    tags: Schema.Struct({ robots: Schema.NullOr(Schema.String) }),
+  }),
+});
+
+const Links = Schema.Struct({
+  missingFromNew: Schema.Array(Schema.String),
+  previewBasePath: Schema.String,
+});
+
+const decodeFacts = Schema.decodeUnknownSync(Schema.fromJsonString(Facts));
+
+const decodeHeadTags = Schema.decodeUnknownSync(
+  Schema.fromJsonString(HeadTags)
+);
+
+const decodeLinks = Schema.decodeUnknownSync(Schema.fromJsonString(Links));
+
+const decodeArgv = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Array(Schema.String))
+);
+
 const root = path.join(import.meta.dirname, "..");
 
 const RED_PNG = Buffer.from(
@@ -127,6 +165,8 @@ const decodePort = Schema.decodeUnknownSync(
   Schema.Struct({ port: Schema.Number })
 );
 
+const decodeStatus = Schema.decodeUnknownSync(Schema.NullOr(Schema.Number));
+
 const { port } = decodePort(server.address());
 
 const origin = `http://127.0.0.1:${String(port)}`;
@@ -139,6 +179,10 @@ const specPath = path.join(workDir, "spec.json");
 
 writeFileSync(driverPath, FIXTURE_DRIVER);
 
+/**
+ * @param {{ new?: Record<string, unknown>, old?: Record<string, unknown> }} [overrides]
+ * @returns {Record<string, Record<string, unknown>>}
+ */
 const spec = (overrides = {}) => ({
   new: {
     finalUrl: `${origin}/new/help`,
@@ -212,9 +256,13 @@ const runEvidence = async (options = {}) => {
 
   clearTimeout(timer);
 
-  return { status: closed[0], stderr, stdout };
+  return { status: decodeStatus(closed[0]), stderr, stdout };
 };
 
+/**
+ * @param {string} evidence
+ * @returns {string}
+ */
 const runOf = (evidence) => {
   const featureDir = path.join(evidence, "fixture");
   const [stamp] = readdirSync(featureDir).toSorted();
@@ -344,7 +392,7 @@ await test("a matching pair writes side by side evidence", async () => {
 
   assert.equal(result.status, 0, result.stderr + result.stdout);
 
-  const payload = JSON.parse(result.stdout);
+  const payload = decodeFacts(result.stdout);
   const runDir = runOf(evidence);
 
   assert.equal(payload.verdict, "PASS");
@@ -366,7 +414,7 @@ await test("a matching pair writes side by side evidence", async () => {
     assert.ok(existsSync(path.join(runDir, file)), `${file} is missing`);
   }
 
-  const headTags = JSON.parse(
+  const headTags = decodeHeadTags(
     readFileSync(path.join(runDir, "head-tags.json"), "utf-8")
   );
 
@@ -374,7 +422,7 @@ await test("a matching pair writes side by side evidence", async () => {
   assert.equal(headTags.preview.tags.robots, "noindex");
   assert.equal(headTags.preview.status, 200);
 
-  const argv = JSON.parse(
+  const argv = decodeArgv(
     readFileSync(path.join(runDir, "driver", "argv.json"), "utf-8")
   );
 
@@ -416,13 +464,13 @@ await test("a missing sentence and a missing link fail the run", async () => {
 
   assert.equal(result.status, 1, result.stderr);
 
-  const payload = JSON.parse(result.stdout);
+  const payload = decodeFacts(result.stdout);
   const runDir = runOf(evidence);
 
   assert.equal(payload.verdict, "FAIL");
   assert.deepEqual(payload.missingFromNewText, ["Pricing plans"]);
 
-  const links = JSON.parse(
+  const links = decodeLinks(
     readFileSync(path.join(runDir, "links.json"), "utf-8")
   );
 
@@ -446,7 +494,7 @@ await test("a not-found journey passes when both sites answer 404", async () => 
   });
 
   assert.equal(result.status, 0, result.stderr + result.stdout);
-  assert.equal(JSON.parse(result.stdout).verdict, "PASS");
+  assert.equal(decodeFacts(result.stdout).verdict, "PASS");
 });
 
 await test("a preview that answers nothing fails with its status", async () => {
@@ -457,7 +505,7 @@ await test("a preview that answers nothing fails with its status", async () => {
 
   assert.equal(result.status, 1, result.stderr);
 
-  const payload = JSON.parse(result.stdout);
+  const payload = decodeFacts(result.stdout);
 
   assert.equal(payload.verdict, "FAIL");
   assert.match(

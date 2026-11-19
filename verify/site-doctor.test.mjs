@@ -41,6 +41,13 @@ ${state.previewNoindex ? '<meta name="robots" content="noindex">' : ""}
 
 const ASSET = "console.log('fixture');";
 
+/**
+ * @param {import("node:http").ServerResponse} response
+ * @param {number} status
+ * @param {string} body
+ * @param {Record<string, string>} [headers]
+ * @returns {void}
+ */
 const respond = (response, status, body, headers = {}) => {
   response.writeHead(status, {
     "content-type": "text/html; charset=utf-8",
@@ -99,6 +106,24 @@ await Promise.all([once(html, "listening"), once(assets, "listening")]);
 
 const decodePort = Schema.decodeUnknownSync(
   Schema.Struct({ port: Schema.Number })
+);
+
+const decodeStatus = Schema.decodeUnknownSync(Schema.NullOr(Schema.Number));
+
+const DoctorReport = Schema.Struct({
+  checks: Schema.Array(
+    Schema.Struct({
+      detail: Schema.String,
+      fix: Schema.optional(Schema.String),
+      name: Schema.String,
+      state: Schema.String,
+    })
+  ),
+  verdict: Schema.String,
+});
+
+const decodeDoctor = Schema.decodeUnknownSync(
+  Schema.fromJsonString(DoctorReport)
 );
 
 /**
@@ -186,7 +211,7 @@ const runDoctor = async (args, options = {}) => {
 
   clearTimeout(timer);
 
-  return { status: closed[0], stderr, stdout };
+  return { status: decodeStatus(closed[0]), stderr, stdout };
 };
 
 const reset = () => {
@@ -222,16 +247,20 @@ try {
 
     assert.equal(result.status, 1, result.stdout);
 
-    const payload = JSON.parse(result.stdout);
+    const payload = decodeDoctor(result.stdout);
 
     const check = payload.checks.find(
       (entry) => entry.name === "preview-noindex"
     );
 
+    if (check === undefined) {
+      throw new Error("the doctor report has no preview-noindex check");
+    }
+
     assert.equal(payload.verdict, "failed");
     assert.equal(check.state, "fail");
     assert.match(check.detail, /noindex header missing/mu);
-    assert.match(check.fix, /site-base-path\.ts/u);
+    assert.match(check.fix ?? "", /site-base-path\.ts/u);
   });
 
   await test("a noindex live site fails", async () => {
