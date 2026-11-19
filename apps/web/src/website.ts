@@ -19,6 +19,7 @@ const previewWorker = {
 };
 
 const headers = siteAssetHeaders();
+
 const redirects = siteAssetRedirects();
 
 export class Website extends Cloudflare.Website.Foldkit<Website>()(

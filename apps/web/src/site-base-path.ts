@@ -67,6 +67,7 @@ export const siteAssetRedirects = (basePath: string = siteBasePath): string => {
   }
 
   const help = sitePath("/help", basePath);
+
   const rules = [basePath, `${basePath}/`].map(
     (source) => `${source} ${help} 302`
   );

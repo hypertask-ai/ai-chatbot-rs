@@ -70,6 +70,7 @@ describe("help site answers recorded from the old site", () => {
 
         for (const name of recorded.comparedHeaders) {
           const expected = row.headers[name] ?? null;
+
           const actual =
             name === "location"
               ? publishedPath(response.headers.get(name))
