@@ -1,6 +1,12 @@
 export { Flags, initialModel, Model } from "./model.js";
 
-export type { AppModel, TranscriptEntryValue, WidgetFlags } from "./model.js";
+export type {
+  AppModel,
+  MenuValue,
+  PastChatPickValue,
+  TranscriptEntryValue,
+  WidgetFlags,
+} from "./model.js";
 
 export { Message } from "./message.js";
 

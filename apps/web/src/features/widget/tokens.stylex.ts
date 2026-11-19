@@ -19,6 +19,8 @@ export const widget = stylex.defineVars({
   lightboxCloseHover: "rgba(255, 255, 255, 0.2)",
   lightboxScrim: "rgba(0, 0, 0, 0.9)",
   muted: "#a7a8ad",
+  newButtonBg: "#ffffff",
+  newButtonFg: "#000000",
   radiusBtn: "8px",
   radiusCard: "12px",
   radiusLg: "14px",

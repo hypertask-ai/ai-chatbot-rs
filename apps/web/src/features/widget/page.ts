@@ -12,6 +12,12 @@ import {
   answerRowShownAt,
   answerRowVisible,
 } from "../../widget/answer-actions.js";
+import {
+  sessionPreview,
+  sessionStamp,
+  sessionTime,
+} from "../../widget/chat-sessions.js";
+import type { ChatSessionValue } from "../../widget/chat-sessions.js";
 import { widgetCopy } from "../../widget/copy.js";
 import { emailCardCopy } from "../../widget/email-card.js";
 import { renderChatMarkdown } from "../../widget/markdown.js";
@@ -75,6 +81,71 @@ const suggestionChevron = (h: HtmlBuilder<AppMessage>): Html =>
     [h.path([h.D("m9 18 6-6-6-6")])]
   );
 
+const sessionChevron = (h: HtmlBuilder<AppMessage>): Html =>
+  h.svg(
+    [
+      h.ViewBox("0 0 24 24"),
+      h.Fill("none"),
+      h.Stroke("currentColor"),
+      h.StrokeWidth("2"),
+      h.Class(classes("session-arrow", styleClass(styles.sessionArrow))),
+    ],
+    [h.polyline([h.Points("9 18 15 12 9 6")])]
+  );
+
+const bubbleIcon = (h: HtmlBuilder<AppMessage>): Html =>
+  h.svg(
+    [
+      h.ViewBox("0 0 24 24"),
+      h.Fill("none"),
+      h.Stroke("currentColor"),
+      h.StrokeWidth("1.5"),
+      h.AriaHidden(true),
+      h.Class(styleClass(styles.menuEmptyIcon)),
+    ],
+    [
+      h.path([
+        h.D("M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"),
+      ]),
+    ]
+  );
+
+const plusIcon = (h: HtmlBuilder<AppMessage>): Html =>
+  h.svg(
+    [
+      h.ViewBox("0 0 24 24"),
+      h.Fill("none"),
+      h.Stroke("currentColor"),
+      h.StrokeWidth("2.5"),
+      h.AriaHidden(true),
+      h.Class(styleClass(styles.newConversationIcon)),
+    ],
+    [
+      h.line([h.X1("12"), h.Y1("5"), h.X2("12"), h.Y2("19")]),
+      h.line([h.X1("5"), h.Y1("12"), h.X2("19"), h.Y2("12")]),
+    ]
+  );
+
+const headerLabel = (model: AppModel): string => {
+  if (model.menu.kind !== "closed") {
+    return widgetCopy.menuTitle;
+  }
+
+  return model.readOnly ? widgetCopy.pastChatTitle : widgetCopy.headerTitle;
+};
+
+const newConversationView = (h: HtmlBuilder<AppMessage>): Html =>
+  h.button(
+    [
+      h.Id("newConvBtn"),
+      h.Type("button"),
+      h.Title(widgetCopy.newConversationLabel),
+      h.OnClick(Message.StartedNewConversation()),
+      h.Class(classes("new-conv-btn", styleClass(styles.newConversation))),
+    ],
+    [plusIcon(h), widgetCopy.newConversationText]
+  );
+
 const headerView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
   h.div(
     [h.Class(classes("header", styleClass(styles.header)))],
@@ -97,7 +168,7 @@ const headerView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
                     classes("header-title", styleClass(styles.headerTitle))
                   ),
                 ],
-                [widgetCopy.headerTitle]
+                [headerLabel(model)]
               ),
               h.div(
                 [
@@ -120,6 +191,7 @@ const headerView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
       h.div(
         [h.Class(classes("header-right", styleClass(styles.headerRight)))],
         [
+          ...(model.menu.kind === "closed" ? [] : [newConversationView(h)]),
           h.button(
             [
               h.Id("closeHeaderBtn"),
@@ -208,6 +280,22 @@ const suggestionsView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
       )
     )
   );
+
+const emptyMessagesView = (
+  model: AppModel,
+  h: HtmlBuilder<AppMessage>
+): readonly Html[] => {
+  if (model.pastChat) {
+    return [
+      h.div(
+        [h.Class(classes("welcome-msg", styleClass(styles.pastChatEmpty)))],
+        [widgetCopy.pastChatEmpty]
+      ),
+    ];
+  }
+
+  return [welcomeView(h), suggestionsView(model, h)];
+};
 
 const sourceLineView = (source: SourceLine, h: HtmlBuilder<AppMessage>): Html =>
   h.div(
@@ -327,7 +415,7 @@ const messagesView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html => {
     ],
     [
       ...(model.messages.length === 0
-        ? [welcomeView(h), suggestionsView(model, h)]
+        ? emptyMessagesView(model, h)
         : transcript),
       ...(Option.isSome(model.handoffEmailCard)
         ? [emailCardView(model, h)]
@@ -336,6 +424,107 @@ const messagesView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html => {
     ]
   );
 };
+
+const readOnlyBannerView = (h: HtmlBuilder<AppMessage>): Html =>
+  h.div(
+    [
+      h.Id("readonlyBanner"),
+      h.Class(classes("readonly-banner", styleClass(styles.readOnlyBanner))),
+    ],
+    [widgetCopy.readOnlyBanner]
+  );
+
+const menuEmptyView = (h: HtmlBuilder<AppMessage>): Html =>
+  h.div(
+    [
+      h.Id("menuSessionsEmpty"),
+      h.Class(
+        classes("menu-sessions-empty", styleClass(styles.menuSessionsEmpty))
+      ),
+    ],
+    [
+      bubbleIcon(h),
+      h.h3(
+        [h.Class(styleClass(styles.menuEmptyHeading))],
+        [widgetCopy.menuEmptyHeading]
+      ),
+      h.p([], [widgetCopy.menuEmptyBody]),
+    ]
+  );
+
+const menuRowView = (
+  model: AppModel,
+  session: ChatSessionValue,
+  h: HtmlBuilder<AppMessage>
+): Html => {
+  const current = session.id === model.conversationId;
+
+  return h.button(
+    [
+      h.Type("button"),
+      h.OnClick(
+        Message.PickedMenuSession({
+          sessionId: session.id,
+          status: session.status,
+        })
+      ),
+      h.Class(
+        classes(
+          "menu-session-item",
+          styleClass(
+            current ? styles.menuSessionItemCurrent : styles.menuSessionItem
+          ),
+          current ? "current" : undefined
+        )
+      ),
+    ],
+    [
+      h.div(
+        [
+          h.Class(
+            classes("session-content", styleClass(styles.sessionContent))
+          ),
+        ],
+        [
+          h.div(
+            [
+              h.Class(
+                classes("session-preview", styleClass(styles.sessionPreview))
+              ),
+            ],
+            [sessionPreview(session.last_message)]
+          ),
+          h.div(
+            [h.Class(classes("session-time", styleClass(styles.sessionTime)))],
+            [sessionTime(sessionStamp(session), model.menu.now)]
+          ),
+        ]
+      ),
+      sessionChevron(h),
+    ]
+  );
+};
+
+const menuView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
+  h.div(
+    [
+      h.Id("menuView"),
+      h.Class(classes("menu-view", styleClass(styles.menuView))),
+    ],
+    [
+      h.div(
+        [
+          h.Id("menuSessionsList"),
+          h.Class(
+            classes("menu-sessions-list", styleClass(styles.menuSessionsList))
+          ),
+        ],
+        model.menu.rows.length === 0
+          ? [menuEmptyView(h)]
+          : model.menu.rows.map((session) => menuRowView(model, session, h))
+      ),
+    ]
+  );
 
 const attachmentView = (dataUrl: string, h: HtmlBuilder<AppMessage>): Html =>
   h.div(
@@ -481,6 +670,19 @@ const inputView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
     ]
   );
 
+const chatView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
+  h.div(
+    [
+      h.Id("chatView"),
+      h.Class(classes("chat-view", styleClass(styles.chatView))),
+    ],
+    [
+      ...(model.readOnly ? [readOnlyBannerView(h)] : []),
+      messagesView(model, h),
+      ...(model.readOnly ? [] : [inputView(model, h)]),
+    ]
+  );
+
 const lightboxView = (dataUrl: string, h: HtmlBuilder<AppMessage>): Html =>
   h.div(
     [
@@ -513,8 +715,7 @@ export const pageView = (model: AppModel, h: HtmlBuilder<AppMessage>): Html =>
     [h.DataAttribute("widget-document", ""), h.Class(styleClass(styles.root))],
     [
       headerView(model, h),
-      messagesView(model, h),
-      inputView(model, h),
+      model.menu.kind === "closed" ? chatView(model, h) : menuView(model, h),
       ...(Option.isSome(model.lightbox)
         ? [lightboxView(model.lightbox.value, h)]
         : []),

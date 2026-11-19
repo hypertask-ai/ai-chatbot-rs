@@ -5,6 +5,10 @@ import {
   answerActionsCopy,
   answerRowAfter,
 } from "../../widget/answer-actions.js";
+import type {
+  ChatLineValue,
+  ChatSessionValue,
+} from "../../widget/chat-sessions.js";
 import { widgetCopy } from "../../widget/copy.js";
 import {
   emailCardCopy,
@@ -12,6 +16,7 @@ import {
   emailSentMessage,
 } from "../../widget/email-card.js";
 import { sourceLineFor } from "../../widget/source-line.js";
+import { starterSuggestions } from "../../widget/suggestions.js";
 import {
   OpenCitedArticle,
   PublishSession,
@@ -25,7 +30,7 @@ import {
 import { HostMessage, Message } from "./message.js";
 import type { AppMessage, HostMessageValue } from "./message.js";
 import { askOf } from "./model.js";
-import type { AppModel, TranscriptEntryValue } from "./model.js";
+import type { AppModel, MenuValue, TranscriptEntryValue } from "./model.js";
 
 type UpdateReturn = Update.Return<AppModel, AppMessage>;
 
@@ -216,6 +221,115 @@ const onViewportFit = (model: AppModel): UpdateReturn => ({
   model,
 });
 
+const openedMenu = (model: AppModel): UpdateReturn => ({
+  model: {
+    ...model,
+    menu: { ...model.menu, kind: "loading" },
+  },
+});
+
+const menuReadKind = (model: AppModel, kind: MenuValue["kind"]) =>
+  model.menu.kind === "closed" ? "closed" : kind;
+
+const loadedMenuSessions = (
+  model: AppModel,
+  sessions: readonly ChatSessionValue[],
+  nowMillis: number
+): UpdateReturn => ({
+  model: {
+    ...model,
+    menu: {
+      kind: menuReadKind(model, "ready"),
+      now: nowMillis,
+      rows: sessions,
+    },
+  },
+});
+
+const rejectedMenuSessions = (model: AppModel): UpdateReturn => ({
+  model: {
+    ...model,
+    menu: { ...model.menu, kind: menuReadKind(model, "failed") },
+  },
+});
+
+const pickedMenuSession = (
+  model: AppModel,
+  sessionId: string,
+  status: string
+): UpdateReturn => ({
+  model: {
+    ...model,
+    selection: Option.some({ sessionId, status }),
+  },
+});
+
+const loadedPastChat = (
+  model: AppModel,
+  messages: readonly ChatLineValue[]
+): UpdateReturn => {
+  if (Option.isNone(model.selection)) {
+    return { model };
+  }
+
+  const { sessionId, status } = model.selection.value;
+  const isCurrent = model.conversationId === sessionId;
+  const resuming = !isCurrent && status !== "closed";
+  const conversationId = resuming ? sessionId : model.conversationId;
+
+  return {
+    commands: [
+      ...(resuming
+        ? [
+            StoreSession({
+              conversationId,
+              visitorId: model.visitorId,
+            }),
+          ]
+        : []),
+      ...(messages.length > 0 ? [ScrollToLatest()] : []),
+    ],
+    model: {
+      ...model,
+      answerRowAfter: Option.none(),
+      conversationId,
+      menu: { ...model.menu, kind: "closed" },
+      messages: messages.map((line) => ({
+        content: line.content,
+        imageUrl: Option.none(),
+        role: line.role,
+      })),
+      pastChat: true,
+      readOnly: status === "closed",
+      selection: Option.none(),
+      suggestionsHidden: model.suggestionsHidden || messages.length > 0,
+    },
+  };
+};
+
+const startedNewConversation = (model: AppModel): UpdateReturn => ({
+  commands: [
+    StoreSession({
+      conversationId: "",
+      visitorId: model.visitorId,
+    }),
+  ],
+  model: {
+    ...model,
+    answerRowAfter: Option.none(),
+    attachment: Option.none(),
+    conversationId: "",
+    menu: { ...model.menu, kind: "closed" },
+    messages: [],
+    pastChat: false,
+    pendingQuestion: Option.none(),
+    readOnly: false,
+    selection: Option.none(),
+    suggestions: [...starterSuggestions],
+    suggestionsHidden: false,
+  },
+});
+
 const hostUpdate = (
   model: AppModel,
   host: HostMessageValue,
@@ -367,6 +481,9 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
           };
         },
       }),
+    LoadedMenuSessions: ({ now, sessions }) =>
+      loadedMenuSessions(model, sessions, now),
+    LoadedPastChat: ({ messages }) => loadedPastChat(model, messages),
     LoadedSession: ({ conversationId, sheet, visitorId }) => {
       const next = {
         ...model,
@@ -393,6 +510,9 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
     OpenedLightbox: ({ dataUrl }) => ({
       model: { ...model, lightbox: Option.some(dataUrl) },
     }),
+    OpenedMenu: () => openedMenu(model),
+    PickedMenuSession: ({ sessionId, status }) =>
+      pickedMenuSession(model, sessionId, status),
     PickedSuggestion: ({ text }) => submit({ ...model, input: text }, text),
     ReceivedAnswer: ({ answer, sources }) => {
       if (answer.trim() === "") {
@@ -432,9 +552,11 @@ export const update = (model: AppModel, message: AppMessage): UpdateReturn =>
         : hostUpdate(model, host.value, trustedParent, sameOrigin);
     },
     RejectedAttachment: () => appendBot(model, widgetCopy.attachmentRejected),
+    RejectedMenuSessions: () => rejectedMenuSessions(model),
     RemovedAttachment: () => ({
       model: { ...model, attachment: Option.none() },
     }),
+    StartedNewConversation: () => startedNewConversation(model),
     Submitted: () => submit(model, model.input),
     SubmittedHandoffEmail: () =>
       Option.match(model.handoffEmailCard, {

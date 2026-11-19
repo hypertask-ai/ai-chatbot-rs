@@ -2,6 +2,7 @@ import { Option, Schema } from "effect";
 
 import { VisitorQuestionSchema } from "../../widget/answer-seam.js";
 import type { VisitorQuestion } from "../../widget/answer-seam.js";
+import { ChatSession } from "../../widget/chat-sessions.js";
 import { starterSuggestions } from "../../widget/suggestions.js";
 
 export const SourceLineSchema = Schema.Struct({
@@ -42,6 +43,21 @@ export const HandoffEmailRequestSchema = Schema.Struct({
 
 export type HandoffEmailRequest = typeof HandoffEmailRequestSchema.Type;
 
+export const Menu = Schema.Struct({
+  kind: Schema.Literals(["closed", "failed", "loading", "ready"]),
+  now: Schema.Finite,
+  rows: Schema.Array(ChatSession),
+});
+
+export type MenuValue = typeof Menu.Type;
+
+export const PastChatPick = Schema.Struct({
+  sessionId: Schema.String,
+  status: Schema.String,
+});
+
+export type PastChatPickValue = typeof PastChatPick.Type;
+
 export const Model = Schema.Struct({
   answerRowAfter: Schema.Option(Schema.Number),
   attachment: Schema.Option(Schema.String),
@@ -51,13 +67,17 @@ export const Model = Schema.Struct({
   handoffEmailError: Schema.Option(Schema.String),
   input: Schema.String,
   lightbox: Schema.Option(Schema.String),
+  menu: Menu,
   messages: Schema.Array(TranscriptEntry),
   onHelpPage: Schema.Boolean,
   pageTitle: Schema.String,
   pageUrl: Schema.String,
+  pastChat: Schema.Boolean,
   pendingHandoffEmail: Schema.Option(HandoffEmailRequestSchema),
   pendingQuestion: Schema.Option(VisitorQuestionSchema),
   pinned: Schema.Boolean,
+  readOnly: Schema.Boolean,
+  selection: Schema.Option(PastChatPick),
   sheet: Schema.Boolean,
   suggestions: Schema.Array(Schema.String),
   suggestionsHidden: Schema.Boolean,
@@ -76,13 +96,17 @@ export const initialModel = (flags: WidgetFlags): AppModel => ({
   handoffEmailError: Option.none(),
   input: "",
   lightbox: Option.none(),
+  menu: { kind: "closed", now: 0, rows: [] },
   messages: [],
   onHelpPage: flags.onHelpPage,
   pageTitle: flags.pageTitle,
   pageUrl: flags.pageUrl,
+  pastChat: false,
   pendingHandoffEmail: Option.none(),
   pendingQuestion: Option.none(),
   pinned: flags.pinned,
+  readOnly: false,
+  selection: Option.none(),
   sheet: false,
   suggestions: [...starterSuggestions],
   suggestionsHidden: false,
