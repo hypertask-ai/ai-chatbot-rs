@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { collectDiff } from "./diff.mjs";
+import { checkoutEnv, collectDiff } from "./diff.mjs";
 
 /**
  * @param {string} cwd
@@ -19,7 +19,7 @@ import { collectDiff } from "./diff.mjs";
  * @returns {string}
  */
 const git = (cwd, args) =>
-  execFileSync("git", args, { cwd, encoding: "utf-8" });
+  execFileSync("git", args, { cwd, encoding: "utf-8", env: checkoutEnv() });
 
 /**
  * @returns {string}

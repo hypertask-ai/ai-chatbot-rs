@@ -1,9 +1,10 @@
 import { Runtime } from "foldkit";
 
-import { view } from "../features/home/index.js";
+import { view } from "../features/help/index.js";
 import { view as widgetView } from "../features/widget/index.js";
+import { sitePath } from "../site-base-path.js";
 import { widgetChatPath } from "../widget/embed.js";
-import { Message, initialModel, Model, update } from "./home/index.js";
+import { Flags, Message, Model, initialModel, update } from "./help/index.js";
 import { LoadSession } from "./widget/command.js";
 import {
   Flags as WidgetFlags,
@@ -14,16 +15,18 @@ import {
   update as updateWidget,
 } from "./widget/index.js";
 
+import "../features/help/help.css";
 import "../features/widget/widget.css";
 import "./site.css";
 
 const container = document.querySelector<HTMLElement>("#root");
 
 const siteApplication = Runtime.makeApplication({
+  Flags,
   Model,
   container,
   devTools: import.meta.env.DEV ? { Message } : false,
-  init: () => ({ model: initialModel }),
+  init: (flags) => ({ model: initialModel(flags) }),
   update,
   view,
 });
@@ -42,7 +45,7 @@ const widgetApplication = Runtime.makeApplication({
   view: widgetView,
 });
 
-if (new URL(window.location.href).pathname === widgetChatPath) {
+if (new URL(window.location.href).pathname === sitePath(widgetChatPath)) {
   Runtime.hydrate(widgetApplication);
 } else {
   Runtime.hydrate(siteApplication);

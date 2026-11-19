@@ -5,6 +5,7 @@ import {
   siteAssetHeaders,
   siteBasePath,
   siteNoindexValue,
+  sitePath,
   siteRobotsMeta,
   stripBasePath,
 } from "../src/site-base-path.js";
@@ -51,6 +52,36 @@ describe("stripBasePath", () => {
     expect(stripBasePath("/help", "/ratstack")).toBeUndefined();
     expect(stripBasePath("/ratstacker", "/ratstack")).toBeUndefined();
     expect(stripBasePath("/ratstacker/help", "/ratstack")).toBeUndefined();
+  });
+});
+
+describe("sitePath", () => {
+  it("adds the base path to a root relative address", () => {
+    expect(sitePath("/help")).toBe("/ratstack/help");
+    expect(sitePath("/fonts/ibm-plex-sans-latin.woff2")).toBe(
+      "/ratstack/fonts/ibm-plex-sans-latin.woff2"
+    );
+  });
+
+  it("adds it once", () => {
+    expect(sitePath("/ratstack/help")).toBe("/ratstack/help");
+    expect(sitePath("/ratstack")).toBe("/ratstack");
+  });
+
+  it("leaves every address that is not root relative alone", () => {
+    for (const path of [
+      "https://hypertask.ai/pricing/",
+      "//cdn.usefathom.com/script.js",
+      "#all",
+      "?category=Agents#all",
+      "back",
+    ]) {
+      expect(sitePath(path)).toBe(path);
+    }
+  });
+
+  it("is the identity when the base path is empty", () => {
+    expect(sitePath("/help", "")).toBe("/help");
   });
 });
 

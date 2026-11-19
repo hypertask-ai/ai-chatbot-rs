@@ -160,7 +160,7 @@ const markupEnd = (value: string, start: number): number => {
   return isTagNameStart(next) ? tagEnd(value, start + 1) : -1;
 };
 
-const withoutTags = (value: string): string => {
+const withoutTags = (value: string, separator = ""): string => {
   const parts: string[] = [];
   let index = 0;
 
@@ -172,6 +172,11 @@ const withoutTags = (value: string): string => {
 
       if (end > index) {
         index = end;
+
+        if (separator !== "") {
+          parts.push(separator);
+        }
+
         continue;
       }
     }
@@ -201,8 +206,87 @@ const withoutTagOpenings = (value: string): string => {
   return parts.toReversed().join("");
 };
 
-export const plainTextOf = (value: string): string =>
-  withoutTagOpenings(withoutTags(value));
+const tagNameAt = (value: string, start: number): string => {
+  let index = start;
+
+  while (
+    index < value.length &&
+    isTagNameCharacter(characterAt(value, index))
+  ) {
+    index += 1;
+  }
+
+  return value.slice(start, index).toLowerCase();
+};
+
+const closingTagEnd = (
+  value: string,
+  lower: string,
+  start: number,
+  name: string
+): number => {
+  const close = `</${name}`;
+  let index = start;
+
+  while (index < value.length) {
+    const at = lower.indexOf(close, index);
+
+    if (at === -1) {
+      return value.length;
+    }
+
+    const nameEnd = at + close.length;
+    const end = markupEnd(value, at);
+
+    if (end > at && !isTagNameCharacter(characterAt(value, nameEnd))) {
+      return end;
+    }
+
+    index = nameEnd;
+  }
+
+  return value.length;
+};
+
+const isSelfClosing = (value: string, start: number, end: number): boolean =>
+  value.slice(start, end).trimEnd().endsWith("/>");
+
+export const withoutElements = (
+  value: string,
+  names: readonly string[]
+): string => {
+  if (names.length === 0) {
+    return value;
+  }
+
+  const wanted = new Set(names.map((name) => name.toLowerCase()));
+  const lower = value.toLowerCase();
+  const parts: string[] = [];
+  let index = 0;
+
+  while (index < value.length) {
+    if (characterAt(value, index) === "<") {
+      const end = markupEnd(value, index);
+      const name = tagNameAt(value, index + 1);
+
+      if (end > index && wanted.has(name)) {
+        index = isSelfClosing(value, index, end)
+          ? end
+          : closingTagEnd(value, lower, end, name);
+        parts.push(" ");
+        continue;
+      }
+    }
+
+    parts.push(characterAt(value, index));
+    index += 1;
+  }
+
+  return parts.join("");
+};
+
+export const plainTextOf = (value: string, separator = ""): string =>
+  withoutTagOpenings(withoutTags(value, separator));
 
 const normalizeDocPath = (path: string): string =>
   path.replaceAll("\\", "/").replace(/^\.\//u, "");

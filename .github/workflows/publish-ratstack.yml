@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: read
 
 concurrency:
@@ -25,7 +26,6 @@ jobs:
       SMOKE_ORIGIN: https://help.hypertask.ai
       SMOKE_BASE_PATH: /ratstack
       SMOKE_DIST: apps/web/dist/client
-      SMOKE_STATE: ${{ runner.temp }}/ratstack-old-site.tsv
     steps:
       - name: Require the Cloudflare deploy secrets
         env:
@@ -59,6 +59,26 @@ jobs:
         run: pnpm turbo run check test build --concurrency=2
       - name: Record the old site before the deploy
         run: scripts/publish-smoke.sh record
+      - name: Install the browser for the release trace
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Record a browser trace of the feature map
+        env:
+          TRACE_COMMIT: ${{ github.sha }}
+          TRACE_OUT: ${{ runner.temp }}/help-site-trace
+        run: node scripts/publish-trace.ts
+      - name: Stop the release when this commit has no trace
+        env:
+          TRACE_COMMIT: ${{ github.sha }}
+          TRACE_OUT: ${{ runner.temp }}/help-site-trace
+        run: node scripts/publish-trace-gate.ts
+      - name: Upload the trace for this commit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: help-site-trace-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/help-site-trace/help-site-trace-${{ github.sha }}.zip
+            ${{ runner.temp }}/help-site-trace/help-site-trace-${{ github.sha }}.json
+          if-no-files-found: error
       - name: Deploy the preview Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

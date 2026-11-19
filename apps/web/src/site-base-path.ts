@@ -29,6 +29,18 @@ export const stripBasePath = (
     : undefined;
 };
 
+export const sitePath = (
+  path: string,
+  basePath: string = siteBasePath
+): string =>
+  basePath === "" ||
+  !path.startsWith("/") ||
+  path.startsWith("//") ||
+  path === basePath ||
+  path.startsWith(`${basePath}/`)
+    ? path
+    : `${basePath}${path}`;
+
 export const siteNoindexValue = (
   basePath: string = siteBasePath
 ): string | undefined => (basePath === "" ? undefined : "noindex");
