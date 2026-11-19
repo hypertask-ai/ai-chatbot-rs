@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { plainTextOf } from "@rat-stack/core";
 import { HelpArticlePane } from "@rat-stack/core/contracts";
 import { Effect, Option, Schema } from "effect";
 import { renderToString, toResponse } from "foldkit/experimental/server";
@@ -65,7 +66,6 @@ const patterns = {
   body: /<body[^>]*>/u,
   heading: /<h(?<rank>[1-6])\b[^>]*>(?<heading>[\s\S]*?)<\/h\k<rank>>/gu,
   space: /\s+/gu,
-  tag: /<[^>]*>/gu,
 };
 
 const entities = [
@@ -78,7 +78,7 @@ const entities = [
 ] as const;
 
 const textOf = (html: string): string => {
-  let decoded = html.replaceAll(patterns.tag, " ");
+  let decoded = plainTextOf(html, " ");
 
   for (const [entity, character] of entities) {
     decoded = decoded.replaceAll(entity, character);
