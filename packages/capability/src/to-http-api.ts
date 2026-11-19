@@ -331,20 +331,20 @@ const routedEndpoint = (
     Object.entries(fields).filter(([name]) => names.includes(name))
   );
 
-  const input =
-    names.length === 0
-      ? contract.input
-      : Schema.Struct(
-          Object.fromEntries(
-            Object.entries(fields).filter(([name]) => !names.includes(name))
-          )
-        );
+  const bodyFields = Object.fromEntries(
+    Object.entries(fields).filter(([name]) => !names.includes(name))
+  );
+
+  const input = names.length === 0 ? contract.input : Schema.Struct(bodyFields);
+
+  const bodySchema =
+    Object.keys(bodyFields).length > 0 ? { payload: input } : {};
 
   return route(http.method)(contract.name, http.path, {
     error,
     params: names.length === 0 ? undefined : Schema.Struct(params),
     success: contract.output,
-    ...(BODY_METHODS.has(http.method) ? { payload: input } : { query: input }),
+    ...(BODY_METHODS.has(http.method) ? bodySchema : { query: input }),
   });
 };
 
@@ -598,43 +598,43 @@ export const toHttpApi = <
     }
 
     const paths = Object.fromEntries(
-      Object.entries(document.paths).map(([path, pathItem]) => {
-        const operation = pathItem.post;
-        const requestBody = operation?.requestBody;
+      Object.entries(document.paths).map(
+        ([path, pathItem]): [string, OpenApi.OpenAPISpecPathItem] => {
+          const operation = pathItem.post;
 
-        const inputSchema =
-          operation === undefined
-            ? undefined
-            : emptyInputsByOperationId.get(operation.operationId);
+          const inputSchema =
+            operation === undefined
+              ? undefined
+              : emptyInputsByOperationId.get(operation.operationId);
 
-        if (
-          operation === undefined ||
-          requestBody === undefined ||
-          inputSchema === undefined
-        ) {
-          return [path, pathItem];
-        }
+          if (operation === undefined || inputSchema === undefined) {
+            return [path, pathItem];
+          }
 
-        const content = Object.fromEntries(
-          Object.entries(requestBody.content).map(
-            ([contentType, mediaType]) => [
-              contentType,
-              { ...mediaType, schema: inputSchema },
-            ]
-          )
-        );
+          const content: OpenApi.OpenApiSpecContent =
+            operation.requestBody === undefined
+              ? { "application/json": { schema: inputSchema } }
+              : Object.fromEntries(
+                  Object.entries(operation.requestBody.content).map(
+                    ([contentType, mediaType]) => [
+                      contentType,
+                      { ...mediaType, schema: inputSchema },
+                    ]
+                  )
+                );
 
-        return [
-          path,
-          {
-            ...pathItem,
-            post: {
-              ...operation,
-              requestBody: { ...requestBody, content },
+          return [
+            path,
+            {
+              ...pathItem,
+              post: {
+                ...operation,
+                requestBody: { content, required: true },
+              },
             },
-          },
-        ];
-      })
+          ];
+        }
+      )
     );
 
     return { ...document, paths };

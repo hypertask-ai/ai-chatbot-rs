@@ -3,6 +3,7 @@ import { Effect, Schema } from "effect";
 import { handleRequest } from "foldkit/experimental/server";
 
 import { renderPage } from "../src/entry.server.js";
+import { sitePath, stripBasePath } from "../src/site-base-path.js";
 import recordedAnswers from "./fixtures/help-site-answers.json";
 
 const RecordedRow = Schema.Struct({
@@ -36,6 +37,9 @@ const varyFields = (value: string | null): readonly string[] =>
     .map((field) => field.trim().toLowerCase())
     .filter((field) => field !== "");
 
+const publishedPath = (value: string | null): string | null =>
+  value === null ? null : (stripBasePath(value) ?? value);
+
 const requestFor = (row: typeof RecordedRow.Type): Request => {
   const headers = new Headers();
 
@@ -47,7 +51,10 @@ const requestFor = (row: typeof RecordedRow.Type): Request => {
     headers.set("access-control-request-method", row.requestMethod);
   }
 
-  return new Request(`${site}${row.path}`, { headers, method: row.method });
+  return new Request(`${site}${sitePath(row.path)}`, {
+    headers,
+    method: row.method,
+  });
 };
 
 const answer = (request: Request): Promise<Response> =>
@@ -63,7 +70,10 @@ describe("help site answers recorded from the old site", () => {
 
         for (const name of recorded.comparedHeaders) {
           const expected = row.headers[name] ?? null;
-          const actual = response.headers.get(name);
+          const actual =
+            name === "location"
+              ? publishedPath(response.headers.get(name))
+              : response.headers.get(name);
 
           if (name === "vary") {
             const kept = varyFields(expected);
@@ -99,7 +109,7 @@ describe("help site answers recorded from the old site", () => {
     Effect.gen(function* preflightBeforeRouting() {
       const response = yield* Effect.promise(() =>
         answer(
-          new Request(`${site}/nope`, {
+          new Request(`${site}${sitePath("/nope")}`, {
             headers: {
               "access-control-request-method": "GET",
               origin: "https://hypertask.ai",
@@ -120,7 +130,7 @@ describe("help site answers recorded from the old site", () => {
     Effect.gen(function* refusedOrigin() {
       const response = yield* Effect.promise(() =>
         answer(
-          new Request(`${site}/`, {
+          new Request(`${site}${sitePath("/en")}`, {
             headers: { origin: "https://docs.hypertask.ai.evil.example" },
           })
         )
@@ -137,22 +147,13 @@ describe("help site answers recorded from the old site", () => {
       Effect.gen(function* pageHostNegotiation() {
         const health = yield* Effect.promise(() =>
           answer(
-            new Request(`${site}/health`, {
-              headers: { accept: "application/json" },
-            })
-          )
-        );
-
-        const root = yield* Effect.promise(() =>
-          answer(
-            new Request(`${site}/`, {
+            new Request(`${site}${sitePath("/health")}`, {
               headers: { accept: "application/json" },
             })
           )
         );
 
         expect(health.status).toBe(404);
-        expect(root.status).toBe(302);
       })
   );
 });

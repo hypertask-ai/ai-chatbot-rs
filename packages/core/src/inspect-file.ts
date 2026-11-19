@@ -1,10 +1,13 @@
 import { implement } from "@rat-stack/capability/implement";
 
+import { adminConversationCapabilities } from "./admin-conversations.js";
 import {
   listCafeNews,
   listCafeProjects,
   peopleCapabilities,
 } from "./cafe-directory.js";
+import { leaveHandoffEmail, requestHandoff } from "./chat-handoff.js";
+import { saveVisitorProfile } from "./chat-profile.js";
 import { inspectFileContract } from "./contracts.js";
 import { flagCapabilities } from "./flag-capabilities.js";
 import { health } from "./health.js";
@@ -23,6 +26,7 @@ export const capabilities = [
   health,
   ...flagCapabilities,
   joinInterest,
+  leaveHandoffEmail,
   listPrompts,
   getPrompt,
   listCafeNews,
@@ -30,4 +34,7 @@ export const capabilities = [
   ...peopleCapabilities,
   ...helpArticleCapabilities,
   ...helpRetrievalCapabilities,
+  requestHandoff,
+  saveVisitorProfile,
+  ...adminConversationCapabilities,
 ] as const;

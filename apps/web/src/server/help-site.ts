@@ -5,6 +5,7 @@ import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
+import { sitePath, stripBasePath } from "../site-base-path.js";
 import { withCors } from "./embed-cors.js";
 
 const healthApi = toHttpApi("help.hypertask.ai", [health]);
@@ -20,14 +21,22 @@ const healthAnswers = HttpRouter.toWebHandler(healthRoutes, {
 
 const helpCenter = "/help";
 
-const redirectsFrom = (pathname: string): boolean =>
-  pathname === "/" || pathname === "/en" || pathname.startsWith("/en/");
+const healthPath = "/health";
+
+const routeOf = (pathname: string): string =>
+  stripBasePath(pathname) ?? pathname;
+
+const redirectsFrom = (route: string): boolean =>
+  route === "/en" || route.startsWith("/en/");
 
 const answerHealth = Effect.fn("helpSite.health")(function* answerHealth(
   request: Request
 ) {
+  const routed = new URL(request.url);
+  routed.pathname = healthPath;
+
   const answered = yield* Effect.promise(() =>
-    healthAnswers.handler(new Request(request.url, { method: "GET" }))
+    healthAnswers.handler(new Request(routed, { method: "GET" }))
   );
 
   return withCors(request, answered);
@@ -39,23 +48,27 @@ const answerPreflight = (request: Request): Response =>
 const answerRedirect = (request: Request): Response =>
   withCors(
     request,
-    new Response(null, { headers: { location: helpCenter }, status: 302 })
+    new Response(null, {
+      headers: { location: sitePath(helpCenter) },
+      status: 302,
+    })
   );
 
 export const answerHelpSite = Effect.fn("helpSite.answer")(
   function* answerHelpSite(request: Request) {
     const { pathname } = new URL(request.url);
+    const route = routeOf(pathname);
     const answersPage = request.method === "GET" || request.method === "HEAD";
 
     if (request.method === "OPTIONS") {
       return answerPreflight(request);
     }
 
-    if (answersPage && pathname === "/health") {
+    if (answersPage && route === healthPath) {
       return yield* answerHealth(request);
     }
 
-    if (answersPage && redirectsFrom(pathname)) {
+    if (answersPage && redirectsFrom(route)) {
       return answerRedirect(request);
     }
 

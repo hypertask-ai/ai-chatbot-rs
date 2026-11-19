@@ -1,6 +1,6 @@
 # Agent instructions
 
-For a non-trivial task, start with `skills/rat-stack-mode`.
+For a non-trivial task, start with `skills/rat-stack-mode`. To prove a change to the help site looks, reads and behaves like the old one, use the verification skill at [`.claude/skills/verify-ai-chatbot-rs`](./.claude/skills/verify-ai-chatbot-rs/SKILL.md).
 
 This file is the repo law for agents and contributors. It holds commands, validation rules, architecture constraints, and project stop rules. Read `VISION.md` for intent before planning substantial work. `VISION.md` does not override this file. Pi sessions also load `.pi/APPEND_SYSTEM.md` and the repo-local extension `.pi/extensions/project.ts`.
 
@@ -41,6 +41,12 @@ This is the template's package inventory. The workspace keeps the `@rat-stack/` 
 - **`@rat-stack/flags`**:
   - Path: `packages/flags`
   - Role: Typed flags cartridge with the template's default Durable Object ledger (`src/cloudflare-ledger.ts`). Kept as the Durable Object example the live chat room follows. Not wired into the Stack yet
+- **`@rat-stack/haiku`**:
+  - Path: `packages/haiku`
+  - Role: Anthropic Messages adapter behind the `AnswerModel` port: one Haiku call over the Cloudflare AI Gateway and the stream reader for its answer. Takes `ANTHROPIC_API_KEY` through `AnthropicConfig`. Not wired into the Stack yet
+- **`@rat-stack/telegram`**:
+  - Path: `packages/telegram`
+  - Role: Help Desk bot adapter behind the `CustomerAlerts` port. Sends the new conversation, handoff request and new customer message alerts with the old text and the admin chat link, skips eval traffic before any request, and reads `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` through `TelegramConfig`. Not wired into the Stack yet
 - **`@rat-stack/web`**:
   - Path: `apps/web`
   - Role: Foldkit site on Vite, deployed through Alchemy's `Cloudflare.Website.Foldkit` as `Website` (`apps/web/src/website.ts`). One home shell until the help pages move. Include it with `const website = yield* Website;`
@@ -105,6 +111,18 @@ Run `pnpm fix` only when you intend to rewrite files. Finish with `pnpm turbo ru
 Nothing is built, tested or deployed on our servers. GitHub Actions runs the gate on every pull request and every merge, and a deploy runs from GitHub on a GitHub-hosted runner. Never deploy from this server or from a laptop.
 
 The old Worker keeps serving help.hypertask.ai until HTPR-9178 switches the address. Deploying to the Hypertask Cloudflare account needs Valentin's approval first, every time, and the step that owns deploy (HTPR-9176) writes the procedure. `skills/ship/references/project.md` still describes the template's deploy driver, which this project does not carry, so read it for the approval rules and not for a command to run.
+
+The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `main` on every push, and by hand through workflow dispatch, to https://help.hypertask.ai/ratstack. It uses the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets of the `ratstack-publish` GitHub environment through Alchemy's CI credential path, so the runner holds no profile, and only `main` may use that environment, so a branch push can never read them. It names one Worker, `help-hypertask-ratstack`, and one route, `help.hypertask.ai/ratstack*`. It never names the old project and declares no database, bucket, key store or DNS record.
+
+## Publish rules
+
+| Rule | Enforced by |
+| --- | --- |
+| The preview answers under `${siteBasePath}` only, and every address the build emits stays inside it, from one value in `apps/web/src/site-base-path.ts`. | `apps/web/test/site-base-output.test.ts` walks every emitted HTML, CSS, JS and JSON file; `apps/web/test/site-base-path.test.ts` pins the value and the route pattern. |
+| Every response under the preview path says `X-Robots-Tag: noindex` and every page carries the robots meta tag, and both disappear when the base path becomes empty at the cutover. | `siteRobotsMeta` and `siteAssetHeaders` in `apps/web/src/site-base-path.ts`, tested in `apps/web/test/site-base-path.test.ts` and read by GET in the last step of `.github/workflows/publish-ratstack.yml`. |
+| A publish can only create or update the preview Worker, its one route and its own Alchemy state store. | `apps/infra/test/publish-scope.test.ts` compiles the published stack without a cloud call and requires exactly one resource, `Website`. |
+| The old site keeps answering exactly what it answered before the deploy. | The record and smoke steps of `.github/workflows/publish-ratstack.yml` compare https://help.hypertask.ai/ before and after the deploy. |
+| Every workflow file is valid, so GitHub starts every run instead of rejecting the file before its first job and listing the workflow by its path. | The `Lint every workflow file with actionlint` step in `.github/workflows/ci.yml` runs actionlint `1.7.7` over every file under `.github/workflows/`, with the release tarball's sha256 pinned in the step. |
 
 ## Release a package
 
@@ -217,6 +235,14 @@ Changes:
 - `no-comments/directive-reason` (`scripts/oxlint-plugin-no-comments.ts`) enforces the reason: every `oxlint-disable*` or `eslint-disable*` comment without text after `--` fails lint.
 - Hot pink is the only accent. `--accent` (#ff1493) marks borders, rules and focus rings; `--accent-text` (#c8006e, 5.7:1 on white) is the only pink text. Use it for at most one thing per screen, plus focus. News chrome uses no pink. The allowed selectors cover `:focus-visible` and copy controls; links, headings, tables and tier cells never use it. `apps/site/test/accent.test.ts` holds the allowed selectors.
 - Pins stay exact. A vendored dependency carries a matching `minimumReleaseAgeExclude` entry and a removal rule in `vendor/README.md`.
+
+### One owner per rule
+
+A rule with a single owner names that owner and the file that enforces it. A new case joins the owner instead of growing a second copy.
+
+| Rule | One owner | Enforced by |
+| --- | --- | --- |
+| Strip HTML tags with the tokenizer, never with a regex. A regex misses upper case tags such as `<SCRIPT>`. | `plainTextOf` and `withoutElements` in `packages/core/src/help-article-html.ts` | `packages/core/test/tag-stripping-owner.test.ts` |
 
 ## Architecture
 

@@ -2,7 +2,11 @@ export { joinInterest, JoinInterest } from "./join-interest.js";
 
 export { AppConfig } from "./app-config.js";
 
-export { ConfigService } from "./config-service.js";
+export {
+  ConfigService,
+  type ConfigValues,
+  type ServiceClass,
+} from "./config-service.js";
 
 export { FileInspector } from "./file-inspector.js";
 
@@ -36,6 +40,10 @@ export {
   type HelpArticleSummaryValue,
   type HelpArticleValue,
 } from "./help-article-store.js";
+
+export { helpCategoryName } from "./help-category.js";
+
+export { helpArticlePane } from "./help-article-pane.js";
 
 export {
   expandedHelpQueryTerms,
@@ -87,11 +95,169 @@ export {
   formatHelpArticleContent,
   isHtmlHelpArticle,
   plainTextOf,
+  withoutElements,
 } from "./help-article-html.js";
+
+export {
+  Admin,
+  AccessLogin,
+  AdminPassword,
+  Unauthorized,
+  adminFactsOf,
+  adminFromRequest,
+  adminIdentity,
+  sameText,
+} from "./admin-access.js";
+
+export {
+  AdminConversationStore,
+  AdminConversationDetail,
+  AdminConversationRow,
+  AdminCustomerConversation,
+  AdminInboxItem,
+  AdminInboxRow,
+  AdminMessageRow,
+} from "./admin-conversation-store.js";
+
+export {
+  AdminClock,
+  adminConversationCapabilities,
+  adminConversationStateOf,
+  acceptAdminConversation,
+  archiveAdminConversation,
+  archiveAdminConversations,
+  archiveIdsOf,
+  closeAdminConversation,
+  inboxQueryOf,
+  lastSeenOf,
+  listAdminConversations,
+  listCustomerConversations,
+  readAdminConversation,
+  readAdminUsage,
+  replyToAdminConversation,
+  takeoverAdminConversation,
+  unarchiveAdminConversation,
+  unreadOf,
+} from "./admin-conversations.js";
+
+export {
+  AdminUsageReport,
+  HAIKU_PRICES_PER_MTOK,
+  UsageDayReport,
+  UsageDayRow,
+  UsageTotals,
+  buildUsageReport,
+  nanosToUsd,
+  usageCostNanos,
+  usageSince,
+  usageWindowDays,
+} from "./admin-usage.js";
+
+export {
+  NoConversationIds,
+  NoCustomerEmail,
+  acceptAdminConversationContract,
+  archiveAdminConversationContract,
+  archiveAdminConversationsContract,
+  closeAdminConversationContract,
+  listAdminConversationsContract,
+  listCustomerConversationsContract,
+  readAdminConversationContract,
+  readAdminUsageContract,
+  replyToAdminConversationContract,
+  takeoverAdminConversationContract,
+  unarchiveAdminConversationContract,
+} from "./admin-contracts.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
 
 export { health } from "./health.js";
+
+export {
+  HANDOFF_EMAIL_REPLY,
+  HANDOFF_EMAIL_USER_MESSAGE,
+  HANDOFF_REPLY,
+  chatHandoffEmailFor,
+  leaveHandoffEmail,
+  requestHandoff,
+  type ChatHandoffEmailRequest,
+} from "./chat-handoff.js";
+
+export { saveVisitorProfile } from "./chat-profile.js";
+
+export { ChatClock, type ChatClockValue } from "./chat-clock.js";
+
+export {
+  ChatConversationSchema,
+  ChatConversationSeedSchema,
+  ChatConversationStore,
+  ReturningCustomerSchema,
+  conversationStateOf,
+  memoryChatConversations,
+  type ChatConversation,
+  type ChatConversationOperations,
+  type ChatConversationSeed,
+  type ChatHandoffEmailChange,
+  type ChatHandoffEmailOutcome,
+  type ChatProfileChange,
+  type ReturningCustomer,
+} from "./chat-conversation-store.js";
+
+export {
+  ChatMessageRoleSchema,
+  ChatMessageSchema,
+  ChatMessageStore,
+  memoryChatMessages,
+  type ChatMessage,
+  type ChatMessageOperations,
+  type ChatMessageRole,
+} from "./chat-message-store.js";
+
+export {
+  ChatVisitorAuth,
+  VISITOR_SECRET_MAX_LENGTH,
+  hashVisitorSecret,
+  readBearerToken,
+  type ChatVisitorAuthValue,
+} from "./chat-visitor-auth.js";
+
+export {
+  CustomerAlerts,
+  HandoffAlertSchema,
+  NewConversationAlertSchema,
+  NewMessageAlertSchema,
+  raiseCustomerAlert,
+  type CustomerAlert,
+  type CustomerAlertOperations,
+  type HandoffAlert,
+  type NewConversationAlert,
+  type NewMessageAlert,
+} from "./customer-alerts.js";
+
+export {
+  CUSTOMER_ALERT_CHAT_URL,
+  CUSTOMER_ALERT_PREVIEW_LENGTH,
+  CUSTOMER_ALERT_UNKNOWN_VISITOR,
+  customerAlertChatUrl,
+  customerAlertMessagePreview,
+  customerAlertText,
+  customerAlertVisitorLabel,
+  escapeCustomerAlertHtml,
+} from "./customer-alert-text.js";
+
+export {
+  EVAL_HEADER,
+  EXCLUDE_EVAL_SQL,
+  isEvalConversation,
+  isVerifiedEvalRequest,
+} from "./eval-traffic.js";
+
+export {
+  HandoffEmail,
+  HandoffEmailMessageSchema,
+  type HandoffEmailMessage,
+  type HandoffEmailOperations,
+} from "./handoff-email.js";
 
 export { PromptLibrary, getPrompt, listPrompts } from "./prompts.js";
 
@@ -161,6 +327,30 @@ export {
   summarizeText,
   type FileStats,
 } from "./stats.js";
+
+export { PERSON_FOLLOWUP, SYSTEM_PROMPT } from "./answer-prompt.js";
+
+export {
+  buildAnswerRequest,
+  HISTORY_TURN_LIMIT,
+  MAX_OUTPUT_TOKENS,
+  pageContextBlock,
+  profileContextBlock,
+  textFromUserContent,
+  toAnswerUserContent,
+  trimConversation,
+  visitorAsksForPerson,
+  type AnswerPageContext,
+  type AnswerRequestInput,
+  type AnswerUserContent,
+  type ChatTurn,
+} from "./answer-request.js";
+
+export {
+  VisitorProfileRowSchema,
+  visitorProfileFromRow,
+  type VisitorProfileRow,
+} from "./visitor-profile-row.js";
 
 export {
   answerMachine,

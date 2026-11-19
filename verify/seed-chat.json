@@ -1,0 +1,23 @@
+{
+  "conversation": {
+    "has_hypertask_account": "none",
+    "id": "seed-past-chat",
+    "is_eval": 1,
+    "status": "closed",
+    "visitor_email": "sample.visitor@example.com",
+    "visitor_id": "seed-visitor",
+    "visitor_name": "Sample Visitor"
+  },
+  "messages": [
+    {
+      "content": "How do I filter chats to one board?",
+      "id": "seed-past-chat-user",
+      "role": "user"
+    },
+    {
+      "content": "Use the board filter in AI Chat. The recorded article is AI Chat Board Filter.",
+      "id": "seed-past-chat-bot",
+      "role": "bot"
+    }
+  ]
+}
