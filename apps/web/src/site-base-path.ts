@@ -41,10 +41,8 @@ export const sitePath = (
     ? path
     : `${basePath}${path}`;
 
-export const siteImagePath = (
-  name: string,
-  extension: string = "png"
-): string => sitePath(`/${name}.${extension}`);
+export const siteImagePath = (name: string, extension = "png"): string =>
+  sitePath(`/${name}.${extension}`);
 
 export const siteNoindexValue = (
   basePath: string = siteBasePath

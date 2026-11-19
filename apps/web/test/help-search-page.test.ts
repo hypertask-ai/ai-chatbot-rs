@@ -150,6 +150,7 @@ const cardsOf = (html: string): readonly Card[] =>
     const [tag] = match;
     const href = patterns.cardSlug.exec(tag)?.groups?.href;
     const category = patterns.cardCategory.exec(tag)?.groups?.category;
+
     const slug =
       href === undefined
         ? undefined
