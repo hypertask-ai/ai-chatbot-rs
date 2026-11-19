@@ -147,7 +147,7 @@ const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
   pathname: string
 ) {
   if (request.method !== "GET" && request.method !== "HEAD") {
-    return withCors(request, unsupportedMethod());
+    return Responded(withCors(request, unsupportedMethod()));
   }
 
   if (pathname === widgetScriptPath) {
