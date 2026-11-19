@@ -217,10 +217,10 @@ describe("chat widget past chats", () => {
       sceneExpect(role("button", { name: "Invite my team" })).toExist(),
       sceneExpect(placeholder("Ask a question…")).toExist(),
       Command.expectExact(
-        StoreSession({ conversationId: "", visitorId: "", visitorSecret: "" })
+        StoreSession({ conversationId: "", visitorId: ""})
       ),
       Command.resolve(
-        StoreSession({ conversationId: "", visitorId: "", visitorSecret: "" }),
+        StoreSession({ conversationId: "", visitorId: ""}),
         Message.CompletedStoreSession()
       ),
       Command.expectNone()

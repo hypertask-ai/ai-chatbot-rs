@@ -271,7 +271,6 @@ const loadedPastChat = (
             StoreSession({
               conversationId,
               visitorId: model.visitorId,
-              visitorSecret: model.visitorSecret,
             }),
           ]
         : []),
@@ -299,7 +298,6 @@ const startedNewConversation = (model: AppModel): UpdateReturn => ({
     StoreSession({
       conversationId: "",
       visitorId: model.visitorId,
-      visitorSecret: model.visitorSecret,
     }),
   ],
   model: {

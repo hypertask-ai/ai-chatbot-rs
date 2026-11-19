@@ -164,7 +164,6 @@ describe("chat widget menu state", () => {
         StoreSession({
           conversationId: "conv-2",
           visitorId: "visitor-1",
-          visitorSecret: "",
         }),
         ScrollToLatest()
       ),
@@ -172,7 +171,6 @@ describe("chat widget menu state", () => {
         StoreSession({
           conversationId: "conv-2",
           visitorId: "visitor-1",
-          visitorSecret: "",
         }),
         Message.CompletedStoreSession()
       ),
@@ -290,14 +288,12 @@ describe("chat widget menu state", () => {
         StoreSession({
           conversationId: "",
           visitorId: "visitor-1",
-          visitorSecret: "",
         })
       ),
       Command.resolve(
         StoreSession({
           conversationId: "",
           visitorId: "visitor-1",
-          visitorSecret: "",
         }),
         Message.CompletedStoreSession()
       ),
