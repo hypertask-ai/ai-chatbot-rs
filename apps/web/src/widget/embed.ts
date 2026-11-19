@@ -24,4 +24,7 @@ export const widgetScriptPath = "/widget/widget.js";
 
 export const widgetScriptAssetPath = `${siteBasePath}${widgetScriptPath}`;
 
+export const isWidgetChatPath = (pathname: string): boolean =>
+  pathname === sitePath(widgetChatPath);
+
 export const widgetScriptAssetHeaders = `${widgetScriptAssetPath}\n  Content-Type: ${widgetScriptHeaders["content-type"]}\n  Cache-Control: ${widgetScriptHeaders["cache-control"]}\n`;

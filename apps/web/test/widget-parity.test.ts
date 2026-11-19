@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 
 import { widgetCopy } from "../src/widget/copy.js";
 import {
+  isWidgetChatPath,
   widgetChatHeaders,
   widgetEmbedOrigins,
   widgetFrameAncestors,
@@ -137,6 +138,13 @@ describe("chat widget parity with the old help site", () => {
     expect(widgetChatHeaders["cache-control"]).toBe("no-store");
     expect(widgetScriptHeaders["content-type"]).toBe("application/javascript");
     expect(widgetScriptHeaders["cache-control"]).toBe("public, max-age=3600");
+  });
+
+  it("hydrates the panel only on the chat path, under the preview base path", () => {
+    expect(isWidgetChatPath("/ratstack/widget/chat")).toBe(true);
+    expect(isWidgetChatPath("/widget/chat")).toBe(false);
+    expect(isWidgetChatPath("/ratstack/widget/chat/")).toBe(false);
+    expect(isWidgetChatPath("/ratstack/widget/chat2")).toBe(false);
   });
 
   it("renders the same HTML for the same markdown as the old renderer", () => {

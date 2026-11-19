@@ -2,8 +2,7 @@ import { Runtime } from "foldkit";
 
 import { view } from "../features/help/index.js";
 import { view as widgetView } from "../features/widget/index.js";
-import { sitePath } from "../site-base-path.js";
-import { widgetChatPath } from "../widget/embed.js";
+import { isWidgetChatPath } from "../widget/embed.js";
 import { Flags, Message, Model, initialModel, update } from "./help/index.js";
 import { LoadSession } from "./widget/command.js";
 import {
@@ -45,7 +44,7 @@ const widgetApplication = Runtime.makeApplication({
   view: widgetView,
 });
 
-if (new URL(window.location.href).pathname === sitePath(widgetChatPath)) {
+if (isWidgetChatPath(new URL(window.location.href).pathname)) {
   Runtime.hydrate(widgetApplication);
 } else {
   Runtime.hydrate(siteApplication);
