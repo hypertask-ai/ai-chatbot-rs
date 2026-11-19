@@ -1,6 +1,6 @@
 # Agent instructions
 
-For a non-trivial task, start with `skills/rat-stack-mode`.
+For a non-trivial task, start with `skills/rat-stack-mode`. To prove a change to the help site looks, reads and behaves like the old one, use the verification skill at [`.claude/skills/verify-ai-chatbot-rs`](./.claude/skills/verify-ai-chatbot-rs/SKILL.md).
 
 This file is the repo law for agents and contributors. It holds commands, validation rules, architecture constraints, and project stop rules. Read `VISION.md` for intent before planning substantial work. `VISION.md` does not override this file. Pi sessions also load `.pi/APPEND_SYSTEM.md` and the repo-local extension `.pi/extensions/project.ts`.
 
