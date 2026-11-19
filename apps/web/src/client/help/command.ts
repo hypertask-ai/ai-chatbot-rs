@@ -2,6 +2,7 @@ import { Effect, Schema } from "effect";
 import { FetchHttpClient, HttpClient, HttpClientResponse } from "effect/http";
 import { Command } from "foldkit";
 
+import { sitePath } from "../../site-base-path.js";
 import { Message } from "./message.js";
 import { HelpArticlePage } from "./model.js";
 
@@ -24,7 +25,7 @@ const readAnswer = HttpClientResponse.schemaJson(HelpArticleAnswer);
 const readHelpArticlePane = (slug: string) =>
   Effect.gen(function* pane() {
     const response = yield* HttpClient.get(
-      `${READER_PATH}${encodeURIComponent(slug)}`
+      sitePath(`${READER_PATH}${encodeURIComponent(slug)}`)
     );
 
     const answer = yield* readAnswer(response);

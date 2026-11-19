@@ -22,6 +22,7 @@ import {
   HelpArticlePane,
   HelpArticleSummary,
 } from "./help-article.js";
+import { HelpRetrievalAnswer } from "./help-search.js";
 import { NoPath } from "./no-path.js";
 import { FileStatsError, FileStatsSchema } from "./stats.js";
 import { UnknownPage } from "./unknown-page.js";
@@ -36,6 +37,18 @@ export {
   readFlagLedgerContract,
 } from "./flag-contracts.js";
 
+export {
+  HandoffAnswerSchema,
+  HandoffEmailAnswerSchema,
+  VisitorProfileAnswerSchema,
+  leaveHandoffEmailContract,
+  requestHandoffContract,
+  saveVisitorProfileContract,
+  type HandoffAnswer,
+  type HandoffEmailAnswer,
+  type VisitorProfileAnswer,
+} from "./chat-contracts.js";
+
 export { UnknownPrompt } from "./unknown-prompt.js";
 
 export {
@@ -47,6 +60,8 @@ export {
 } from "./help-article.js";
 
 export { HelpArticleNotFound } from "./help-article-not-found.js";
+
+export { HelpRetrievalAnswer, HelpRetrievalArticle } from "./help-search.js";
 
 export { UnknownPerson } from "./unknown-person.js";
 
@@ -355,6 +370,31 @@ export const readHelpArticlePaneContract = defineContract(
     output: HelpArticlePane,
   }
 );
+
+export const debugHelpRetrievalContract = defineContract("debugHelpRetrieval", {
+  annotations: { idempotent: true, readOnly: true },
+  description:
+    "Answer the articles the help chat retrieves for a question, in rank order",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/api/chat/debug-rag" },
+  input: Schema.Struct({ q: Schema.optional(Schema.String) }),
+  output: HelpRetrievalAnswer,
+});
+
+// oxlint-disable-next-line sort-keys -- The old worker sends status before service and the recorded answer compares the encoded body.
+export const HealthOutput = Schema.Struct({
+  status: Schema.Literals(["ok"]),
+  service: Schema.Literals(["ai-chatbot"]),
+});
+
+export const healthContract = defineContract("health", {
+  annotations: { idempotent: true, readOnly: true },
+  description: "Report that the help site worker is serving",
+  failure: Schema.Never,
+  http: { method: "GET", path: "/health" },
+  input: Schema.Struct({}),
+  output: HealthOutput,
+});
 
 export const PromptSlug = Schema.String.check(
   Schema.isPattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)

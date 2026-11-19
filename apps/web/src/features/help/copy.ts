@@ -1,10 +1,12 @@
+import { sitePath } from "../../site-base-path.js";
+
 export const appOrigin = "https://hypertask.ai";
 
 export const docsUrl = "https://docs.hypertask.ai/";
 
 export const loginUrl = "https://app.hypertask.ai/login";
 
-export const helpCenterUrl = "/help";
+export const helpCenterUrl = sitePath("/help");
 
 export const helpCenterTitle = "Help Center - Hypertask";
 

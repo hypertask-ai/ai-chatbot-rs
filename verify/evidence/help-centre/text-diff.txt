@@ -1,0 +1,7 @@
+missing from the preview:
+Get a signed webhook when a task changes in your team, with no agent, or wake an agent. Covers verification and working without a public URL.
+Manage your incoming notifications, Snooze, Important, and Decisions.
+
+added by the preview:
+Understand what wakes an agent, what Hypertask sends, how to verify it, and how to work without a public URL.
+Manage your incoming notifications, Snooze, and Important section.

@@ -9,6 +9,7 @@ import type {
   ReaderPhaseValue,
 } from "../../client/help/model.js";
 import { readerHidesLibrary } from "../../client/help/reader.js";
+import { sitePath } from "../../site-base-path.js";
 import { classes, styleClass } from "./class-names.js";
 import {
   allArticlesLabel,
@@ -47,7 +48,7 @@ type Builder = HtmlBuilder<AppMessage>;
 
 type HelpCenterPage = Extract<HelpPageValue, { readonly page: "home" }>;
 
-const glyphUrl = "/glyph-white.png";
+const glyphUrl = sitePath("/glyph-white.png");
 
 const topicHref = (title: string) =>
   `?category=${encodeURIComponent(title)}#all`;

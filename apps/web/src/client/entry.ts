@@ -1,6 +1,8 @@
 import { Runtime } from "foldkit";
 
 import { view } from "../features/help/index.js";
+import { view as widgetView } from "../features/widget/index.js";
+import { isWidgetChatPath } from "../widget/embed.js";
 import {
   Flags,
   Message,
@@ -9,14 +11,26 @@ import {
   subscriptions,
   update,
 } from "./help/index.js";
+import { LoadSession } from "./widget/command.js";
+import {
+  Flags as WidgetFlags,
+  Message as WidgetMessage,
+  Model as WidgetModel,
+  initialModel as initialWidgetModel,
+  subscriptions as widgetSubscriptions,
+  update as updateWidget,
+} from "./widget/index.js";
 
 import "../features/help/help.css";
+import "../features/widget/widget.css";
 import "./site.css";
 
-const application = Runtime.makeApplication({
+const container = document.querySelector<HTMLElement>("#root");
+
+const siteApplication = Runtime.makeApplication({
   Flags,
   Model,
-  container: document.querySelector("#root"),
+  container,
   devTools: import.meta.env.DEV ? { Message } : false,
   init: (flags) => ({ model: initialModel(flags) }),
   subscriptions,
@@ -24,4 +38,22 @@ const application = Runtime.makeApplication({
   view,
 });
 
-Runtime.hydrate(application);
+const widgetApplication = Runtime.makeApplication({
+  Flags: WidgetFlags,
+  Model: WidgetModel,
+  container,
+  devTools: import.meta.env.DEV ? { Message: WidgetMessage } : false,
+  init: (flags) => ({
+    commands: [LoadSession()],
+    model: initialWidgetModel(flags),
+  }),
+  subscriptions: widgetSubscriptions,
+  update: updateWidget,
+  view: widgetView,
+});
+
+if (isWidgetChatPath(new URL(window.location.href).pathname)) {
+  Runtime.hydrate(widgetApplication);
+} else {
+  Runtime.hydrate(siteApplication);
+}

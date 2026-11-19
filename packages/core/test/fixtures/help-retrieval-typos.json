@@ -1,0 +1,137 @@
+{
+  "source": "eval/retrieval-typos.jsonl on ai-chatbot master",
+  "rows": [
+    {
+      "id": "t01",
+      "question": "what are the limitations fo the freeplan",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Live miss on 2026-10-25. limitations is a heading; freeplan is one glued word."
+    },
+    {
+      "id": "t02",
+      "question": "pricng",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Typo of pricing."
+    },
+    {
+      "id": "t03",
+      "question": "frre plan",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Typo of free. plan is already an exact word."
+    },
+    {
+      "id": "t04",
+      "question": "freeplan",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Glued free+plan. Also stuffed into the pricing title today."
+    },
+    {
+      "id": "t05",
+      "question": "limitations",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Synonym of limits. The pricing article heading uses the word."
+    },
+    {
+      "id": "t06",
+      "question": "restrictions",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "People ask for restrictions; the plan page says limits."
+    },
+    {
+      "id": "t07",
+      "question": "seats",
+      "acceptable_slugs": ["pricing-plans", "docs-features-billing"],
+      "note": "Seat count lives on the pricing and billing articles."
+    },
+    {
+      "id": "t08",
+      "question": "team size",
+      "acceptable_slugs": ["pricing-plans", "docs-features-billing"],
+      "note": "Means how many seats or members, not the agent-team article."
+    },
+    {
+      "id": "t09",
+      "question": "intergrations",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Typo of integrations. Pro includes them; pricing says so."
+    },
+    {
+      "id": "t10",
+      "question": "slak",
+      "acceptable_slugs": ["docs-features-slack"],
+      "note": "Typo of Slack."
+    },
+    {
+      "id": "t11",
+      "question": "how many seats are on the pro plan",
+      "acceptable_slugs": ["pricing-plans", "docs-features-billing"],
+      "note": "Exact seat wording, kept so the typo pass does not drop a clean query."
+    },
+    {
+      "id": "t12",
+      "question": "conect to slak",
+      "acceptable_slugs": ["docs-features-slack"],
+      "note": "Both words misspelled."
+    },
+    {
+      "id": "t13",
+      "question": "magik link email never arrived",
+      "acceptable_slugs": [
+        "troubleshooting-email-login-magic-link",
+        "docs-getting-started-troubleshooting-login"
+      ],
+      "note": "Typo of magic link."
+    },
+    {
+      "id": "t14",
+      "question": "keybaord shortcts",
+      "acceptable_slugs": [
+        "keyboard-shortcuts",
+        "docs-features-keyboard-shortcuts"
+      ],
+      "note": "Transposition plus a missing letter."
+    },
+    {
+      "id": "t15",
+      "question": "custum feilds on a task",
+      "acceptable_slugs": ["docs-features-custom-fields"],
+      "note": "Two typos. task alone matches almost every article."
+    },
+    {
+      "id": "t16",
+      "question": "tiem trackng",
+      "acceptable_slugs": ["docs-features-time-tracking"],
+      "note": "Transposition of time, missing letter in tracking."
+    },
+    {
+      "id": "t17",
+      "question": "desktpo app for windows",
+      "acceptable_slugs": [
+        "docs-getting-started-apps",
+        "docs-features-desktop"
+      ],
+      "note": "Typo of desktop. The desktop page now lives at docs-getting-started-apps."
+    },
+    {
+      "id": "t18",
+      "question": "webhoook when an agent is assigned",
+      "acceptable_slugs": ["docs-mcp-agent-webhooks"],
+      "note": "Extra letter in webhook."
+    },
+    {
+      "id": "t19",
+      "question": "kanban borad",
+      "acceptable_slugs": [
+        "how-to-create-a-kanban-board-in-hypertasks",
+        "getting-started-with-hypertasks-learn-board-basics"
+      ],
+      "note": "Transposition of board."
+    },
+    {
+      "id": "t20",
+      "question": "what are the restrctions of the free tier",
+      "acceptable_slugs": ["pricing-plans"],
+      "note": "Typo of restrictions plus free tier, which was stuffed into the pricing article."
+    }
+  ]
+}

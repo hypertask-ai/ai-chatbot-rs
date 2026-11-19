@@ -1,11 +1,16 @@
 import { Option } from "effect";
 
+import { stripBasePath } from "../../site-base-path.js";
+
 export interface HelpArticleLink {
   readonly href: string | null;
   readonly target: string | null;
 }
 
 const ARTICLE_PATH = /^\/help\/(?<slug>[^/]+)\/?$/u;
+
+const routeOfPathname = (pathname: string): string =>
+  stripBasePath(pathname) ?? pathname;
 
 const parsedUrl = (href: string, origin: string): Option.Option<URL> => {
   try {
@@ -33,7 +38,7 @@ export const helpArticleSlugOf = (
         url.origin === origin
           ? Option.flatMap(
               Option.fromUndefinedOr(
-                ARTICLE_PATH.exec(url.pathname)?.groups?.slug
+                ARTICLE_PATH.exec(routeOfPathname(url.pathname))?.groups?.slug
               ),
               decodedSegment
             )

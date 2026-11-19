@@ -10,6 +10,7 @@ import {
   initialModel,
 } from "../src/client/help/index.js";
 import { readerStep } from "../src/client/help/reader.js";
+import { sitePath } from "../src/site-base-path.js";
 import { renderDocument, renderPage } from "../src/entry.server.js";
 import { view } from "../src/features/help/index.js";
 import { helpPageFlags } from "../src/server/help-pages.js";
@@ -35,7 +36,9 @@ const readerRows = recordedAnswers.rows.filter((row) =>
 const responseAt = (path: string, method = "GET") =>
   Effect.gen(function* respond() {
     const result = yield* Effect.promise(() =>
-      renderPage(new Request(`https://help.hypertask.ai${path}`, { method }))
+      renderPage(
+        new Request(`https://help.hypertask.ai${sitePath(path)}`, { method })
+      )
     );
 
     return toResponse(
