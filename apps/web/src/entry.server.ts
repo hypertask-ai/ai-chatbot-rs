@@ -29,6 +29,7 @@ import {
 } from "./server/recorded-help-articles.js";
 import {
   siteBasePath,
+  siteImagePath,
   siteNoindexValue,
   siteRobotsMeta,
   stripBasePath,
@@ -43,7 +44,7 @@ import { widgetLoaderScript } from "./widget/loader.js";
 import { widgetPageFlags } from "./widget/params.js";
 
 const headMarkup = [
-  `<link rel="icon" type="image/png" href="${siteBasePath}/glyph-white.png">`,
+  `<link rel="icon" type="image/png" href="${siteImagePath("glyph-white")}">`,
   '<script src="https://cdn.usefathom.com/script.js" data-site="SSBYTYUQ" defer></script>',
 ].join("");
 

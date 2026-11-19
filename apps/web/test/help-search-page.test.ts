@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { plainTextOf } from "@rat-stack/core";
 import { Effect } from "effect";
 import { renderToString } from "foldkit/experimental/server";
 
@@ -14,6 +15,7 @@ import {
   helpRouteOf,
 } from "../src/server/help-pages.js";
 import { recordedHelpArticles } from "../src/server/recorded-help-articles.js";
+import { siteBasePath } from "../src/site-base-path.js";
 import searchRowsJson from "./fixtures/help-search-rows.json";
 import visitorJson from "./fixtures/help-visitor-search.json";
 import liveArticleAiFeatures from "./fixtures/live/help-article-docs-features-ai-features.json";
@@ -31,14 +33,13 @@ const assets = {
 const patterns = {
   anchor: /<a\b[^>]*>/gu,
   cardCategory: /data-category="(?<category>[^"]*)"/u,
-  cardSlug: /href="\/help\/(?<slug>[^"]*)"/u,
+  cardSlug: /href="(?<href>[^"#]*)"/u,
   description: /<meta name="description" content="(?<content>[^"]*)">/u,
   href: /\bhref="(?<href>[^"]*)"/u,
   mark: /<mark\b[^>]*>[\s\S]*?<\/mark>/gu,
   markClose: /<\/mark>/gu,
   markOpen: /<mark\b[^>]*>/gu,
   space: /\s+/gu,
-  tag: /<[^>]*>/gu,
   topic: /<a\b(?=[^>]*\bhref="\?category=)[^>]*>[\s\S]*?<\/a>/gu,
   topicBody: /<p[^>]*>(?<body>[\s\S]*?)<\/p>/u,
   topicHref: /href="\?category=(?<category>[^"#]*)#all"/u,
@@ -69,17 +70,23 @@ const decodeEntities = (text: string): string => {
   return decoded;
 };
 
+const underSiteBasePath = (href: string): boolean =>
+  href === siteBasePath || href.startsWith(`${siteBasePath}/`);
+
+const withoutSiteBasePath = (href: string): string =>
+  underSiteBasePath(href) ? href.slice(siteBasePath.length) || "/" : href;
+
 const textOf = (html: string): string =>
-  decodeEntities(html.replaceAll(patterns.tag, " "))
-    .replaceAll(patterns.space, " ")
-    .trim();
+  decodeEntities(plainTextOf(html, " ")).replaceAll(patterns.space, " ").trim();
 
 const markedTextOf = (html: string): string =>
   decodeEntities(
-    html
-      .replaceAll(patterns.markOpen, markOpen)
-      .replaceAll(patterns.markClose, markClose)
-      .replaceAll(patterns.tag, " ")
+    plainTextOf(
+      html
+        .replaceAll(patterns.markOpen, markOpen)
+        .replaceAll(patterns.markClose, markClose),
+      " "
+    )
   )
     .replaceAll(patterns.space, " ")
     .trim();
@@ -131,7 +138,7 @@ const resultRowsOf = (region: string): readonly ResultRow[] =>
     }));
 
 const slugsOf = (rows: readonly ResultRow[]): readonly string[] =>
-  rows.map((row) => row.href.replace("/help/", ""));
+  rows.map((row) => withoutSiteBasePath(row.href).replace("/help/", ""));
 
 type Card = Readonly<{
   category: string;
@@ -141,8 +148,12 @@ type Card = Readonly<{
 const cardsOf = (html: string): readonly Card[] =>
   [...html.matchAll(patterns.anchor)].flatMap((match) => {
     const [tag] = match;
-    const slug = patterns.cardSlug.exec(tag)?.groups?.slug;
+    const href = patterns.cardSlug.exec(tag)?.groups?.href;
     const category = patterns.cardCategory.exec(tag)?.groups?.category;
+    const slug =
+      href === undefined
+        ? undefined
+        : withoutSiteBasePath(decodeEntities(href)).replace("/help/", "");
 
     return slug === undefined || category === undefined
       ? []
@@ -273,7 +284,8 @@ describe("help center search box", () => {
         const served = yield* helpCenterAt(searchAddressOf(expected.query));
 
         const row = resultRowsOf(resultsRegionOf(served)).find(
-          (candidate) => candidate.href === `/help/${expected.slug}`
+          (candidate) =>
+            withoutSiteBasePath(candidate.href) === `/help/${expected.slug}`
         );
 
         if (row === undefined) {
@@ -297,7 +309,8 @@ describe("help center search box", () => {
 
       const row = resultRowsOf(resultsRegionOf(served)).find(
         (candidate) =>
-          candidate.href === "/help/docs-features-chat-board-filter"
+          withoutSiteBasePath(candidate.href) ===
+          "/help/docs-features-chat-board-filter"
       );
 
       expect(marksIn(row?.html ?? "")).toEqual(["Board"]);

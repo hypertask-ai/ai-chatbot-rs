@@ -21,6 +21,7 @@ import {
 import type { HelpPageValue } from "../src/client/help/index.js";
 import { Message, initialModelAtAddress } from "../src/client/help/index.js";
 import { update } from "../src/client/help/update.js";
+import { helpCenterUrl } from "../src/features/help/copy.js";
 import { view } from "../src/features/help/index.js";
 
 const home: HelpPageValue = {
@@ -69,7 +70,7 @@ describe("help center search controls", () => {
       settled("connect"),
       sceneExpect(selector("#liveSearchResults a")).toHaveAttr(
         "href",
-        "/help/docs-connect-an-agent"
+        `${helpCenterUrl}/docs-connect-an-agent`
       ),
       sceneExpect(selector("#liveSearchResults a")).toContainText(
         "Connect an Agent"
