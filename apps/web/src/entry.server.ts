@@ -13,8 +13,10 @@ import {
 } from "./client/widget/index.js";
 import { view } from "./features/help/index.js";
 import { view as widgetView } from "./features/widget/index.js";
+import { withCors } from "./server/embed-cors.js";
 import type { HelpRoute } from "./server/help-pages.js";
 import { helpPageFlags, helpRouteOf } from "./server/help-pages.js";
+import { answerHelpSite } from "./server/help-site.js";
 import {
   recordedArticlePaths,
   recordedHelpArticles,
@@ -66,27 +68,21 @@ const noindexHeaders = (): Headers => {
   return headers;
 };
 
-const articleNotFound = (noindex: boolean) => {
+const articleNotFound = (noindex: boolean): Response => {
   const headers = noindex ? noindexHeaders() : new Headers();
   headers.set("content-type", "text/html; charset=UTF-8");
 
-  return Responded(
-    new Response("<h1>Article not found</h1>", { headers, status: 404 })
-  );
+  return new Response("<h1>Article not found</h1>", { headers, status: 404 });
 };
 
-const notFound = () =>
-  Responded(
-    new Response("Not found", { headers: noindexHeaders(), status: 404 })
-  );
+const notFound = (): Response =>
+  new Response("Not found", { headers: noindexHeaders(), status: 404 });
 
-const unsupportedMethod = () => {
+const unsupportedMethod = (): Response => {
   const headers = noindexHeaders();
   headers.set("Allow", "GET, HEAD");
 
-  return Responded(
-    new Response("Unsupported method", { headers, status: 405 })
-  );
+  return new Response("Unsupported method", { headers, status: 405 });
 };
 
 const withWidgetChatHeaders = (): Headers => {
@@ -122,13 +118,17 @@ const pageUnder = (
 };
 
 const renderHelpPage = Effect.fn("site.renderHelpPage")(
-  function* renderHelpPage(noindex: boolean, route: HelpRoute) {
+  function* renderHelpPage(
+    request: Request,
+    noindex: boolean,
+    route: HelpRoute
+  ) {
     const flags = yield* helpPageFlags(route).pipe(
       Effect.provide(recordedHelpArticles)
     );
 
     if (flags === null) {
-      return articleNotFound(noindex);
+      return Responded(withCors(request, articleNotFound(noindex)));
     }
 
     const application = yield* renderToString(
@@ -147,7 +147,7 @@ const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
   pathname: string
 ) {
   if (request.method !== "GET" && request.method !== "HEAD") {
-    return unsupportedMethod();
+    return Responded(withCors(request, unsupportedMethod()));
   }
 
   if (pathname === widgetScriptPath) {
@@ -179,6 +179,12 @@ const widgetRoutes = Effect.fn("site.widgetRoutes")(function* widgetRoutes(
 const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   request: Request
 ) {
+  const answered = yield* answerHelpSite(request);
+
+  if (answered !== null) {
+    return Responded(answered);
+  }
+
   const { pathname } = new URL(request.url);
   const route = routePath(pathname);
 
@@ -189,14 +195,14 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
   const page = pageUnder(pathname);
 
   if (page === null) {
-    return notFound();
+    return Responded(withCors(request, notFound()));
   }
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    return unsupportedMethod();
+    return Responded(withCors(request, unsupportedMethod()));
   }
 
-  return yield* renderHelpPage(page.noindex, page.route);
+  return yield* renderHelpPage(request, page.noindex, page.route);
 });
 
 export const renderPage = (request: Request) =>
@@ -205,11 +211,14 @@ export const renderPage = (request: Request) =>
       Effect.catchCause((cause) =>
         Effect.succeed(
           Responded(
-            new Response("The page could not be rendered", {
-              headers: noindexHeaders(),
-              status: 500,
-              statusText: cause.toString(),
-            })
+            withCors(
+              request,
+              new Response("The page could not be rendered", {
+                headers: noindexHeaders(),
+                status: 500,
+                statusText: cause.toString(),
+              })
+            )
           )
         )
       )

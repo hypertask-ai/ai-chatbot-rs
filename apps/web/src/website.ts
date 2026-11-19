@@ -1,6 +1,10 @@
 import * as Cloudflare from "@alchemy.run/cloudflare";
 
-import { siteAssetHeaders, siteBasePath } from "./site-base-path.js";
+import {
+  siteAssetHeaders,
+  siteAssetRedirects,
+  siteBasePath,
+} from "./site-base-path.js";
 import { widgetScriptAssetHeaders } from "./widget/embed.js";
 
 export const publishHostname = "help.hypertask.ai";
@@ -17,7 +21,9 @@ const previewWorker = {
 
 const headers = `${siteAssetHeaders() ?? ""}${widgetScriptAssetHeaders}`;
 
+const redirects = siteAssetRedirects();
+
 export class Website extends Cloudflare.Website.Foldkit<Website>()("Website", {
   ...previewWorker,
-  assets: { headers },
+  assets: { headers, redirects },
 }) {}

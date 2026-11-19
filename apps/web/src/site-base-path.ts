@@ -60,3 +60,17 @@ export const siteAssetHeaders = (
     ? undefined
     : `${basePath}/*\n  X-Robots-Tag: ${value}\n`;
 };
+
+export const siteAssetRedirects = (basePath: string = siteBasePath): string => {
+  if (basePath === "") {
+    return "/ /help 302\n";
+  }
+
+  const help = sitePath("/help", basePath);
+
+  const rules = [basePath, `${basePath}/`].map(
+    (source) => `${source} ${help} 302`
+  );
+
+  return `${rules.join("\n")}\n`;
+};

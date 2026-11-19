@@ -11,6 +11,7 @@ import { sendChatMessage } from "./chat-message.js";
 import { saveVisitorProfile } from "./chat-profile.js";
 import { inspectFileContract } from "./contracts.js";
 import { flagCapabilities } from "./flag-capabilities.js";
+import { health } from "./health.js";
 import { helpArticleCapabilities } from "./help-articles.js";
 import { helpRetrievalCapabilities } from "./help-retrieval.js";
 import { runInspectMachine } from "./inspect-machine.js";
@@ -23,6 +24,7 @@ export const inspectFile = implement(inspectFileContract, ({ path }) =>
 
 export const capabilities = [
   inspectFile,
+  health,
   ...flagCapabilities,
   joinInterest,
   leaveHandoffEmail,

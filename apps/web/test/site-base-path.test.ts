@@ -3,6 +3,7 @@ import { describe, expect, it } from "@effect/vitest";
 import {
   normalizeBasePath,
   siteAssetHeaders,
+  siteAssetRedirects,
   siteBasePath,
   siteNoindexValue,
   sitePath,
@@ -112,5 +113,17 @@ describe("the noindex answers", () => {
     expect(siteNoindexValue("")).toBeUndefined();
     expect(siteRobotsMeta("")).toBe("");
     expect(siteAssetHeaders("")).toBeUndefined();
+  });
+});
+
+describe("the root redirect rules for the asset layer", () => {
+  it("sends the preview root to the published help page", () => {
+    expect(siteAssetRedirects("/ratstack")).toBe(
+      "/ratstack /ratstack/help 302\n/ratstack/ /ratstack/help 302\n"
+    );
+  });
+
+  it("sends the origin root to the help page once the base path is gone", () => {
+    expect(siteAssetRedirects("")).toBe("/ /help 302\n");
   });
 });

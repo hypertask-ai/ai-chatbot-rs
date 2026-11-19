@@ -17,10 +17,12 @@ export {
   HelpArticlePane,
   HelpArticleSummary,
   HelpArticleTimestamp,
+  HealthOutput,
   ReadOutput,
   ResourceNotFound,
   SearchMatch,
   SearchOutput,
+  healthContract,
   inspectFileContract,
   listHelpArticlesContract,
   readContract,
@@ -168,6 +170,8 @@ export {
 } from "./admin-contracts.js";
 
 export { capabilities, inspectFile } from "./inspect-file.js";
+
+export { health } from "./health.js";
 
 export {
   HANDOFF_EMAIL_REPLY,
