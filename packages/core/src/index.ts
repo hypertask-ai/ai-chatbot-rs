@@ -385,3 +385,102 @@ export {
   type SettledAnswer,
   type TokenUsage,
 } from "./answer-model.js";
+
+export {
+  clientKeyOf,
+  chatMessageBodySchema,
+  chatMessageRequiredFailure,
+  chatRateLimitedFailure,
+  ChatMessageAnswerSchema,
+  ChatMessageSentSchema,
+  ChatMessageStreamedSchema,
+  newConversationRateLimitedFailure,
+  sanitizePageContext,
+  sendChatMessage,
+  sendChatMessageContract,
+  chatTurnOf,
+  visitorSecretOf,
+  type ChatClientHeaders,
+  type ChatMessageAnswer,
+  type ChatMessageBody,
+  type ChatMessageSent,
+  type ChatMessageStreamed,
+  type ChatPageContext,
+  type ChatRequestTurn,
+} from "./chat-message.js";
+
+export {
+  CHAT_STREAM_CONTENT_TYPE,
+  CHAT_STREAM_HEADERS,
+  chunkEvent,
+  connectedEvent,
+  doneEvent,
+  encodeChatStream,
+  encodeChatStreamBytes,
+  encodeChatStreamEvent,
+  errorEvent,
+  type ChatStreamChunk,
+  type ChatStreamConnected,
+  type ChatStreamDone,
+  type ChatStreamError,
+  type ChatStreamEvent,
+  type ChatStreamFinish,
+  type ChatStreamFailure,
+  type ChatStreamSource,
+  type ChatStreamStart,
+} from "./chat-stream.js";
+
+export {
+  HISTORY_MESSAGE_LIMIT,
+  RESPONSE_CACHE_TTL_SECONDS,
+  chatAnswerFrames,
+  firstAnswerEligible,
+  historyTurnsOf,
+  normalizeQuestion,
+  profileIsKnown,
+  responseCacheKey,
+  type ChatAnswerInput,
+  type FirstAnswerEligibility,
+} from "./chat-answer.js";
+
+export {
+  ChatAnswerCleanup,
+  type ChatAnswerCleanupOperations,
+} from "./chat-answer-cleanup.js";
+
+export {
+  ChatArticleContext,
+  type ChatArticleContextOperations,
+} from "./chat-article-context.js";
+
+export {
+  ChatCitations,
+  ChatCitationSchema,
+  type ChatCitation,
+  type ChatCitationsOperations,
+} from "./chat-citations.js";
+
+export { ChatConfig } from "./chat-config.js";
+
+export {
+  ChatRateLimits,
+  type ChatRateLimitAnswer,
+  type ChatRateLimitOperations,
+} from "./chat-rate-limits.js";
+
+export {
+  ChatRequestFacts,
+  type ChatRequestFactsValue,
+} from "./chat-request-facts.js";
+
+export {
+  ChatRoom,
+  ChatRoomMessageSchema,
+  type ChatRoomMessage,
+  type ChatRoomOperations,
+} from "./chat-room.js";
+
+export {
+  FirstAnswerCache,
+  type FirstAnswerCacheOperations,
+} from "./first-answer-cache.js";

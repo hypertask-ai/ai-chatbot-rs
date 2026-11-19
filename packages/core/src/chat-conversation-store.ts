@@ -19,6 +19,7 @@ export const ChatConversationSchema = Schema.Struct({
   profileCompleted: Schema.Boolean,
   status: ConversationStatusSchema,
   updatedAt: Schema.Natural,
+  visitorId: Schema.optionalKey(Schema.String),
 });
 
 export type ChatConversation = typeof ChatConversationSchema.Type;
@@ -69,9 +70,20 @@ export interface ChatHandoffChange {
   readonly id: string;
 }
 
+export interface ChatConversationTouch {
+  readonly at: number;
+  readonly id: string;
+}
+
+export interface VisitorSecretQuery {
+  readonly secretHash: string;
+  readonly visitorId: string;
+}
+
 export type ChatHandoffEmailOutcome = "not_found" | "saved" | "too_soon";
 
 export interface ChatConversationOperations {
+  readonly create: (seed: ChatConversationSeed) => Effect.Effect<void>;
   readonly findReturningCustomer: (
     query: ReturningCustomerQuery
   ) => Effect.Effect<ReturningCustomer | undefined>;
@@ -86,6 +98,10 @@ export interface ChatConversationOperations {
   readonly setHandoffRequested: (
     change: ChatHandoffChange
   ) => Effect.Effect<void>;
+  readonly touch: (change: ChatConversationTouch) => Effect.Effect<void>;
+  readonly visitorOwnsSecret: (
+    query: VisitorSecretQuery
+  ) => Effect.Effect<boolean>;
 }
 
 export class ChatConversationStore extends Context.Service<
@@ -111,17 +127,23 @@ interface MemoryConversation {
   readonly visitorSecretHash: string | undefined;
 }
 
-const seedConversation = (seed: ChatConversationSeed): ChatConversation => ({
-  archived: seed.archived,
-  email: seed.email,
-  hasAccount: seed.hasAccount,
-  id: seed.id,
-  isEval: seed.isEval,
-  name: seed.name,
-  profileCompleted: seed.profileCompleted,
-  status: seed.status,
-  updatedAt: seed.updatedAt,
-});
+const seedConversation = (seed: ChatConversationSeed): ChatConversation => {
+  const base: ChatConversation = {
+    archived: seed.archived,
+    email: seed.email,
+    hasAccount: seed.hasAccount,
+    id: seed.id,
+    isEval: seed.isEval,
+    name: seed.name,
+    profileCompleted: seed.profileCompleted,
+    status: seed.status,
+    updatedAt: seed.updatedAt,
+  };
+
+  return seed.visitorId === undefined
+    ? base
+    : { ...base, visitorId: seed.visitorId };
+};
 
 const newestReturningCustomer = (
   held: ReadonlyMap<string, MemoryConversation>,
@@ -167,6 +189,13 @@ export const memoryChatConversations = (
     );
 
     const operations: ChatConversationOperations = {
+      create: (conversationSeed) =>
+        Ref.update(rows, (held) =>
+          new Map(held).set(conversationSeed.id, {
+            conversation: seedConversation(conversationSeed),
+            visitorSecretHash: conversationSeed.visitorSecretHash,
+          })
+        ),
       findReturningCustomer: (query) =>
         Ref.get(rows).pipe(
           Effect.map((held) => newestReturningCustomer(held, query))
@@ -266,6 +295,34 @@ export const memoryChatConversations = (
             visitorSecretHash: entry.visitorSecretHash,
           });
         }),
+      touch: (change) =>
+        Ref.update(rows, (held) => {
+          const entry = held.get(change.id);
+
+          if (entry === undefined) {
+            return held;
+          }
+
+          return new Map(held).set(change.id, {
+            conversation: { ...entry.conversation, updatedAt: change.at },
+            visitorSecretHash: entry.visitorSecretHash,
+          });
+        }),
+      visitorOwnsSecret: (query) =>
+        Ref.get(rows).pipe(
+          Effect.map((held) => {
+            for (const entry of held.values()) {
+              if (
+                entry.conversation.visitorId === query.visitorId &&
+                entry.visitorSecretHash === query.secretHash
+              ) {
+                return true;
+              }
+            }
+
+            return false;
+          })
+        ),
     };
 
     return {
