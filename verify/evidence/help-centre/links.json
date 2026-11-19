@@ -1,0 +1,9 @@
+{
+  "addedInNew": [],
+  "changedText": [
+    "/help/docs-features-inbox: \"Inbox & NotificationsBoards & ticketsManage your incoming notifications, Snooze, Important, and Decisions.\" became \"Inbox & NotificationsBoards & ticketsManage your incoming notifications, Snooze, and Important section.\"",
+    "/help/docs-mcp-agent-webhooks: \"Agent webhooksAgentsGet a signed webhook when a task changes in your team, with no agent, or wake an agent. Covers verification and working without a public URL.\" became \"Agent webhooksAgentsUnderstand what wakes an agent, what Hypertask sends, how to verify it, and how to work without a public URL.\""
+  ],
+  "missingFromNew": [],
+  "previewBasePath": "/ratstack"
+}

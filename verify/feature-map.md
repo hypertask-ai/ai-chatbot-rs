@@ -35,6 +35,12 @@ The verifier calls `verify/driver.mjs` for the pages, screenshots, links, consol
 | Reader payload | `/api/help-reader/<slug>`, plus a miss | `title`, `slug`, `excerpt`, `category`, `html`, `plansHtml`, 404 on a miss | F12 |
 | Pricing block | `/api/help-reader/pricing-plans` | `plansHtml` holds the plan board, and only for that article | F12, F13 |
 | Transcript gate | `/api/chat/history/unknown-without-secret` | 401 without the visitor secret or the admin password | F39 |
+| Chat send | `POST /api/chat/message` | 400 when the body is empty or has no message and no image. 200 `text/event-stream` on a real send, 404 when the conversation id is unknown, 429 when a rate limit trips, 503 when the model is not Haiku 5.5 or the API key is unset. The driver never POSTs to `/api/chat/**`. | F19 |
+| Save profile | `POST /api/chat/profile` | 400 when the body or the conversation id is missing, 404 when that conversation does not exist, 200 when the fields save. The driver never POSTs to `/api/chat/**`. | F36 |
+| Handoff email | `POST /api/chat/handoff-email` | 401 without the visitor secret, 400 on a bad email, 404 when the conversation does not exist, 429 on a repeat inside one minute, 200 `{status:"handoff_requested"}` when it is accepted. The driver never POSTs to `/api/chat/**`. | F37 |
+| Handoff request | `POST /api/chat/handoff` | 400 `profile_incomplete` with `missing` when the name or email is absent, 404 when the conversation does not exist, 200 `{status:"handoff_requested"}` when the profile is complete. The driver never POSTs to `/api/chat/**`. | F38 |
+| Past sessions | `GET /api/chat/sessions/:visitorId` | 401 without the visitor secret or the admin password, 200 `{sessions}` with at most 20 rows when the secret matches | F40 |
+| Chat socket | `GET /api/chat/ws/:conversationId` | 101 when the request upgrades to a WebSocket, 404 on a GET that does not upgrade | F42 |
 | Retrieval debug | `/api/chat/debug-rag?q=invite` | `{query, count, articles}` with hits, the same shape | F41 |
 | Embed headers | `/widget/widget.js`, `/widget/chat` | `frame-ancestors 'self'` plus the three allowed sites, `no-store` on the frame, CORS only for the allowlist | F47, F48, F102 |
 
@@ -80,6 +86,15 @@ The verifier reads these without logging in. Access sits in front of them on the
 | Admin socket | `/admin` after login with a visitor writing | The new message appears and a tone plays, the reconnect runs every two seconds | F89 |
 | Usage report | `/admin/api/usage?days=7` | 401 without the password or an Access token, token and cost totals after login | F81, F71 |
 | Customer threads | `/admin/api/customers/conversations?email=…` | 401 without a credential, the visitor's threads after login | F82 |
+| Inbox list API | `GET /admin/api/conversations` | 401 without the password or an Access token, 200 JSON of at most 50 rows after login | F72 |
+| Bulk archive | `POST /admin/api/conversations/bulk/archive` | 401 without a credential, 400 when `ids` is empty, 200 `{archived:true}` after login. The driver does not send this write. | F73 |
+| Conversation API | `GET /admin/api/conversations/:id` | 401 without a credential, 200 `{conversation,messages}` after login | F74 |
+| Accept handoff | `POST /admin/api/conversations/:id/accept` | 401 without a credential, 200 `{status:"human"}` after login. The driver does not send this write. | F75 |
+| Take over | `POST /admin/api/conversations/:id/takeover` | 401 without a credential, 200 `{status:"human"}` after login. The driver does not send this write. | F76 |
+| Admin reply | `POST /admin/api/conversations/:id/message` | 401 without a credential, 200 `{id}` after login. The driver does not send this write. | F77 |
+| Close conversation | `POST /admin/api/conversations/:id/close` | 401 without a credential, 200 `{status:"closed"}` after login. The driver does not send this write. | F78 |
+| Archive one | `POST /admin/api/conversations/:id/archive` | 401 without a credential, 200 `{archived:true}` after login. The driver does not send this write. | F79 |
+| Unarchive one | `POST /admin/api/conversations/:id/unarchive` | 401 without a credential, 200 `{archived:false}` after login. The driver does not send this write. | F80 |
 
 ## Not in this map
 

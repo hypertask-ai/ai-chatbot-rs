@@ -1,6 +1,6 @@
 # Agent instructions
 
-For a non-trivial task, start with `skills/rat-stack-mode`.
+For a non-trivial task, start with `skills/rat-stack-mode`. To prove a change to the help site looks, reads and behaves like the old one, use the verification skill at [`.claude/skills/verify-ai-chatbot-rs`](./.claude/skills/verify-ai-chatbot-rs/SKILL.md).
 
 This file is the repo law for agents and contributors. It holds commands, validation rules, architecture constraints, and project stop rules. Read `VISION.md` for intent before planning substantial work. `VISION.md` does not override this file. Pi sessions also load `.pi/APPEND_SYSTEM.md` and the repo-local extension `.pi/extensions/project.ts`.
 
@@ -122,6 +122,7 @@ The preview publishes itself. `.github/workflows/publish-ratstack.yml` deploys `
 | Every response under the preview path says `X-Robots-Tag: noindex` and every page carries the robots meta tag, and both disappear when the base path becomes empty at the cutover. | `siteRobotsMeta` and `siteAssetHeaders` in `apps/web/src/site-base-path.ts`, tested in `apps/web/test/site-base-path.test.ts` and read by GET in the last step of `.github/workflows/publish-ratstack.yml`. |
 | A publish can only create or update the preview Worker, its one route and its own Alchemy state store. | `apps/infra/test/publish-scope.test.ts` compiles the published stack without a cloud call and requires exactly one resource, `Website`. |
 | The old site keeps answering exactly what it answered before the deploy. | The record and smoke steps of `.github/workflows/publish-ratstack.yml` compare https://help.hypertask.ai/ before and after the deploy. |
+| Every workflow file is valid, so GitHub starts every run instead of rejecting the file before its first job and listing the workflow by its path. | The `Lint every workflow file with actionlint` step in `.github/workflows/ci.yml` runs actionlint `1.7.7` over every file under `.github/workflows/`, with the release tarball's sha256 pinned in the step. |
 
 ## Release a package
 
@@ -234,6 +235,14 @@ Changes:
 - `no-comments/directive-reason` (`scripts/oxlint-plugin-no-comments.ts`) enforces the reason: every `oxlint-disable*` or `eslint-disable*` comment without text after `--` fails lint.
 - Hot pink is the only accent. `--accent` (#ff1493) marks borders, rules and focus rings; `--accent-text` (#c8006e, 5.7:1 on white) is the only pink text. Use it for at most one thing per screen, plus focus. News chrome uses no pink. The allowed selectors cover `:focus-visible` and copy controls; links, headings, tables and tier cells never use it. `apps/site/test/accent.test.ts` holds the allowed selectors.
 - Pins stay exact. A vendored dependency carries a matching `minimumReleaseAgeExclude` entry and a removal rule in `vendor/README.md`.
+
+### One owner per rule
+
+A rule with a single owner names that owner and the file that enforces it. A new case joins the owner instead of growing a second copy.
+
+| Rule | One owner | Enforced by |
+| --- | --- | --- |
+| Strip HTML tags with the tokenizer, never with a regex. A regex misses upper case tags such as `<SCRIPT>`. | `plainTextOf` and `withoutElements` in `packages/core/src/help-article-html.ts` | `packages/core/test/tag-stripping-owner.test.ts` |
 
 ## Architecture
 
