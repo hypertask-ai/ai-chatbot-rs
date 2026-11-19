@@ -129,6 +129,11 @@
       "import": "./dist/help-articles.js",
       "default": "./dist/help-articles.js"
     },
+    "./help-related-articles": {
+      "types": "./src/help-related-articles.ts",
+      "import": "./dist/help-related-articles.js",
+      "default": "./dist/help-related-articles.js"
+    },
     "./help-search": {
       "types": "./src/help-search.ts",
       "import": "./dist/help-search.js",

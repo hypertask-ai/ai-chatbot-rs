@@ -1,0 +1,107 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai",
+  "method": "curl, GET only, no cookies and no visitor data",
+  "removed": "The old site marks no article as removed or unpublished: src/index.ts:95-143 reads one row by slug. An article whose row is gone answers the unknown-article row below.",
+  "rows": [
+    {
+      "id": "unknown-article",
+      "method": "GET",
+      "path": "/help/htpr-9313-no-such-article",
+      "status": 404,
+      "headers": {
+        "content-type": "text/html; charset=UTF-8"
+      },
+      "body": "<h1>Article not found</h1>",
+      "title": null
+    },
+    {
+      "id": "unknown-article-in-another-case",
+      "method": "GET",
+      "path": "/help/Docs-Features-Boards",
+      "status": 404,
+      "headers": {
+        "content-type": "text/html; charset=UTF-8"
+      },
+      "body": "<h1>Article not found</h1>",
+      "title": null
+    },
+    {
+      "id": "unknown-article-with-a-query",
+      "method": "GET",
+      "path": "/help/htpr-9313-no-such-article?query=1",
+      "status": 404,
+      "headers": {
+        "content-type": "text/html; charset=UTF-8"
+      },
+      "body": "<h1>Article not found</h1>",
+      "title": null
+    },
+    {
+      "id": "unknown-category",
+      "method": "GET",
+      "path": "/help/category/payments",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8"
+      },
+      "body": "404 Not Found",
+      "title": null
+    },
+    {
+      "id": "unknown-article-extra-segment",
+      "method": "GET",
+      "path": "/help/htpr-9313-no-such-article/extra",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8"
+      },
+      "body": "404 Not Found",
+      "title": null
+    },
+    {
+      "id": "unknown-article-trailing-slash",
+      "method": "GET",
+      "path": "/help/htpr-9313-no-such-article/",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8"
+      },
+      "body": "404 Not Found",
+      "title": null
+    },
+    {
+      "id": "help-center-trailing-slash",
+      "method": "GET",
+      "path": "/help/",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8"
+      },
+      "body": "404 Not Found",
+      "title": null
+    },
+    {
+      "id": "unknown-root-path",
+      "method": "GET",
+      "path": "/htpr-9313-unknown",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8"
+      },
+      "body": "404 Not Found",
+      "title": null
+    },
+    {
+      "id": "decoded-article-address",
+      "method": "GET",
+      "path": "/help/%70ricing-plans",
+      "status": 200,
+      "headers": {
+        "content-type": "text/html; charset=UTF-8"
+      },
+      "title": "Hypertask pricing, free trial and Free plan limits - Help Center - Hypertask",
+      "body": null
+    }
+  ]
+}

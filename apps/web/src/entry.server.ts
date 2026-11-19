@@ -75,8 +75,12 @@ const articleNotFound = (noindex: boolean): Response => {
   return new Response("<h1>Article not found</h1>", { headers, status: 404 });
 };
 
-const notFound = (): Response =>
-  new Response("Not found", { headers: noindexHeaders(), status: 404 });
+const notFound = (): Response => {
+  const headers = noindexHeaders();
+  headers.set("content-type", "text/plain; charset=UTF-8");
+
+  return new Response("404 Not Found", { headers, status: 404 });
+};
 
 const unsupportedMethod = (): Response => {
   const headers = noindexHeaders();

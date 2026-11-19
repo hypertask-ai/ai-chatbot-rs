@@ -99,6 +99,13 @@ export {
 } from "./help-article-html.js";
 
 export {
+  relatedHelpArticles,
+  type HelpRelatedArticle,
+  type HelpRelatedFocus,
+  type HelpRelatedInput,
+} from "./help-related-articles.js";
+
+export {
   Admin,
   AccessLogin,
   AdminPassword,

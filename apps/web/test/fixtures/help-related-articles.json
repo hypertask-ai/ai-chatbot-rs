@@ -1,0 +1,3779 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai",
+  "method": "curl, GET only, no cookies and no visitor data",
+  "rule": "hand run of the old rule at src/index.ts:100-143 of the old site over the rows of GET /api/articles",
+  "articles": [
+    {
+      "slug": "docs-features-chat-board-filter",
+      "rule": [
+        {
+          "slug": "docs-features-ai-features",
+          "title": "AI Features"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "docs-features-smart-labels",
+          "title": "Smart Labels"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-ai-features",
+          "title": "AI Features"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "docs-features-smart-labels",
+          "title": "Smart Labels"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-ai-features",
+      "rule": [
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "docs-features-smart-labels",
+          "title": "Smart Labels"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "docs-features-smart-labels",
+          "title": "Smart Labels"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-ai-feedback-from-bot",
+      "rule": [
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-ai-features",
+          "title": "AI Features"
+        },
+        {
+          "slug": "docs-features-smart-labels",
+          "title": "Smart Labels"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-ai-features",
+          "title": "AI Features"
+        },
+        {
+          "slug": "docs-features-smart-labels",
+          "title": "Smart Labels"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-smart-labels",
+      "rule": [
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-ai-features",
+          "title": "AI Features"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-ai-features",
+          "title": "AI Features"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-agents",
+      "rule": [
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-mcp-workflows",
+          "title": "Agent Workflows"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-mcp-workflows",
+          "title": "Agent Workflows"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-agent-chat",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-mcp-workflows",
+          "title": "Agent Workflows"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "using-the-ai-chat-to-manage-your-board-and-inbox",
+          "title": "Using the AI Chat to Manage Your Board and Inbox"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-mcp-workflows",
+          "title": "Agent Workflows"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "using-the-ai-chat-to-manage-your-board-and-inbox",
+          "title": "Using the AI Chat to Manage Your Board and Inbox"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-agent-sdk",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-workflows",
+          "title": "Agent Workflows"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-workflows",
+          "title": "Agent Workflows"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-workflows",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-agent-webhooks",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-agents-dashboard",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-cli-commands",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-cli-reference",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-cli-tasks-assign",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-connect-an-agent",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-agents",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "managing-and-creating-columns-in-hypertasks",
+          "title": "Managing and Creating Columns in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "managing-and-creating-columns-in-hypertasks",
+          "title": "Managing and Creating Columns in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-overview",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        }
+      ]
+    },
+    {
+      "slug": "docs-api-tools-reference",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-troubleshooting",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "troubleshooting-email-login-magic-link",
+          "title": "Troubleshooting Email Login (Magic Link)"
+        },
+        {
+          "slug": "docs-getting-started-troubleshooting-login",
+          "title": "Troubleshooting Login"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "troubleshooting-email-login-magic-link",
+          "title": "Troubleshooting Email Login (Magic Link)"
+        },
+        {
+          "slug": "docs-getting-started-troubleshooting-login",
+          "title": "Troubleshooting Login"
+        }
+      ]
+    },
+    {
+      "slug": "docs-api-rest-api",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        }
+      ]
+    },
+    {
+      "slug": "docs-mcp-scheduling",
+      "rule": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-features-scheduling",
+          "title": "Scheduling"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-agents",
+          "title": "AI Agents"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        },
+        {
+          "slug": "docs-mcp-agent-sdk",
+          "title": "Agent SDK"
+        },
+        {
+          "slug": "docs-features-scheduling",
+          "title": "Scheduling"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-board-visibility",
+      "rule": [
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "docs-features-calendar",
+          "title": "Calendar"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "docs-features-calendar",
+          "title": "Calendar"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-board-settings",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "docs-features-calendar",
+          "title": "Calendar"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "docs-features-calendar",
+          "title": "Calendar"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-boards",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-calendar",
+          "title": "Calendar"
+        },
+        {
+          "slug": "moving-tasks-between-boards-in-hypertasks",
+          "title": "Moving Tasks Between Boards in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-calendar",
+          "title": "Calendar"
+        },
+        {
+          "slug": "moving-tasks-between-boards-in-hypertasks",
+          "title": "Moving Tasks Between Boards in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-calendar",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-custom-fields",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-favorites",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-images",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-inbox",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-pages",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-reports",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-scheduling",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "docs-mcp-scheduling",
+          "title": "Scheduling Agents"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "docs-mcp-scheduling",
+          "title": "Scheduling Agents"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-search",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "using-board-search-in-hypertasks-ctrlf",
+          "title": "Using Board Search in Hypertask (Ctrl+F)"
+        },
+        {
+          "slug": "web-search-now-available-in-task-writer-write-with-ai",
+          "title": "Web Search: Now Available in Task Writer & Write with AI"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "using-board-search-in-hypertasks-ctrlf",
+          "title": "Using Board Search in Hypertask (Ctrl+F)"
+        },
+        {
+          "slug": "web-search-now-available-in-task-writer-write-with-ai",
+          "title": "Web Search: Now Available in Task Writer & Write with AI"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-search-screen",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "using-board-search-in-hypertasks-ctrlf",
+          "title": "Using Board Search in Hypertask (Ctrl+F)"
+        },
+        {
+          "slug": "web-search-now-available-in-task-writer-write-with-ai",
+          "title": "Web Search: Now Available in Task Writer & Write with AI"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "using-board-search-in-hypertasks-ctrlf",
+          "title": "Using Board Search in Hypertask (Ctrl+F)"
+        },
+        {
+          "slug": "web-search-now-available-in-task-writer-write-with-ai",
+          "title": "Web Search: Now Available in Task Writer & Write with AI"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-table-view",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "using-project-board-views-in-hypertasks",
+          "title": "Using Project Board Views in Hypertask"
+        },
+        {
+          "slug": "view-all-tasks-g-then-a-in-hypertasks",
+          "title": "View All Tasks (G then A) in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "using-project-board-views-in-hypertasks",
+          "title": "Using Project Board Views in Hypertask"
+        },
+        {
+          "slug": "view-all-tasks-g-then-a-in-hypertasks",
+          "title": "View All Tasks (G then A) in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-tasks",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-time-tracking",
+      "rule": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "docs-features-boards",
+          "title": "Boards & Sections"
+        }
+      ]
+    },
+    {
+      "slug": "docs-changelog-index",
+      "rule": [],
+      "live": []
+    },
+    {
+      "slug": "docs-features-billing",
+      "rule": [
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-byok",
+      "rule": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        },
+        {
+          "slug": "docs-features-keyboard-shortcuts",
+          "title": "Keyboard Shortcuts"
+        },
+        {
+          "slug": "video-tutorial-a-guide-to-keyboard-driven-productivity",
+          "title": "Video Tutorial: A Guide to Keyboard-Driven Productivity"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        },
+        {
+          "slug": "docs-features-keyboard-shortcuts",
+          "title": "Keyboard Shortcuts"
+        },
+        {
+          "slug": "video-tutorial-a-guide-to-keyboard-driven-productivity",
+          "title": "Video Tutorial: A Guide to Keyboard-Driven Productivity"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-collaboration",
+      "rule": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-integrations",
+          "title": "Integrations"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-integrations",
+      "rule": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-slack",
+      "rule": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-billing",
+          "title": "Billing & Seat Management"
+        },
+        {
+          "slug": "docs-features-byok",
+          "title": "Bring Your Own Key (BYOK)"
+        },
+        {
+          "slug": "docs-features-collaboration",
+          "title": "Collaboration"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-skills",
+      "rule": [
+        {
+          "slug": "docs-features-superhuman-snippets",
+          "title": "Superhuman-Style Snippets"
+        },
+        {
+          "slug": "docs-features-ai-chat-capabilities",
+          "title": "What AI chat can do"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-superhuman-snippets",
+          "title": "Superhuman-Style Snippets"
+        },
+        {
+          "slug": "docs-features-ai-chat-capabilities",
+          "title": "What AI chat can do"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-superhuman-snippets",
+      "rule": [
+        {
+          "slug": "docs-features-skills",
+          "title": "Skills"
+        },
+        {
+          "slug": "docs-features-ai-chat-capabilities",
+          "title": "What AI chat can do"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-skills",
+          "title": "Skills"
+        },
+        {
+          "slug": "docs-features-ai-chat-capabilities",
+          "title": "What AI chat can do"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-ai-chat-capabilities",
+      "rule": [
+        {
+          "slug": "docs-features-skills",
+          "title": "Skills"
+        },
+        {
+          "slug": "docs-features-superhuman-snippets",
+          "title": "Superhuman-Style Snippets"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-features-skills",
+          "title": "Skills"
+        },
+        {
+          "slug": "docs-features-superhuman-snippets",
+          "title": "Superhuman-Style Snippets"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-concepts",
+      "rule": [
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-contact-support",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-apps",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-settings-profile",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-features-board-settings",
+          "title": "Board Settings"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-quickstart",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+          "title": "Quick Board Switching with the Hypertask Sidebar"
+        },
+        {
+          "slug": "quick-like-add-reactions-faster-with-l",
+          "title": "Quick Like: Add Reactions Faster with 'L'"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+          "title": "Quick Board Switching with the Hypertask Sidebar"
+        },
+        {
+          "slug": "quick-like-add-reactions-faster-with-l",
+          "title": "Quick Like: Add Reactions Faster with 'L'"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-security-and-privacy",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-switching",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-troubleshooting-login",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-mcp-troubleshooting",
+          "title": "MCP troubleshooting"
+        },
+        {
+          "slug": "troubleshooting-email-login-magic-link",
+          "title": "Troubleshooting Email Login (Magic Link)"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        },
+        {
+          "slug": "docs-mcp-troubleshooting",
+          "title": "MCP troubleshooting"
+        },
+        {
+          "slug": "troubleshooting-email-login-magic-link",
+          "title": "Troubleshooting Email Login (Magic Link)"
+        }
+      ]
+    },
+    {
+      "slug": "docs-getting-started-introduction",
+      "rule": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        }
+      ],
+      "live": [
+        {
+          "slug": "docs-getting-started-concepts",
+          "title": "Core Concepts"
+        },
+        {
+          "slug": "docs-getting-started-contact-support",
+          "title": "Get help"
+        },
+        {
+          "slug": "docs-getting-started-apps",
+          "title": "Mobile and desktop apps"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-keyboard-shortcuts",
+      "rule": [
+        {
+          "slug": "video-tutorial-a-guide-to-keyboard-driven-productivity",
+          "title": "Video Tutorial: A Guide to Keyboard-Driven Productivity"
+        },
+        {
+          "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+          "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience"
+        }
+      ],
+      "live": [
+        {
+          "slug": "video-tutorial-a-guide-to-keyboard-driven-productivity",
+          "title": "Video Tutorial: A Guide to Keyboard-Driven Productivity"
+        },
+        {
+          "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+          "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience"
+        }
+      ]
+    },
+    {
+      "slug": "docs-features-appearance",
+      "rule": [],
+      "live": []
+    },
+    {
+      "slug": "how-to-create-tasks-in-hypertasks",
+      "rule": [
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-create-a-kanban-board-in-hypertasks",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-receive-notifications-from-hypertasks",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "pricing-plans",
+          "title": "Hypertask pricing, free trial and Free plan limits"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "pricing-plans",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "troubleshooting-email-login-magic-link",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "docs-mcp-troubleshooting",
+          "title": "MCP troubleshooting"
+        },
+        {
+          "slug": "docs-getting-started-troubleshooting-login",
+          "title": "Troubleshooting Login"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "docs-mcp-troubleshooting",
+          "title": "MCP troubleshooting"
+        },
+        {
+          "slug": "docs-getting-started-troubleshooting-login",
+          "title": "Troubleshooting Login"
+        }
+      ]
+    },
+    {
+      "slug": "using-the-hypertasks-command-center-htc",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "docs-cli-commands",
+          "title": "CLI Commands"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "docs-cli-commands",
+          "title": "CLI Commands"
+        }
+      ]
+    },
+    {
+      "slug": "video-tutorial-a-guide-to-keyboard-driven-productivity",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+      "rule": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "how-to-use-text-block-dragging-in-hypertasks",
+          "title": "How to Use Text Block Dragging in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "how-to-create-a-kanban-board-in-hypertasks",
+          "title": "How to Create a Kanban Board in Hypertask"
+        },
+        {
+          "slug": "how-to-receive-notifications-from-hypertasks",
+          "title": "How to Receive Notifications from Hypertask"
+        },
+        {
+          "slug": "how-to-use-text-block-dragging-in-hypertasks",
+          "title": "How to Use Text Block Dragging in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "managing-and-creating-columns-in-hypertasks",
+      "rule": [
+        {
+          "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+          "title": "Quick Board Switching with the Hypertask Sidebar"
+        },
+        {
+          "slug": "docs-mcp-agents",
+          "title": "Creating Agents"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+          "title": "Quick Board Switching with the Hypertask Sidebar"
+        },
+        {
+          "slug": "docs-mcp-agents",
+          "title": "Creating Agents"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+      "rule": [
+        {
+          "slug": "managing-and-creating-columns-in-hypertasks",
+          "title": "Managing and Creating Columns in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "managing-and-creating-columns-in-hypertasks",
+          "title": "Managing and Creating Columns in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+      "rule": [
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        }
+      ],
+      "live": [
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        }
+      ]
+    },
+    {
+      "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        },
+        {
+          "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+          "title": "Voice Dictation Meets AI: Speak Your Way to Perfect Comments"
+        },
+        {
+          "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+          "title": "Voice Transcription: Dictate Comments and Descriptions with Whisper v2"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        },
+        {
+          "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+          "title": "Voice Dictation Meets AI: Speak Your Way to Perfect Comments"
+        },
+        {
+          "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+          "title": "Voice Transcription: Dictate Comments and Descriptions with Whisper v2"
+        }
+      ]
+    },
+    {
+      "slug": "creating-tasks-from-comments-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "docs-mcp-agents",
+          "title": "Creating Agents"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "drag-drop-file-attachments",
+          "title": "Drag & Drop File Attachments"
+        },
+        {
+          "slug": "docs-features-ai-feedback-from-bot",
+          "title": "AI Feedback from a Bot Account"
+        },
+        {
+          "slug": "docs-mcp-agents",
+          "title": "Creating Agents"
+        }
+      ]
+    },
+    {
+      "slug": "drag-drop-file-attachments",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "docs-getting-started-settings-profile",
+          "title": "Profile & Settings"
+        }
+      ]
+    },
+    {
+      "slug": "filter-tasks-by-star-status",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-duplicate-tasks-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-edit-comments-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-filter-tasks-in-hypertasks-mastering-shiftf",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-sort-tasks-in-hypertasks-using-shifts",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-tasks",
+          "title": "Tasks"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-tasks",
+          "title": "Tasks"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-star-tasks-and-comments-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-getting-started-quickstart",
+          "title": "Quick Start"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-getting-started-quickstart",
+          "title": "Quick Start"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-use-text-block-dragging-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+          "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+          "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience"
+        }
+      ]
+    },
+    {
+      "slug": "moving-tasks-between-boards-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-tasks",
+          "title": "Tasks"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-tasks",
+          "title": "Tasks"
+        }
+      ]
+    },
+    {
+      "slug": "navigation-and-editing-mode-in-hypertasks-task-detail-page",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-appearance",
+          "title": "Appearance & AI Models"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-appearance",
+          "title": "Appearance & AI Models"
+        }
+      ]
+    },
+    {
+      "slug": "public-and-private-task-sharing-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-cli-tasks-assign",
+          "title": "CLI Task Assignment"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "docs-cli-tasks-assign",
+          "title": "CLI Task Assignment"
+        }
+      ]
+    },
+    {
+      "slug": "quick-like-add-reactions-faster-with-l",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+          "title": "Quick Board Switching with the Hypertask Sidebar"
+        },
+        {
+          "slug": "docs-getting-started-quickstart",
+          "title": "Quick Start"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "quick-board-switching-with-the-hypertasks-sidebar",
+          "title": "Quick Board Switching with the Hypertask Sidebar"
+        },
+        {
+          "slug": "docs-getting-started-quickstart",
+          "title": "Quick Start"
+        }
+      ]
+    },
+    {
+      "slug": "replying-to-and-quoting-comments-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+          "title": "Voice Dictation Meets AI: Speak Your Way to Perfect Comments"
+        },
+        {
+          "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+          "title": "Voice Transcription: Dictate Comments and Descriptions with Whisper v2"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+          "title": "Voice Dictation Meets AI: Speak Your Way to Perfect Comments"
+        },
+        {
+          "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+          "title": "Voice Transcription: Dictate Comments and Descriptions with Whisper v2"
+        }
+      ]
+    },
+    {
+      "slug": "sort-tasks-by-last-updated-status",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-tasks",
+          "title": "Tasks"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-tasks",
+          "title": "Tasks"
+        }
+      ]
+    },
+    {
+      "slug": "using-board-search-in-hypertasks-ctrlf",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "using-project-board-views-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agents-dashboard",
+          "title": "Agents Dashboard"
+        }
+      ]
+    },
+    {
+      "slug": "using-the-forward-slash-menu-in-task-descriptions-and-comments",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        },
+        {
+          "slug": "using-auto-splits-in-hypertasks",
+          "title": "Using Auto-Splits in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        },
+        {
+          "slug": "using-auto-splits-in-hypertasks",
+          "title": "Using Auto-Splits in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "view-all-tasks-g-then-a-in-hypertasks",
+      "rule": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-table-view",
+          "title": "Table View"
+        }
+      ],
+      "live": [
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "comment-thread-display-settings-expand-or-collapse-comments-by-default",
+          "title": "Comment Thread Display Settings (Expand or Collapse Comments by Default)"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        },
+        {
+          "slug": "how-to-create-tasks-in-hypertasks",
+          "title": "How to Create Tasks in Hypertask"
+        },
+        {
+          "slug": "docs-features-table-view",
+          "title": "Table View"
+        }
+      ]
+    },
+    {
+      "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+      "rule": [
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        },
+        {
+          "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+          "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience"
+        }
+      ],
+      "live": [
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        },
+        {
+          "slug": "why-you-should-use-hypertasks-as-a-pwa-quick-access-and-improved-keyboard-experience",
+          "title": "Why You Should Use Hypertasks as a PWA: Quick Access and Improved Keyboard Experience"
+        }
+      ]
+    },
+    {
+      "slug": "embedding-figma-files-in-hypertasks",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        }
+      ]
+    },
+    {
+      "slug": "how-to-reach-inbox-zero-with-hypertasks",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        },
+        {
+          "slug": "docs-features-inbox",
+          "title": "Inbox & Notifications"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+          "title": "Using AI-Powered Auto Summary in Hypertask (Shortcut i)"
+        },
+        {
+          "slug": "docs-features-inbox",
+          "title": "Inbox & Notifications"
+        }
+      ]
+    },
+    {
+      "slug": "using-ai-powered-auto-summary-in-hypertasks-shortcut-i",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "how-to-sort-tasks-in-hypertasks-using-shifts",
+          "title": "How to Sort Tasks in Hypertask: Using Shift+S"
+        },
+        {
+          "slug": "using-board-search-in-hypertasks-ctrlf",
+          "title": "Using Board Search in Hypertask (Ctrl+F)"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "how-to-sort-tasks-in-hypertasks-using-shifts",
+          "title": "How to Sort Tasks in Hypertask: Using Shift+S"
+        },
+        {
+          "slug": "using-board-search-in-hypertasks-ctrlf",
+          "title": "Using Board Search in Hypertask (Ctrl+F)"
+        }
+      ]
+    },
+    {
+      "slug": "using-auto-splits-in-hypertasks",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        },
+        {
+          "slug": "creating-tasks-from-comments-in-hypertasks",
+          "title": "Creating Tasks from Comments in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "using-the-ai-chat-to-manage-your-board-and-inbox",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "docs-features-chat-board-filter",
+          "title": "AI Chat Board Filter"
+        },
+        {
+          "slug": "docs-features-agent-chat",
+          "title": "Agent Chat"
+        }
+      ]
+    },
+    {
+      "slug": "using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "docs-features-board-visibility",
+          "title": "Board & Subtask Visibility"
+        },
+        {
+          "slug": "bulk-actions-archive-and-defer-multiple-tasks-at-once-in-hypertask",
+          "title": "Bulk Actions: Archive and Defer Multiple Tasks at Once in Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "voice-transcription-dictate-comments-and-descriptions-with-whisper-v2",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        }
+      ]
+    },
+    {
+      "slug": "web-search-now-available-in-task-writer-write-with-ai",
+      "rule": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "docs-mcp-agent-webhooks",
+          "title": "Agent webhooks"
+        }
+      ],
+      "live": [
+        {
+          "slug": "ai-improve-readability-turn-any-text-into-scannable-web-content",
+          "title": "AI Improve Readability: Turn Any Text into Scannable Web Content"
+        },
+        {
+          "slug": "embedding-figma-files-in-hypertasks",
+          "title": "Embedding Figma Files in Hypertask"
+        },
+        {
+          "slug": "how-to-reach-inbox-zero-with-hypertasks",
+          "title": "How to Reach Inbox Zero with Hypertask"
+        },
+        {
+          "slug": "docs-mcp-agent-webhooks",
+          "title": "Agent webhooks"
+        }
+      ]
+    }
+  ]
+}
