@@ -7,6 +7,7 @@ import {
   peopleCapabilities,
 } from "./cafe-directory.js";
 import { leaveHandoffEmail, requestHandoff } from "./chat-handoff.js";
+import { sendChatMessage } from "./chat-message.js";
 import { saveVisitorProfile } from "./chat-profile.js";
 import { inspectFileContract } from "./contracts.js";
 import { flagCapabilities } from "./flag-capabilities.js";
@@ -36,5 +37,6 @@ export const capabilities = [
   ...helpRetrievalCapabilities,
   requestHandoff,
   saveVisitorProfile,
+  sendChatMessage,
   ...adminConversationCapabilities,
 ] as const;

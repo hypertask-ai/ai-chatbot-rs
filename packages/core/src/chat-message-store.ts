@@ -1,5 +1,7 @@
 import { Context, Effect, Ref, Schema } from "effect";
 
+import { TokenUsageSchema } from "./answer-model.js";
+
 export const ChatMessageRoleSchema = Schema.Literals(["user", "bot", "admin"]);
 
 export type ChatMessageRole = typeof ChatMessageRoleSchema.Type;
@@ -9,7 +11,9 @@ export const ChatMessageSchema = Schema.Struct({
   conversationId: Schema.String,
   createdAt: Schema.Natural,
   id: Schema.String,
+  model: Schema.optionalKey(Schema.String),
   role: ChatMessageRoleSchema,
+  usage: Schema.optionalKey(TokenUsageSchema),
 });
 
 export type ChatMessage = typeof ChatMessageSchema.Type;

@@ -5,6 +5,7 @@ import {
   siteAssetRedirects,
   siteBasePath,
 } from "./site-base-path.js";
+import { widgetScriptAssetHeaders } from "./widget/embed.js";
 
 export const publishHostname = "help.hypertask.ai";
 
@@ -18,13 +19,11 @@ const previewWorker = {
   routes: [{ pattern: publishRoutePattern, zoneName: "hypertask.ai" }],
 };
 
-const headers = siteAssetHeaders();
+const headers = `${siteAssetHeaders() ?? ""}${widgetScriptAssetHeaders}`;
 
 const redirects = siteAssetRedirects();
 
-export class Website extends Cloudflare.Website.Foldkit<Website>()(
-  "Website",
-  headers === undefined
-    ? { ...previewWorker, assets: { redirects } }
-    : { ...previewWorker, assets: { headers, redirects } }
-) {}
+export class Website extends Cloudflare.Website.Foldkit<Website>()("Website", {
+  ...previewWorker,
+  assets: { headers, redirects },
+}) {}
