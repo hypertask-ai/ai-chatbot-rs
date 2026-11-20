@@ -142,6 +142,15 @@ verify() {
     url="${origin}${addresses[$index]}"
     require_200 "$url"
   done
+
+  local widget="${origin}${base_path}/widget/widget.js"
+
+  require_200 "$widget"
+  if ! grep -qiE '^content-type:[[:space:]]*(application|text)/javascript' \
+    "$PROBE_HEADERS"; then
+    fail "$widget did not answer as JavaScript"
+  fi
+  printf 'ok %s -> JavaScript\n' "$widget"
 }
 
 case "$mode" in
