@@ -3,7 +3,14 @@ import { Runtime } from "foldkit";
 import { view } from "../features/help/index.js";
 import { view as widgetView } from "../features/widget/index.js";
 import { isWidgetChatPath } from "../widget/embed.js";
-import { Flags, Message, Model, initialModel, update } from "./help/index.js";
+import {
+  Flags,
+  Message,
+  Model,
+  initialModel,
+  subscriptions,
+  update,
+} from "./help/index.js";
 import { LoadSession } from "./widget/command.js";
 import {
   Flags as WidgetFlags,
@@ -26,6 +33,7 @@ const siteApplication = Runtime.makeApplication({
   container,
   devTools: import.meta.env.DEV ? { Message } : false,
   init: (flags) => ({ model: initialModel(flags) }),
+  subscriptions,
   update,
   view,
 });

@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import {
   Rendered,
   Responded,
@@ -16,6 +16,7 @@ import { view as widgetView } from "./features/widget/index.js";
 import { withCors } from "./server/embed-cors.js";
 import type { HelpRoute } from "./server/help-pages.js";
 import { helpPageFlags, helpRouteOf } from "./server/help-pages.js";
+import { helpReaderResponse, helpReaderSlugOf } from "./server/help-reader.js";
 import { answerHelpSite } from "./server/help-site.js";
 import {
   recordedArticlePaths,
@@ -194,6 +195,21 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
 
   if (route === widgetScriptPath || route === widgetChatPath) {
     return yield* widgetRoutes(request, route);
+  }
+
+  const readerSlug =
+    route === undefined ? Option.none<string>() : helpReaderSlugOf(route);
+
+  if (Option.isSome(readerSlug)) {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return Responded(withCors(request, unsupportedMethod()));
+    }
+
+    return Responded(
+      yield* helpReaderResponse(readerSlug.value).pipe(
+        Effect.provide(recordedHelpArticles)
+      )
+    );
   }
 
   const page = pageUnder(pathname);

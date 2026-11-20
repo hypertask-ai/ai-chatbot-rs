@@ -18,7 +18,7 @@ export interface HelpRoute {
   readonly slug: string | null;
 }
 
-const decodeSlug = (raw: string): string => {
+export const decodeSlug = (raw: string): string => {
   try {
     return decodeURIComponent(raw);
   } catch {
