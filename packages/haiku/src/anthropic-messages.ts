@@ -7,8 +7,8 @@ import { AnthropicConfig } from "./anthropic-config.js";
 import { isRetryableAnthropicFailure } from "./anthropic-failure.js";
 import { readAnthropicStream } from "./anthropic-stream.js";
 
-export const ANTHROPIC_MESSAGES_URL =
-  "https://gateway.ai.cloudflare.com/v1/6031a7dff0d4a6469414cfa8a6dedddf/hypertask-ai/anthropic/v1/messages";
+export const anthropicMessagesUrl = (accountId: string): string =>
+  `https://gateway.ai.cloudflare.com/v1/${accountId}/hypertask-ai/anthropic/v1/messages`;
 
 const gatewayMetadata = (): string =>
   // oxlint-disable-next-line sort-keys -- The old request sends the worker before the client and the recorded request compares the header.
@@ -28,12 +28,13 @@ export const answerModelLayer = Layer.effect(
     const config = yield* AnthropicConfig;
     const client = yield* HttpClient.HttpClient;
     const apiKey = Redacted.value(config.apiKey);
+    const messagesUrl = anthropicMessagesUrl(Redacted.value(config.accountId));
 
     const stream = Effect.fn("haikuAnswerStream")(function* haikuAnswerStream(
       request: AnswerRequest,
       onText: (text: string) => Effect.Effect<void>
     ) {
-      const httpRequest = HttpClientRequest.post(ANTHROPIC_MESSAGES_URL).pipe(
+      const httpRequest = HttpClientRequest.post(messagesUrl).pipe(
         HttpClientRequest.setHeaders(requestHeaders(apiKey)),
         HttpClientRequest.bodyText(JSON.stringify(request), "application/json")
       );

@@ -1,6 +1,38 @@
-# rat-stack 🐀
+# hypertask-help
 
-_An Effect stack so pure (aspirational) Kit Langton will blush._
+This repository is the new home of help.hypertask.ai, built from Rat Stack. `VISION.md` says what the help site must keep, `AGENTS.md` is the law. The old Cloudflare Worker keeps serving the address until HTPR-9178 switches it.
+
+## The chat widget
+
+AI help center for Hypertask. The help page at [help.hypertask.ai/help](https://help.hypertask.ai/help) and the embeddable widget are the same chat (`/widget/widget.js`, `/widget/chat`) and the same `/api/chat/message` backend.
+
+Add this script tag to a page. It renders a launcher at the bottom-right that opens the chat. A cited help article stays closed until the visitor agrees, then opens on help.hypertask.ai in a new tab.
+
+```html
+<script src="https://help.hypertask.ai/widget/widget.js"></script>
+```
+
+Dock the same chat open on the right (desktop). Below 900px it falls back to the launcher. The widget adds `hypertask-chat-docked` to `html` and `body` and sets `--hypertask-chat-dock-width: 400px` while the panel is open. It injects the margin below so page content is not covered. Do not add that margin again.
+
+```html
+<script
+  src="https://help.hypertask.ai/widget/widget.js"
+  data-mode="docked"
+></script>
+```
+
+```css
+body.hypertask-chat-docked {
+  width: auto;
+  margin-right: var(--hypertask-chat-dock-width, 400px);
+}
+```
+
+A host that locks down CSP must allow `https://help.hypertask.ai` in `script-src` and `frame-src`. Cross-origin calls and framing are allowed from `https://hypertask.ai`, `https://www.hypertask.ai`, and `https://docs.hypertask.ai`.
+
+## The Rat Stack README this project starts from
+
+The rest of this file describes the reference stack, not the help product.
 
 [![CI](https://github.com/joelhooks/rat-stack/actions/workflows/ci.yml/badge.svg)](https://github.com/joelhooks/rat-stack/actions/workflows/ci.yml)
 

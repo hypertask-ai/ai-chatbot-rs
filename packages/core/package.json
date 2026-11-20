@@ -79,6 +79,76 @@
       "import": "./dist/contracts.js",
       "default": "./dist/contracts.js"
     },
+    "./admin-access": {
+      "types": "./src/admin-access.ts",
+      "import": "./dist/admin-access.js",
+      "default": "./dist/admin-access.js"
+    },
+    "./admin-contracts": {
+      "types": "./src/admin-contracts.ts",
+      "import": "./dist/admin-contracts.js",
+      "default": "./dist/admin-contracts.js"
+    },
+    "./admin-conversation-store": {
+      "types": "./src/admin-conversation-store.ts",
+      "import": "./dist/admin-conversation-store.js",
+      "default": "./dist/admin-conversation-store.js"
+    },
+    "./admin-conversations": {
+      "types": "./src/admin-conversations.ts",
+      "import": "./dist/admin-conversations.js",
+      "default": "./dist/admin-conversations.js"
+    },
+    "./admin-usage": {
+      "types": "./src/admin-usage.ts",
+      "import": "./dist/admin-usage.js",
+      "default": "./dist/admin-usage.js"
+    },
+    "./help-article-store": {
+      "types": "./src/help-article-store.ts",
+      "import": "./dist/help-article-store.js",
+      "default": "./dist/help-article-store.js"
+    },
+    "./help-category": {
+      "types": "./src/help-category.ts",
+      "import": "./dist/help-category.js",
+      "default": "./dist/help-category.js"
+    },
+    "./help-article-pane": {
+      "types": "./src/help-article-pane.ts",
+      "import": "./dist/help-article-pane.js",
+      "default": "./dist/help-article-pane.js"
+    },
+    "./help-plans": {
+      "types": "./src/help-plans.ts",
+      "import": "./dist/help-plans.js",
+      "default": "./dist/help-plans.js"
+    },
+    "./help-articles": {
+      "types": "./src/help-articles.ts",
+      "import": "./dist/help-articles.js",
+      "default": "./dist/help-articles.js"
+    },
+    "./help-related-articles": {
+      "types": "./src/help-related-articles.ts",
+      "import": "./dist/help-related-articles.js",
+      "default": "./dist/help-related-articles.js"
+    },
+    "./help-search": {
+      "types": "./src/help-search.ts",
+      "import": "./dist/help-search.js",
+      "default": "./dist/help-search.js"
+    },
+    "./help-retrieval": {
+      "types": "./src/help-retrieval.ts",
+      "import": "./dist/help-retrieval.js",
+      "default": "./dist/help-retrieval.js"
+    },
+    "./health": {
+      "types": "./src/health.ts",
+      "import": "./dist/health.js",
+      "default": "./dist/health.js"
+    },
     "./intake": {
       "types": "./src/intake.ts",
       "import": "./dist/intake.js",

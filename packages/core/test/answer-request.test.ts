@@ -11,6 +11,7 @@ import {
   SYSTEM_PROMPT,
   toAnswerUserContent,
   trimConversation,
+  visitorProfileFromRow,
 } from "../src/index.js";
 import type { ChatTurn } from "../src/index.js";
 
@@ -53,11 +54,11 @@ describe("help answer request", () => {
     const request = buildAnswerRequest({
       articleContext,
       history: [],
-      profile: {
+      profile: visitorProfileFromRow({
         has_hypertask_account: "unknown",
         visitor_email: null,
         visitor_name: "Ada",
-      },
+      }),
       userContent: "current question",
     });
 

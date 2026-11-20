@@ -31,6 +31,7 @@ import {
 import { startConversation, stepConversation } from "./conversation-machine.js";
 import type { ConversationState } from "./conversation-machine.js";
 import { CustomerAlerts } from "./customer-alerts.js";
+import { isVerifiedEvalRequest } from "./eval-traffic.js";
 
 export const UNKNOWN_CLIENT = "unknown";
 
@@ -237,34 +238,6 @@ export const visitorSecretOf = (bytes: Uint8Array): string => {
   return encoded.replaceAll("+", "-").replaceAll("/", "_");
 };
 
-export const isVerifiedEvalRequest = (
-  token: string | undefined,
-  secret: string | undefined
-): boolean => {
-  if (
-    token === undefined ||
-    token === "" ||
-    secret === undefined ||
-    secret === ""
-  ) {
-    return false;
-  }
-
-  const provided = new TextEncoder().encode(token);
-  const expected = new TextEncoder().encode(secret);
-  let difference = provided.length === expected.length ? 0 : 1;
-  const length = Math.max(provided.length, expected.length);
-
-  for (let index = 0; index < length; index += 1) {
-    const left = provided[index] ?? 0;
-    const right = expected[index] ?? 0;
-
-    difference = difference === 0 && left === right ? 0 : 1;
-  }
-
-  return difference === 0;
-};
-
 export interface ChatMessageIds {
   readonly answerMessageId: string;
   readonly conversationId: string;
@@ -397,6 +370,7 @@ const newConversationRow = (
   secretHash: string | undefined
 ) => ({
   archived: state.archived,
+  createdAt: state.updatedAt,
   email: state.profile.email,
   hasAccount: state.profile.account,
   id: ids.conversationId,

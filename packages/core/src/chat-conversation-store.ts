@@ -11,6 +11,7 @@ import type {
 
 export const ChatConversationSchema = Schema.Struct({
   archived: Schema.Boolean,
+  createdAt: Schema.Natural,
   email: Schema.UndefinedOr(Schema.String),
   hasAccount: VisitorAccountSchema,
   id: Schema.String,
@@ -80,6 +81,13 @@ export interface VisitorSecretQuery {
   readonly visitorId: string;
 }
 
+export interface RecentVisitorSessionsQuery {
+  readonly secretHash: string | undefined;
+  readonly visitorId: string;
+}
+
+export const VISITOR_SESSIONS_LIMIT = 20;
+
 export type ChatHandoffEmailOutcome = "not_found" | "saved" | "too_soon";
 
 export interface ChatConversationOperations {
@@ -87,6 +95,9 @@ export interface ChatConversationOperations {
   readonly findReturningCustomer: (
     query: ReturningCustomerQuery
   ) => Effect.Effect<ReturningCustomer | undefined>;
+  readonly listRecentForVisitor: (
+    query: RecentVisitorSessionsQuery
+  ) => Effect.Effect<readonly ChatConversation[]>;
   readonly read: (id: string) => Effect.Effect<ChatConversation | undefined>;
   readonly readAsVisitor: (
     query: VisitorConversationQuery
@@ -130,6 +141,7 @@ interface MemoryConversation {
 const seedConversation = (seed: ChatConversationSeed): ChatConversation => {
   const base: ChatConversation = {
     archived: seed.archived,
+    createdAt: seed.createdAt,
     email: seed.email,
     hasAccount: seed.hasAccount,
     id: seed.id,
@@ -199,6 +211,21 @@ export const memoryChatConversations = (
       findReturningCustomer: (query) =>
         Ref.get(rows).pipe(
           Effect.map((held) => newestReturningCustomer(held, query))
+        ),
+      listRecentForVisitor: (query) =>
+        Ref.get(rows).pipe(
+          Effect.map((held) =>
+            [...held.values()]
+              .flatMap((entry) =>
+                entry.conversation.visitorId === query.visitorId &&
+                (query.secretHash === undefined ||
+                  entry.visitorSecretHash === query.secretHash)
+                  ? [entry.conversation]
+                  : []
+              )
+              .toSorted((left, right) => right.updatedAt - left.updatedAt)
+              .slice(0, VISITOR_SESSIONS_LIMIT)
+          )
         ),
       read: (id) =>
         Ref.get(rows).pipe(Effect.map((held) => held.get(id)?.conversation)),
