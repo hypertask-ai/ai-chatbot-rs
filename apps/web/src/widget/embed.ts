@@ -24,6 +24,8 @@ export const widgetScriptPath = "/widget/widget.js";
 
 export const widgetScriptAssetPath = `${siteBasePath}${widgetScriptPath}`;
 
+export const widgetScriptBuildFileName = widgetScriptPath.replace(/^\//u, "");
+
 export const isWidgetChatPath = (pathname: string): boolean =>
   pathname === sitePath(widgetChatPath);
 
