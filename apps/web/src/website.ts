@@ -1,14 +1,29 @@
 import * as Cloudflare from "@alchemy.run/cloudflare";
-import { Stage } from "alchemy/Stage";
-import * as Effect from "effect/Effect";
 
-import { websiteProps } from "./website-props.js";
+import {
+  siteAssetHeaders,
+  siteAssetRedirects,
+  siteBasePath,
+} from "./site-base-path.js";
+import { widgetScriptAssetHeaders } from "./widget/embed.js";
 
-export class Website extends Cloudflare.Website.Foldkit<Website>()(
-  "Website",
-  Effect.gen(function* websiteStage() {
-    const stage = yield* Stage;
+export const publishHostname = "help.hypertask.ai";
 
-    return websiteProps(stage);
-  })
-) {}
+export const publishRoutePattern = `${publishHostname}${siteBasePath}*`;
+
+export const publishWorkerName = "help-hypertask-ratstack";
+
+const previewWorker = {
+  name: publishWorkerName,
+  rootDir: "../web",
+  routes: [{ pattern: publishRoutePattern, zoneName: "hypertask.ai" }],
+};
+
+const headers = `${siteAssetHeaders() ?? ""}${widgetScriptAssetHeaders}`;
+
+const redirects = siteAssetRedirects();
+
+export class Website extends Cloudflare.Website.Foldkit<Website>()("Website", {
+  ...previewWorker,
+  assets: { headers, redirects },
+}) {}

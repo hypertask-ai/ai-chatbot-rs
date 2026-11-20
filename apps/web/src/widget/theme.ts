@@ -1,0 +1,30 @@
+export const widgetTheme = {
+  btnBg: "#ffffff",
+  btnFg: "#000000",
+  btnHover: "#d9d9d9",
+  chatBg: "#262626",
+  chatBorder: "rgba(255, 255, 255, 0.14)",
+  divider: "rgba(255, 255, 255, 0.10)",
+  fontBody: 'system-ui, -apple-system, "Segoe UI", sans-serif',
+  htInk: "#f4f4f7",
+  muted: "#a7a8ad",
+  radiusBtn: "8px",
+  radiusLg: "14px",
+  secondaryHover: "#3a3a42",
+  surface: "#0b0b0d",
+  surfaceBorder: "rgba(255, 255, 255, 0.14)",
+  surfaceHover: "#191a1e",
+} as const;
+
+export const widgetLayout = {
+  chatBottom: "92px",
+  dockWidth: 400,
+  expandedHeight: "720px",
+  expandedWidth: "500px",
+  helpBreakpoint: 900,
+  launcherBottom: "24px",
+  launcherSize: "56px",
+  mobileBreakpoint: 640,
+  normalHeight: "640px",
+  normalWidth: "400px",
+} as const;

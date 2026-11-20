@@ -31,7 +31,6 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "env": ["SITE_BASE_PATH"],
       "outputs": ["dist/**"]
     },
     "test": {
@@ -45,6 +44,10 @@
       "outputs": []
     },
     "//#lockfile:check": {
+      "cache": false,
+      "outputs": []
+    },
+    "//#test:verify": {
       "cache": false,
       "outputs": []
     },

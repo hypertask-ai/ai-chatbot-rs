@@ -39,32 +39,6 @@
       "body": ""
     },
     {
-      "id": "redirect-root",
-      "method": "GET",
-      "path": "/",
-      "origin": null,
-      "requestMethod": null,
-      "status": 302,
-      "headers": {
-        "location": "/help",
-        "vary": "Origin"
-      },
-      "body": ""
-    },
-    {
-      "id": "redirect-root-head",
-      "method": "HEAD",
-      "path": "/",
-      "origin": null,
-      "requestMethod": null,
-      "status": 302,
-      "headers": {
-        "location": "/help",
-        "vary": "Origin"
-      },
-      "body": ""
-    },
-    {
       "id": "redirect-en",
       "method": "GET",
       "path": "/en",
@@ -211,9 +185,9 @@
       "body": "{\"status\":\"ok\",\"service\":\"ai-chatbot\"}"
     },
     {
-      "id": "cors-redirect-allowed",
+      "id": "cors-redirect-en-allowed",
       "method": "GET",
-      "path": "/",
+      "path": "/en",
       "origin": "https://docs.hypertask.ai",
       "requestMethod": null,
       "status": 302,
