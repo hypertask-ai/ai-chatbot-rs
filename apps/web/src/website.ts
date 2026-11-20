@@ -23,7 +23,13 @@ const headers = `${siteAssetHeaders() ?? ""}${widgetScriptAssetHeaders}`;
 
 const redirects = siteAssetRedirects();
 
+export const websiteAssets = {
+  headers,
+  htmlHandling: "none",
+  redirects,
+} as const;
+
 export class Website extends Cloudflare.Website.Foldkit<Website>()("Website", {
   ...previewWorker,
-  assets: { headers, redirects },
+  assets: websiteAssets,
 }) {}
