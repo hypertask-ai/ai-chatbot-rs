@@ -85,19 +85,19 @@ const decodeArticle = Schema.decodeUnknownSync(
   Schema.fromJsonString(HelpArticle)
 );
 
-const articleSlugs = [
-  "docs-features-chat-board-filter",
-  "docs-features-ai-features",
-  "pricing-plans",
-  "using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj",
-  "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
-];
+const articleRows = recorded.rows.filter(
+  (row) =>
+    row.path.startsWith("/api/articles/") &&
+    !row.path.startsWith("/api/articles/search/") &&
+    row.status === 200
+);
 
 const articlesBySlug = new Map(
-  articleSlugs.map((slug) => [
-    slug,
-    decodeArticle(rowOf(`article-${slug}`).body),
-  ])
+  articleRows.map((row) => {
+    const article = decodeArticle(row.body);
+
+    return [article.slug, article];
+  })
 );
 
 interface SeedArticle {

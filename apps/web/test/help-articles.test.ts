@@ -33,13 +33,12 @@ const RecordedAnswers = Schema.Struct({
 
 const recorded = Schema.decodeUnknownSync(RecordedAnswers)(recordedAnswers);
 
-const articleSlugs = [
-  "docs-features-chat-board-filter",
-  "docs-features-ai-features",
-  "pricing-plans",
-  "using-the-ai-task-writer-in-hypertasks-ctrlj-cmdj",
-  "voice-dictation-meets-ai-speak-your-way-to-perfect-comments",
-];
+const articleRows = recorded.rows.filter(
+  (row) =>
+    row.path.startsWith("/api/articles/") &&
+    !row.path.startsWith("/api/articles/search/") &&
+    row.status === 200
+);
 
 const searchQueries = ["board", "voice", "zzzqx"];
 
@@ -70,9 +69,7 @@ const decodePane = Schema.decodeUnknownSync(
 );
 
 const memory = {
-  articles: articleSlugs.map((slug) =>
-    decodeArticle(rowOf(`article-${slug}`).body)
-  ),
+  articles: articleRows.map((row) => decodeArticle(row.body)),
   list: decodeSummaries(rowOf("articles-list").body),
   searches: searchQueries.map((keywords) => ({
     keywords,
