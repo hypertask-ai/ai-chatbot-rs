@@ -620,7 +620,6 @@ export const helpCenter = stylex.create({
     "::placeholder": { color: helpTheme.muted },
     ":focus": {
       backgroundColor: helpTheme.surface,
-      borderColor: helpTheme.ink,
       boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.20)",
     },
     backgroundColor: "transparent",
