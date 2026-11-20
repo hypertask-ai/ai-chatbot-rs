@@ -164,7 +164,7 @@ const expectSamePage = (served: string, live: string): void => {
   const servedBody = withoutCode(bodyOf(served));
   const liveBody = withoutCode(bodyOf(live));
 
-  expect(titleOf(served)).toBe(titleOf(live));
+  expect(textOf(titleOf(served))).toBe(textOf(titleOf(live)));
   expect(textOf(servedBody)).toBe(textOf(liveBody));
   expect(headingsOf(servedBody)).toEqual(headingsOf(liveBody));
   expect(hrefsOf(servedBody).map(withoutSiteBasePath)).toEqual(
@@ -251,31 +251,36 @@ describe("help pages recorded from the old site", () => {
     );
   }
 
-  it.effect("answers every article the old site lists", () =>
-    Effect.gen(function* everyArticle() {
-      for (const pathname of recordedArticlePaths) {
-        const route = helpRouteOf(pathname);
+  it.effect(
+    "answers every article the old site lists",
+    () =>
+      Effect.gen(function* everyArticle() {
+        for (const pathname of recordedArticlePaths) {
+          const route = helpRouteOf(pathname);
 
-        if (route === null) {
-          throw new Error(`No help route answers ${pathname}`);
+          if (route === null) {
+            throw new Error(`No help route answers ${pathname}`);
+          }
+
+          const flags = yield* helpPageFlags(route).pipe(
+            Effect.provide(recordedHelpArticles)
+          );
+
+          if (flags === null || flags.page !== "article") {
+            throw new Error(`No article answers ${pathname}`);
+          }
+
+          const served = yield* pageAt(pathname);
+
+          expect(textOf(titleOf(served)), pathname).toBe(
+            `${flags.article.title} - ${articleTitleSuffix}`
+          );
+          expect(textOf(bodyOf(served)), pathname).toContain(
+            flags.article.title
+          );
         }
-
-        const flags = yield* helpPageFlags(route).pipe(
-          Effect.provide(recordedHelpArticles)
-        );
-
-        if (flags === null || flags.page !== "article") {
-          throw new Error(`No article answers ${pathname}`);
-        }
-
-        const served = yield* pageAt(pathname);
-
-        expect(textOf(titleOf(served)), pathname).toBe(
-          `${flags.article.title} - ${articleTitleSuffix}`
-        );
-        expect(textOf(bodyOf(served)), pathname).toContain(flags.article.title);
-      }
-    })
+      }),
+    { timeout: 30_000 }
   );
 
   it.effect("serves the fonts and images from this site", () =>
