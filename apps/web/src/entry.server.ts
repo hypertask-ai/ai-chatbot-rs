@@ -140,7 +140,7 @@ const underBasePath = (pathname: string): boolean =>
   siteBasePath !== "" &&
   (pathname === siteBasePath || pathname.startsWith(`${siteBasePath}/`));
 
-const pageUnder = (
+export const pageUnder = (
   pathname: string
 ): { readonly noindex: boolean; readonly route: HelpRoute } | null => {
   const noindex = underBasePath(pathname);
