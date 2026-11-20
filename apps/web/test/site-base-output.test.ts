@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "@effect/vitest";
 
 import { siteBasePath, siteRobotsMeta } from "../src/site-base-path.js";
+import {
+  widgetScriptAssetPath,
+  widgetScriptBuildFileName,
+} from "../src/widget/embed.js";
 
 const basePathOwner = "apps/web/src/site-base-path.ts";
 
@@ -140,5 +144,18 @@ describe("the built site under the base path", () => {
     );
 
     expect(missing).toStrictEqual([]);
+  });
+
+  it("writes the widget loader where the asset manifest adds the base path", () => {
+    expect(widgetScriptBuildFileName).toBe("widget/widget.js");
+    expect(widgetScriptAssetPath).toBe(`${siteBasePath}/widget/widget.js`);
+    expect(widgetScriptBuildFileName.startsWith(siteBasePath)).toBe(false);
+
+    const loader = statSync(
+      path.join(clientDirectory, widgetScriptBuildFileName),
+      { throwIfNoEntry: false }
+    );
+
+    expect(loader?.isFile()).toBe(true);
   });
 });

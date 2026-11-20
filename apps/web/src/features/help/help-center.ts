@@ -1,14 +1,18 @@
 import { Option } from "effect";
 import type { Html, HtmlBuilder } from "foldkit/html";
 
-import type { AppMessage } from "../../client/help/message.js";
 import { Message } from "../../client/help/message.js";
+import type { AppMessage } from "../../client/help/message.js";
+import { ReaderPhase } from "../../client/help/model.js";
 import type {
   HelpArticleCardValue,
+  HelpArticlePageValue,
   HelpBrowserValue,
   HelpPageValue,
   HelpSearchValue,
+  ReaderPhaseValue,
 } from "../../client/help/model.js";
+import { readerHidesLibrary } from "../../client/help/reader.js";
 import {
   filterHelpArticles,
   helpSearchHits,
@@ -41,6 +45,8 @@ import {
   noResultsTitle,
   openAppLabel,
   readerBackLabel,
+  readerLoadFailedLabel,
+  readerLoadingLabel,
   searchLabel,
   searchPlaceholder,
   sendLabel,
@@ -535,9 +541,71 @@ const footer = (h: Builder): Html =>
     ]
   );
 
-const reader = (h: Builder): Html =>
+const readerArticle = (
+  h: Builder,
+  page: HelpCenterPage,
+  article: HelpArticlePageValue
+): readonly Html[] => {
+  const category =
+    page.articles.find((card) => card.slug === article.slug)?.category ?? "";
+
+  return [
+    h.header(
+      [h.Class(styleClass(helpCenter.readerHeader))],
+      [
+        category === ""
+          ? null
+          : h.span(
+              [h.Class(styleClass(helpCenter.readerCategory))],
+              [category]
+            ),
+        h.h1([h.Class(styleClass(helpCenter.readerTitle))], [article.title]),
+        article.plansHtml === ""
+          ? null
+          : h.div([h.InnerHTML(article.plansHtml)]),
+        article.excerpt === ""
+          ? null
+          : h.p(
+              [h.Class(styleClass(helpCenter.readerExcerpt))],
+              [article.excerpt]
+            ),
+      ]
+    ),
+    h.div([
+      h.Class(
+        classes(styleClass(helpCenter.readerContent), "rat-help-reader-content")
+      ),
+      h.InnerHTML(article.html),
+    ]),
+  ];
+};
+
+const readerLine = (h: Builder, label: string): Html =>
+  h.p([h.Class(styleClass(helpCenter.readerLoading))], [label]);
+
+const readerContent = (
+  h: Builder,
+  page: HelpCenterPage,
+  phase: ReaderPhaseValue
+): readonly Html[] =>
+  ReaderPhase.match<readonly Html[]>(phase, {
+    Closed: () => [],
+    Failed: () => [readerLine(h, readerLoadFailedLabel)],
+    Loading: () => [readerLine(h, readerLoadingLabel)],
+    Open: ({ article }) => readerArticle(h, page, article),
+  });
+
+const reader = (
+  h: HtmlBuilder<AppMessage>,
+  page: HelpCenterPage,
+  phase: ReaderPhaseValue
+): Html =>
   h.div(
-    [h.Class(styleClass(helpCenter.reader)), h.Id("reader"), h.Hidden(true)],
+    [
+      h.Class(classes(styleClass(helpCenter.reader), "rat-help-reader")),
+      h.Id("reader"),
+      ...(ReaderPhase.guards.Closed(phase) ? [h.Hidden(true)] : []),
+    ],
     [
       h.div(
         [h.Class(styleClass(helpCenter.readerBar))],
@@ -547,12 +615,16 @@ const reader = (h: Builder): Html =>
               h.Class(styleClass(helpCenter.readerBack)),
               h.Type("button"),
               h.Id("readerBack"),
+              h.OnClick(Message.ReaderClosed()),
             ],
             [chevronLeftIcon(h), readerBackLabel]
           ),
         ]
       ),
-      h.div([h.Class(styleClass(helpCenter.readerBody)), h.Id("readerBody")]),
+      h.div(
+        [h.Class(styleClass(helpCenter.readerBody)), h.Id("readerBody")],
+        readerContent(h, page, phase)
+      ),
     ]
   );
 
@@ -560,6 +632,7 @@ export const helpCenterView = (
   page: HelpCenterPage,
   browser: HelpBrowserValue,
   search: HelpSearchValue,
+  phase: ReaderPhaseValue,
   h: Builder
 ): Html =>
   h.div(
@@ -569,7 +642,9 @@ export const helpCenterView = (
         [h.Id("helpMain")],
         [
           h.div(
-            [h.Id("libraryView")],
+            readerHidesLibrary(phase)
+              ? [h.Id("libraryView"), h.Hidden(true)]
+              : [h.Id("libraryView")],
             [
               header(h),
               hero(h),
@@ -580,6 +655,6 @@ export const helpCenterView = (
           ),
         ]
       ),
-      reader(h),
+      reader(h, page, phase),
     ]
   );

@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import {
   Rendered,
   Responded,
@@ -22,6 +22,7 @@ import {
   helpPageFlags,
   helpRouteOf,
 } from "./server/help-pages.js";
+import { helpReaderResponse, helpReaderSlugOf } from "./server/help-reader.js";
 import { answerHelpSite } from "./server/help-site.js";
 import {
   recordedArticlePaths,
@@ -108,8 +109,12 @@ const articleNotFound = (noindex: boolean): Response => {
   return new Response("<h1>Article not found</h1>", { headers, status: 404 });
 };
 
-const notFound = (): Response =>
-  new Response("Not found", { headers: noindexHeaders(), status: 404 });
+const notFound = (): Response => {
+  const headers = noindexHeaders();
+  headers.set("content-type", "text/plain; charset=UTF-8");
+
+  return new Response("404 Not Found", { headers, status: 404 });
+};
 
 const unsupportedMethod = (): Response => {
   const headers = noindexHeaders();
@@ -225,6 +230,21 @@ const renderRoute = Effect.fn("site.renderRoute")(function* renderRoute(
 
   if (route === widgetScriptPath || route === widgetChatPath) {
     return yield* widgetRoutes(request, route);
+  }
+
+  const readerSlug =
+    route === undefined ? Option.none<string>() : helpReaderSlugOf(route);
+
+  if (Option.isSome(readerSlug)) {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return Responded(withCors(request, unsupportedMethod()));
+    }
+
+    return Responded(
+      yield* helpReaderResponse(readerSlug.value).pipe(
+        Effect.provide(recordedHelpArticles)
+      )
+    );
   }
 
   const page = pageUnder(pathname);

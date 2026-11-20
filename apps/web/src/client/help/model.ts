@@ -1,4 +1,5 @@
 import { Option, Schema } from "effect";
+import { defineTaggedUnion } from "foldkit/schema";
 
 export const HelpArticleCard = Schema.Struct({
   category: Schema.String,
@@ -45,6 +46,13 @@ export const HelpSearch = Schema.Struct({
   query: Schema.String,
 });
 
+export const ReaderPhase = defineTaggedUnion({
+  Closed: {},
+  Failed: { wide: Schema.Boolean },
+  Loading: { slug: Schema.String, wide: Schema.Boolean },
+  Open: { article: HelpArticlePage, wide: Schema.Boolean },
+});
+
 export const Model = Schema.Struct({
   browser: HelpBrowser,
   feedback: Schema.Struct({
@@ -52,6 +60,7 @@ export const Model = Schema.Struct({
     yes: Schema.Boolean,
   }),
   page: HelpPage,
+  reader: ReaderPhase,
   search: HelpSearch,
 });
 
@@ -59,11 +68,15 @@ export type AppModel = typeof Model.Type;
 
 export type HelpArticleCardValue = typeof HelpArticleCard.Type;
 
+export type HelpArticlePageValue = typeof HelpArticlePage.Type;
+
 export type HelpPageValue = typeof HelpPage.Type;
 
 export type HelpBrowserValue = typeof HelpBrowser.Type;
 
 export type HelpSearchValue = typeof HelpSearch.Type;
+
+export type ReaderPhaseValue = typeof ReaderPhase.Type;
 
 export const closedBrowser: HelpBrowserValue = {
   category: Option.none(),
@@ -76,5 +89,6 @@ export const initialModel = (flags: typeof Flags.Type): AppModel => ({
   browser: closedBrowser,
   feedback: { no: false, yes: false },
   page: flags,
+  reader: ReaderPhase.Closed(),
   search: emptySearch,
 });

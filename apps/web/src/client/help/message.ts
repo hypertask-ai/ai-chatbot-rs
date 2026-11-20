@@ -1,6 +1,8 @@
 import { Schema } from "effect";
 import { defineMessageUnion } from "foldkit/message";
 
+import { readerMessageCases } from "./reader.js";
+
 export const Message = defineMessageUnion({
   AddressChanged: { hash: Schema.String },
   AddressReplaced: {},
@@ -12,6 +14,7 @@ export const Message = defineMessageUnion({
   SearchInputFocused: {},
   SearchKeyPressed: { key: Schema.String },
   SearchSettled: { value: Schema.String },
+  ...readerMessageCases,
 });
 
 export type AppMessage = typeof Message.Type;

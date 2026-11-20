@@ -9,7 +9,13 @@ import { helpCenterView } from "./help-center.js";
 export const view = (model: AppModel, h: HtmlBuilder<AppMessage>): Document =>
   model.page.page === "home"
     ? {
-        body: helpCenterView(model.page, model.browser, model.search, h),
+        body: helpCenterView(
+          model.page,
+          model.browser,
+          model.search,
+          model.reader,
+          h
+        ),
         title: helpCenterTitle,
       }
     : {

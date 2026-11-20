@@ -3,7 +3,7 @@ import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 
 import { siteBasePath } from "./src/site-base-path.js";
-import { widgetScriptAssetPath } from "./src/widget/embed.js";
+import { widgetScriptBuildFileName } from "./src/widget/embed.js";
 import { widgetLoaderScript } from "./src/widget/loader.js";
 import { stylexPlugin } from "./stylex.js";
 
@@ -31,8 +31,6 @@ const outputLayout = (): Plugin => ({
   name: "site-output-layout",
 });
 
-const widgetAssetFileName = widgetScriptAssetPath.replace(/^\//u, "");
-
 const widgetLoaderAsset = (): Plugin => ({
   apply: "build",
   generateBundle() {
@@ -41,7 +39,7 @@ const widgetLoaderAsset = (): Plugin => ({
     }
 
     this.emitFile({
-      fileName: widgetAssetFileName,
+      fileName: widgetScriptBuildFileName,
       source: widgetLoaderScript(),
       type: "asset",
     });
