@@ -4,7 +4,16 @@ import { defineMessageUnion } from "foldkit/message";
 import { readerMessageCases } from "./reader.js";
 
 export const Message = defineMessageUnion({
+  AddressChanged: { hash: Schema.String },
+  AddressReplaced: {},
+  AllArticlesChosen: {},
   ArticleFeedbackGiven: { sentiment: Schema.Literals(["yes", "no"]) },
+  SearchCleared: {},
+  SearchEdited: { value: Schema.String },
+  SearchInputBlurred: {},
+  SearchInputFocused: {},
+  SearchKeyPressed: { key: Schema.String },
+  SearchSettled: { value: Schema.String },
   ...readerMessageCases,
 });
 

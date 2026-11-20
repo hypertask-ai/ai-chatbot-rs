@@ -1,19 +1,30 @@
+import { Option } from "effect";
 import type { Html, HtmlBuilder } from "foldkit/html";
 
 import { Message } from "../../client/help/message.js";
 import type { AppMessage } from "../../client/help/message.js";
 import { ReaderPhase } from "../../client/help/model.js";
 import type {
+  HelpArticleCardValue,
   HelpArticlePageValue,
+  HelpBrowserValue,
   HelpPageValue,
+  HelpSearchValue,
   ReaderPhaseValue,
 } from "../../client/help/model.js";
 import { readerHidesLibrary } from "../../client/help/reader.js";
-import { sitePath } from "../../site-base-path.js";
+import {
+  filterHelpArticles,
+  helpSearchHits,
+  helpVisitorQuery,
+} from "../../client/help/search.js";
+import { siteImagePath } from "../../site-base-path.js";
 import { classes, styleClass } from "./class-names.js";
 import {
   allArticlesLabel,
   appOrigin,
+  articleFoundLabel,
+  articlesFoundLabel,
   attachLabel,
   browserTitle,
   chatLabel,
@@ -30,6 +41,8 @@ import {
   loginUrl,
   menuGlyph,
   menuLabel,
+  noResultsBody,
+  noResultsTitle,
   openAppLabel,
   readerBackLabel,
   readerLoadFailedLabel,
@@ -41,14 +54,14 @@ import {
   topics,
   topicsHeading,
 } from "./copy.js";
-import { chevronLeftIcon } from "./icons.js";
+import { chevronLeftIcon, documentIcon, noResultsIcon } from "./icons.js";
 import { helpCenter } from "./styles.stylex.js";
 
 type Builder = HtmlBuilder<AppMessage>;
 
 type HelpCenterPage = Extract<HelpPageValue, { readonly page: "home" }>;
 
-const glyphUrl = sitePath("/glyph-white.png");
+const glyphUrl = siteImagePath("glyph-white");
 
 const topicHref = (title: string) =>
   `?category=${encodeURIComponent(title)}#all`;
@@ -64,9 +77,13 @@ const topicList = (h: Builder): readonly Html[] =>
     )
   );
 
-const allArticlesLink = (h: Builder): Html =>
+const allArticlesLink = (h: HtmlBuilder<AppMessage>): Html =>
   h.a(
-    [h.Class(styleClass(helpCenter.topicsHeadingLink)), h.Href("#all")],
+    [
+      h.Class(styleClass(helpCenter.topicsHeadingLink)),
+      h.Href("#all"),
+      h.OnClick(Message.AllArticlesChosen()),
+    ],
     [allArticlesLabel]
   );
 
@@ -100,8 +117,11 @@ const suggestionButtons = (h: Builder): readonly Html[] =>
     )
   );
 
-const articleCards = (h: Builder, page: HelpCenterPage): readonly Html[] =>
-  page.articles.map((article) =>
+const articleCards = (
+  h: Builder,
+  articles: readonly HelpArticleCardValue[]
+): readonly Html[] =>
+  articles.map((article) =>
     h.a(
       [
         h.Class(styleClass(helpCenter.articleCard)),
@@ -261,12 +281,174 @@ const topicSection = (h: Builder): Html =>
     ]
   );
 
-const articleBrowser = (h: Builder, page: HelpCenterPage): Html =>
-  h.section(
+const highlightedTitle = (
+  h: Builder,
+  article: HelpArticleCardValue,
+  query: string
+): readonly (Html | string)[] => {
+  const pieces: (Html | string)[] = [];
+  let at = 0;
+
+  for (const hit of helpSearchHits(article.title, query)) {
+    if (hit.start > at) {
+      pieces.push(article.title.slice(at, hit.start));
+    }
+
+    pieces.push(
+      h.mark(
+        [h.Class(styleClass(helpCenter.searchHighlight))],
+        [article.title.slice(hit.start, hit.end)]
+      )
+    );
+    at = hit.end;
+  }
+
+  if (at < article.title.length) {
+    pieces.push(article.title.slice(at));
+  }
+
+  return pieces;
+};
+
+const searchResult = (
+  h: Builder,
+  article: HelpArticleCardValue,
+  query: string
+): Html =>
+  h.a(
+    [
+      h.Class(styleClass(helpCenter.liveSearchItem)),
+      h.Href(`${helpCenterUrl}/${article.slug}`),
+    ],
+    [
+      h.div(
+        [h.Class(styleClass(helpCenter.liveSearchItemIcon))],
+        [documentIcon(h)]
+      ),
+      h.div(
+        [h.Class(styleClass(helpCenter.liveSearchItemContent))],
+        [
+          h.div(
+            [h.Class(styleClass(helpCenter.liveSearchItemTitle))],
+            highlightedTitle(h, article, query)
+          ),
+          h.div(
+            [h.Class(styleClass(helpCenter.liveSearchItemCategory))],
+            [article.category]
+          ),
+          article.excerpt === ""
+            ? null
+            : h.div(
+                [h.Class(styleClass(helpCenter.liveSearchItemExcerpt))],
+                [article.excerpt]
+              ),
+        ]
+      ),
+    ]
+  );
+
+const searchResults = (
+  h: Builder,
+  articles: readonly HelpArticleCardValue[],
+  query: string
+): readonly Html[] => [
+  h.div(
+    [h.Class(styleClass(helpCenter.liveSearchHeader))],
+    [
+      h.span(
+        [h.Class(styleClass(helpCenter.liveSearchTitle))],
+        [
+          h.strong(
+            [h.Class(styleClass(helpCenter.liveSearchTitleCount))],
+            [String(articles.length)]
+          ),
+          " ",
+          articles.length === 1 ? articleFoundLabel : articlesFoundLabel,
+        ]
+      ),
+    ]
+  ),
+  h.div(
+    [h.Class(styleClass(helpCenter.liveSearchList))],
+    articles.map((article) => searchResult(h, article, query))
+  ),
+];
+
+const searchResultsEmpty = (h: Builder): Html =>
+  h.div(
+    [h.Class(styleClass(helpCenter.liveSearchNoResults))],
+    [
+      h.div(
+        [h.Class(styleClass(helpCenter.liveSearchNoResultsIcon))],
+        [noResultsIcon(h)]
+      ),
+      h.h3(
+        [h.Class(styleClass(helpCenter.liveSearchNoResultsHeading))],
+        [noResultsTitle]
+      ),
+      h.p(
+        [h.Class(styleClass(helpCenter.liveSearchNoResultsBody))],
+        [noResultsBody]
+      ),
+    ]
+  );
+
+const liveResultsBody = (
+  h: Builder,
+  page: HelpCenterPage,
+  search: HelpSearchValue
+): readonly Html[] => {
+  const results = filterHelpArticles(page.articles, search.query);
+
+  return results.length === 0
+    ? [searchResultsEmpty(h)]
+    : searchResults(h, results, search.query);
+};
+
+const liveResults = (
+  h: Builder,
+  page: HelpCenterPage,
+  search: HelpSearchValue
+): Html => {
+  const searching = helpVisitorQuery(search.query) !== "";
+
+  return h.div(
+    [
+      h.Class(
+        styleClass(
+          searching ? helpCenter.liveResultsShown : helpCenter.liveResultsHidden
+        )
+      ),
+      h.Id("liveSearchResults"),
+    ],
+    searching ? liveResultsBody(h, page, search) : []
+  );
+};
+
+const cardsIn = (
+  page: HelpCenterPage,
+  browser: HelpBrowserValue
+): readonly HelpArticleCardValue[] => {
+  const category = Option.getOrNull(browser.category);
+
+  return category === null
+    ? page.articles
+    : page.articles.filter((article) => article.category === category);
+};
+
+const articleBrowser = (
+  h: HtmlBuilder<AppMessage>,
+  page: HelpCenterPage,
+  browser: HelpBrowserValue,
+  search: HelpSearchValue
+): Html => {
+  const searching = helpVisitorQuery(search.query) !== "";
+
+  return h.section(
     [
       h.Class(styleClass(helpCenter.articleBrowser)),
       h.Id("all"),
-      h.Hidden(true),
+      h.Hidden(!browser.open),
     ],
     [
       h.h2(
@@ -274,7 +456,11 @@ const articleBrowser = (h: Builder, page: HelpCenterPage): Html =>
           h.Class(styleClass(helpCenter.articleBrowserTitle)),
           h.Id("browserTitle"),
         ],
-        [browserTitle]
+        [
+          Option.isNone(browser.category)
+            ? browserTitle
+            : browser.category.value,
+        ]
       ),
       h.div(
         [h.Class(styleClass(helpCenter.searchContainer))],
@@ -286,25 +472,40 @@ const articleBrowser = (h: Builder, page: HelpCenterPage): Html =>
             h.Placeholder(searchPlaceholder),
             h.AriaLabel(searchLabel),
             h.Autocomplete("off"),
+            h.Value(search.input),
+            h.OnInput((value) => Message.SearchEdited({ value })),
+            h.OnKeyDown((key) => Message.SearchKeyPressed({ key })),
           ]),
           h.button(
             [
-              h.Class(styleClass(helpCenter.searchClear)),
+              h.Class(
+                classes(
+                  styleClass(helpCenter.searchClear),
+                  styleClass(
+                    searching
+                      ? helpCenter.searchClearShown
+                      : helpCenter.searchClearHidden
+                  )
+                )
+              ),
               h.Id("searchClear"),
               h.Type("button"),
               h.AriaLabel(clearSearchLabel),
+              h.OnClick(Message.SearchCleared()),
             ],
             [clearSearchGlyph]
           ),
         ]
       ),
-      h.div([
-        h.Class(styleClass(helpCenter.liveResults)),
-        h.Id("liveSearchResults"),
-      ]),
+      liveResults(h, page, search),
       h.div(
         [
-          h.Class(styleClass(helpCenter.articlesRegion)),
+          h.Class(
+            classes(
+              styleClass(helpCenter.articlesRegion),
+              searching ? styleClass(helpCenter.articlesRegionSearching) : null
+            )
+          ),
           h.Id("categoriesContainer"),
         ],
         [
@@ -313,7 +514,7 @@ const articleBrowser = (h: Builder, page: HelpCenterPage): Html =>
             [
               h.div(
                 [h.Class(styleClass(helpCenter.articlesList))],
-                articleCards(h, page)
+                articleCards(h, cardsIn(page, browser))
               ),
             ]
           ),
@@ -321,6 +522,7 @@ const articleBrowser = (h: Builder, page: HelpCenterPage): Html =>
       ),
     ]
   );
+};
 
 const footer = (h: Builder): Html =>
   h.footer(
@@ -428,6 +630,8 @@ const reader = (
 
 export const helpCenterView = (
   page: HelpCenterPage,
+  browser: HelpBrowserValue,
+  search: HelpSearchValue,
   phase: ReaderPhaseValue,
   h: Builder
 ): Html =>
@@ -445,7 +649,7 @@ export const helpCenterView = (
               header(h),
               hero(h),
               topicSection(h),
-              articleBrowser(h, page),
+              articleBrowser(h, page, browser, search),
               footer(h),
             ]
           ),

@@ -1,3 +1,7 @@
+export { initialModelAtAddress } from "./address.js";
+
+export type { HelpAddress } from "./address.js";
+
 export { chatArticleSlugOf } from "./chat-link.js";
 
 export type { ChatMessage } from "./chat-link.js";
@@ -6,17 +10,24 @@ export {
   Flags,
   HelpArticleCard,
   HelpArticlePage,
+  HelpBrowser,
   HelpPage,
   HelpRelatedLink,
+  HelpSearch,
   Model,
   ReaderPhase,
+  closedBrowser,
+  emptySearch,
   initialModel,
 } from "./model.js";
 
 export type {
   AppModel,
+  HelpArticleCardValue,
   HelpArticlePageValue,
+  HelpBrowserValue,
   HelpPageValue,
+  HelpSearchValue,
   ReaderPhaseValue,
 } from "./model.js";
 

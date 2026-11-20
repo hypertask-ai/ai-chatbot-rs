@@ -62,6 +62,15 @@ export const topics = [
 
 export const browserTitle = "All articles";
 
+export const articleFoundLabel = "article found";
+
+export const articlesFoundLabel = "articles found";
+
+export const noResultsTitle = "No results found";
+
+export const noResultsBody =
+  "Try a different search term or browse the categories below.";
+
 export const searchPlaceholder = "Search for articles...";
 
 export const searchLabel = "Search articles";

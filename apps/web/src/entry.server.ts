@@ -5,8 +5,10 @@ import {
   renderDocument as renderFoldkitDocument,
   renderToString,
 } from "foldkit/experimental/server";
+import type { RenderedApplication } from "foldkit/experimental/server";
 
 import { Flags, initialModel } from "./client/help/index.js";
+import type { HelpPageValue } from "./client/help/index.js";
 import {
   Flags as WidgetFlags,
   initialModel as initialWidgetModel,
@@ -15,7 +17,11 @@ import { view } from "./features/help/index.js";
 import { view as widgetView } from "./features/widget/index.js";
 import { withCors } from "./server/embed-cors.js";
 import type { HelpRoute } from "./server/help-pages.js";
-import { helpPageFlags, helpRouteOf } from "./server/help-pages.js";
+import {
+  helpDescriptionOf,
+  helpPageFlags,
+  helpRouteOf,
+} from "./server/help-pages.js";
 import { helpReaderResponse, helpReaderSlugOf } from "./server/help-reader.js";
 import { answerHelpSite } from "./server/help-site.js";
 import {
@@ -24,6 +30,7 @@ import {
 } from "./server/recorded-help-articles.js";
 import {
   siteBasePath,
+  siteImagePath,
   siteNoindexValue,
   siteRobotsMeta,
   stripBasePath,
@@ -38,18 +45,35 @@ import { widgetLoaderScript } from "./widget/loader.js";
 import { widgetPageFlags } from "./widget/params.js";
 
 const headMarkup = [
-  `<link rel="icon" type="image/png" href="${siteBasePath}/glyph-white.png">`,
+  `<link rel="icon" type="image/png" href="${siteImagePath("glyph-white")}">`,
   '<script src="https://cdn.usefathom.com/script.js" data-site="SSBYTYUQ" defer></script>',
 ].join("");
 
-export const renderDocument: typeof renderFoldkitDocument = (
-  application,
-  assets,
-  options = {}
-) =>
+type DescribedApplication = RenderedApplication & {
+  readonly description?: string;
+};
+
+type DocumentOptions = NonNullable<Parameters<typeof renderFoldkitDocument>[2]>;
+
+const escapedAttribute = (text: string): string =>
+  text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll('"', "&quot;");
+
+const descriptionTagOf = (application: DescribedApplication): string =>
+  application.description === undefined || application.description === ""
+    ? ""
+    : `<meta name="description" content="${escapedAttribute(application.description)}">`;
+
+export const renderDocument = (
+  application: DescribedApplication,
+  assets: Parameters<typeof renderFoldkitDocument>[1],
+  options: DocumentOptions = {}
+): string =>
   renderFoldkitDocument(application, assets, {
     ...options,
-    head: `${options.head ?? ""}${headMarkup}${siteRobotsMeta()}`,
+    head: `${descriptionTagOf(application)}${options.head ?? ""}${headMarkup}${siteRobotsMeta()}`,
   });
 
 export const prerenderPaths: readonly string[] = [
@@ -57,6 +81,15 @@ export const prerenderPaths: readonly string[] = [
   "/help",
   ...recordedArticlePaths,
 ];
+
+const described = (
+  application: RenderedApplication,
+  page: HelpPageValue
+): DescribedApplication => {
+  const description = helpDescriptionOf(page);
+
+  return description === "" ? application : { ...application, description };
+};
 
 const noindexHeaders = (): Headers => {
   const headers = new Headers();
@@ -141,9 +174,11 @@ const renderHelpPage = Effect.fn("site.renderHelpPage")(
       { flags }
     );
 
+    const page = described(application, flags);
+
     return noindex
-      ? Rendered(application, { headers: noindexHeaders() })
-      : Rendered(application);
+      ? Rendered(page, { headers: noindexHeaders() })
+      : Rendered(page);
   }
 );
 

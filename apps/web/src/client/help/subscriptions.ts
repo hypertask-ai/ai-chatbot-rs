@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Duration, Effect, Option, Schema, Stream } from "effect";
 import { Subscription } from "foldkit";
 import {
   streamFromEvent,
@@ -12,9 +12,22 @@ import type { AppMessage } from "./message.js";
 import type { AppModel } from "./model.js";
 import { helpArticleSlugOf } from "./reader-link.js";
 
+const settleDelay = Duration.millis(100);
+
 const READER_PANE_MIN_WIDTH = 900;
 
 const READER_AREAS = "#helpMain, #reader";
+
+const settleAfter = (query: string) =>
+  Effect.sleep(settleDelay).pipe(
+    Effect.as(Message.SearchSettled({ value: query }))
+  );
+
+const addressChanges = streamFromEvent({
+  mapEvent: () => Message.AddressChanged({ hash: window.location.hash }),
+  target: () => window,
+  type: "hashchange",
+});
 
 const wideNow = (): boolean => window.innerWidth >= READER_PANE_MIN_WIDTH;
 
@@ -68,6 +81,13 @@ const viewportChanges = streamFromEvent({
 
 export const subscriptions = Subscription.make<AppModel, AppMessage>()(
   (entry) => ({
+    addressChanged: entry(
+      {},
+      {
+        dependenciesToStream: () => addressChanges,
+        modelToDependencies: () => ({}),
+      }
+    ),
     articleClicks: entry(
       {},
       {
@@ -87,6 +107,14 @@ export const subscriptions = Subscription.make<AppModel, AppMessage>()(
       {
         dependenciesToStream: () => escapePresses,
         modelToDependencies: () => ({}),
+      }
+    ),
+    searchSettled: entry(
+      { query: Schema.String },
+      {
+        dependenciesToStream: ({ query }) =>
+          Stream.fromIterable([query]).pipe(Stream.mapEffect(settleAfter)),
+        modelToDependencies: (model) => ({ query: model.search.input }),
       }
     ),
     viewportChanges: entry(

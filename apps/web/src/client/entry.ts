@@ -7,7 +7,7 @@ import {
   Flags,
   Message,
   Model,
-  initialModel,
+  initialModelAtAddress,
   subscriptions,
   update,
 } from "./help/index.js";
@@ -32,7 +32,12 @@ const siteApplication = Runtime.makeApplication({
   Model,
   container,
   devTools: import.meta.env.DEV ? { Message } : false,
-  init: (flags) => ({ model: initialModel(flags) }),
+  init: (flags) => ({
+    model: initialModelAtAddress(flags, {
+      hash: window.location.hash,
+      search: window.location.search,
+    }),
+  }),
   subscriptions,
   update,
   view,

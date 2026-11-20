@@ -1,0 +1,48 @@
+{
+  "recorded": "2026-11-15",
+  "source": "https://help.hypertask.ai/help inline article array, GET only",
+  "rule": "src/index.ts:836-863, the live search row markup and highlightMatch",
+  "rows": [
+    {
+      "query": "board",
+      "slug": "docs-features-chat-board-filter",
+      "title": "AI Chat Board Filter",
+      "markedTitle": "AI Chat <mark>Board</mark> Filter",
+      "category": "AI & Productivity",
+      "excerpt": "Choose a ticket or board scope for docked AI Chat, and filter chat history by board.",
+      "found": "32 articles found"
+    },
+    {
+      "query": "BOARD",
+      "slug": "docs-features-keyboard-shortcuts",
+      "title": "Keyboard Shortcuts",
+      "markedTitle": "Key<mark>board</mark> Shortcuts",
+      "category": "Keyboard Shortcuts",
+      "excerpt": "Complete keyboard shortcut reference for Windows, Linux, and Mac.",
+      "found": "32 articles found"
+    },
+    {
+      "query": "board",
+      "slug": "docs-features-board-visibility",
+      "title": "Board & Subtask Visibility",
+      "markedTitle": "<mark>Board</mark> & Subtask Visibility",
+      "category": "Boards & tickets",
+      "excerpt": "Configure which tasks and subtasks are visible to users across boards, saved views, tables, and AI Chat.",
+      "found": "32 articles found"
+    },
+    {
+      "query": "custom fields",
+      "slug": "docs-features-custom-fields",
+      "title": "Custom Fields",
+      "markedTitle": "<mark>Custom Fields</mark>",
+      "category": "Boards & tickets",
+      "excerpt": "Add per-board fields like Number, Text, Select, Date, and Checkbox to tasks, sort by them in table view, and manage them from agents via the API.",
+      "found": "1 article found"
+    }
+  ],
+  "empty": {
+    "query": "connect claude",
+    "heading": "No results found",
+    "body": "Try a different search term or browse the categories below."
+  }
+}

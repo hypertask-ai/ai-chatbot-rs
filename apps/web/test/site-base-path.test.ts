@@ -5,6 +5,7 @@ import {
   siteAssetHeaders,
   siteAssetRedirects,
   siteBasePath,
+  siteImagePath,
   siteNoindexValue,
   sitePath,
   siteRobotsMeta,
@@ -83,6 +84,19 @@ describe("sitePath", () => {
 
   it("is the identity when the base path is empty", () => {
     expect(sitePath("/help", "")).toBe("/help");
+  });
+});
+
+describe("siteImagePath", () => {
+  it("names a public image under the base path", () => {
+    expect(siteImagePath("glyph-white")).toBe("/ratstack/glyph-white.png");
+    expect(siteImagePath("hypertask_white")).toBe(
+      "/ratstack/hypertask_white.png"
+    );
+  });
+
+  it("takes another extension when the file is not a png", () => {
+    expect(siteImagePath("logo", "svg")).toBe("/ratstack/logo.svg");
   });
 });
 

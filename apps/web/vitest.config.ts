@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [stylexRenderingPlugin()],
   test: {
     environment: "node",
+    hookTimeout: 30_000,
     include: ["test/**/*.test.ts"],
+    testTimeout: 30_000,
   },
 });

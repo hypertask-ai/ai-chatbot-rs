@@ -92,3 +92,6 @@ export const helpPageFlags = (
   route: HelpRoute
 ): Effect.Effect<HelpPageValue | null, never, HelpArticleStore> =>
   route.slug === null ? helpCenterFlags() : helpArticleFlags(route.slug);
+
+export const helpDescriptionOf = (page: HelpPageValue): string =>
+  page.page === "article" ? page.article.excerpt : "";
