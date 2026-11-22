@@ -9,6 +9,8 @@ import { chromium } from "playwright";
 import type { BrowserContext, Page } from "playwright";
 import { PNG } from "pngjs";
 
+import { parityUrl } from "./help-parity-url.ts";
+
 interface ArticleRow {
   readonly category?: string | null | undefined;
   readonly slug: string;
@@ -433,10 +435,12 @@ const runPageJob = async (
 ): Promise<PageResult> => {
   const { height, name, width } = job.viewport;
   const pageName = fileNameFor(job.pagePath);
-  const oldUrl = new URL(job.pagePath, oldBase).href;
+  const oldUrl = parityUrl({ base: oldBase, path: job.pagePath });
 
   const newUrl =
-    newBase.length > 0 ? new URL(job.pagePath, newBase).href : null;
+    newBase.length > 0
+      ? parityUrl({ base: newBase, path: job.pagePath })
+      : null;
 
   const page = await browserContext.newPage();
 
@@ -545,7 +549,7 @@ const probe = async (
       : { accept: "*/*", origin: target.origin };
 
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI probes a public site outside an Effect runtime.
-  const response = await fetch(new URL(target.path, base).href, {
+  const response = await fetch(parityUrl({ base, path: target.path }), {
     headers,
     redirect: "manual",
   });
@@ -691,8 +695,10 @@ const readHistoryCount = async (
 ): Promise<number | null> => {
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI reads a public history route outside an Effect runtime.
   const response = await fetch(
-    new URL(`/api/chat/history/${encodeURIComponent(conversationId)}`, base)
-      .href,
+    parityUrl({
+      base,
+      path: `/api/chat/history/${encodeURIComponent(conversationId)}`,
+    }),
     { headers: { authorization: `Bearer ${visitorSecret}` } }
   );
 
@@ -724,11 +730,11 @@ const storedMessageCount = async (
 // @effect-diagnostics-next-line asyncFunction:off -- This Node CLI sends one test-marked chat with native Promise I/O outside an Effect runtime.
 const runChat = async (base: string, token: string): Promise<ChatProbe> => {
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI sends one test-marked chat outside an Effect runtime.
-  const response = await fetch(new URL("/api/chat/message", base).href, {
+  const response = await fetch(parityUrl({ base, path: "/api/chat/message" }), {
     body: JSON.stringify({
       message: PARITY_QUESTION,
       pageTitle: "Help Center",
-      pageUrl: new URL("/help", base).href,
+      pageUrl: parityUrl({ base, path: "/help" }),
       visitorId: PARITY_VISITOR_ID,
     }),
     headers: {
@@ -768,7 +774,7 @@ const runChat = async (base: string, token: string): Promise<ChatProbe> => {
 // @effect-diagnostics-next-line asyncFunction:off -- This Node CLI reads the widget frame with native Promise I/O outside an Effect runtime.
 const answerActionLabels = async (base: string): Promise<readonly string[]> => {
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI reads the public widget frame outside an Effect runtime.
-  const response = await fetch(new URL("/widget/chat", base).href);
+  const response = await fetch(parityUrl({ base, path: "/widget/chat" }));
 
   const html = await response.text();
 
@@ -936,7 +942,7 @@ const pageRow = (pagePath: string, rows: readonly PageResult[]): string => {
     .join(", ");
 
   const verdict = reasons.length === 0 ? "pass" : reasons.join("; ");
-  const target = new URL(pagePath, oldBase).href;
+  const target = parityUrl({ base: oldBase, path: pagePath });
 
   return `| [${pagePath}](${target}) | ${statuses} | ${titleCell(rows)} | ${textCell(rows)} | ${fontsCell(rows)} | ${pixels} | ${verdict} |`;
 };
@@ -1014,7 +1020,7 @@ const routeKeyCell = (row: RouteResult): string => {
 
 const routeRow = (row: RouteResult): string => {
   const reasons = routeViolations(row);
-  const target = new URL(row.path, oldBase).href;
+  const target = parityUrl({ base: oldBase, path: row.path });
   const verdict = reasons.length === 0 ? "pass" : reasons.join("; ");
 
   return `| [${row.label}](${target}) ${row.path} | ${routeStatusCell(row)} | ${routeContentTypeCell(row)} | ${routeFramingCell(row)} | ${routeKeyCell(row)} | ${verdict} |`;
@@ -1043,7 +1049,7 @@ const distinctCategories = (
 // @effect-diagnostics-next-line asyncFunction:off -- This Node CLI reads the old article list with native Promise I/O outside an Effect runtime.
 const readArticles = async (base: string): Promise<readonly ArticleRow[]> => {
   // @effect-diagnostics-next-line globalFetch:off -- This Node CLI reads the public article list outside an Effect runtime.
-  const response = await fetch(new URL("/api/articles", base).href, {
+  const response = await fetch(parityUrl({ base, path: "/api/articles" }), {
     headers: { accept: "application/json" },
   });
 
