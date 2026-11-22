@@ -37,7 +37,8 @@ jobs:
             base=$(git rev-parse "origin/$DEFAULT_BRANCH")
             [ "$GITHUB_REF_NAME" = "$DEFAULT_BRANCH" ] && base=""
             if [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ] \
-              && git cat-file -e "$PUSH_BEFORE_SHA^{commit}" 2>/dev/null; then
+              && git cat-file -e "$PUSH_BEFORE_SHA^{commit}" 2>/dev/null \
+              && git merge-base --is-ancestor "$PUSH_BEFORE_SHA" "$PUSH_HEAD_SHA"; then
               base="$PUSH_BEFORE_SHA"
             fi
           fi
