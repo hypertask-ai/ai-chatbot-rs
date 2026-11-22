@@ -585,12 +585,14 @@ jobs:
             LIVE_URL="$LIVE_URL" \
             PREVIEW_URL="$PREVIEW_URL" \
             claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md"
-          if grep -qi "weekly limit" "$RUNNER_TEMP/verdict.md"; then
-            sed -n '1p' "$RUNNER_TEMP/verdict.md" >&2
-            echo "::error::Claude Code subscription weekly limit reached. Retry after the reset time above."
-            exit 1
-          fi
           first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
+          case "$first" in
+            *"weekly limit"*|*"You've hit your weekly"*)
+              echo "$first" >&2
+              echo "::error::Claude Code subscription weekly limit reached. Retry after the reset time above."
+              exit 1
+              ;;
+          esac
           case "$first" in
             "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
             *)
