@@ -19,137 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  engine:
-    name: Pick the verifier engine
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      engine: ${{ steps.pick.outputs.engine }}
-      codex: ${{ steps.pick.outputs.codex }}
-      claude: ${{ steps.pick.outputs.claude }}
-    steps:
-      - name: Check out the verifier gate
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          persist-credentials: false
-
-      - name: Use Node.js 24.18.0
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 24.18.0
-
-      - name: Read which verifier setting exists
-        id: pick
-        env:
-          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
-          CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: node verify/pick-engine.mjs
-
-  bugfix-repro:
-    name: bugfix-repro
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      REPO: ${{ github.repository }}
-    steps:
-      - name: Resolve the pull request, its head and its base
-        id: target
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
-        run: |
-          set -euo pipefail
-          case "${PR_NUMBER:-}" in
-            ''|*[!0-9]*) echo "::error::No pull request number was given."; exit 1 ;;
-          esac
-          gh pr view "$PR_NUMBER" --repo "$REPO" --json state,isDraft,headRefOid,baseRefOid,headRepository,url > "$RUNNER_TEMP/pr.json"
-          state="$(jq -r .state "$RUNNER_TEMP/pr.json")"
-          draft="$(jq -r .isDraft "$RUNNER_TEMP/pr.json")"
-          sha="$(jq -r .headRefOid "$RUNNER_TEMP/pr.json" | tr '[:upper:]' '[:lower:]')"
-          base="$(jq -r .baseRefOid "$RUNNER_TEMP/pr.json" | tr '[:upper:]' '[:lower:]')"
-          head_repo="$(jq -r .headRepository.nameWithOwner "$RUNNER_TEMP/pr.json")"
-          case "$sha" in
-            *[!0-9a-f]*|'') echo "::error::The head commit is not a full commit SHA: $sha"; exit 1 ;;
-          esac
-          if [ "${#sha}" -ne 40 ]; then
-            echo "::error::The head commit is not a full commit SHA: $sha"
-            exit 1
-          fi
-          case "$base" in
-            *[!0-9a-f]*|'') echo "::error::The base commit is not a full commit SHA: $base"; exit 1 ;;
-          esac
-          if [ "${#base}" -ne 40 ]; then
-            echo "::error::The base commit is not a full commit SHA: $base"
-            exit 1
-          fi
-          go=yes
-          if [ "$head_repo" != "$REPO" ]; then
-            go=no
-            echo "::notice::skipped: pull request $PR_NUMBER comes from the fork $head_repo, and a fork gets no verifier setting."
-          elif [ "$state" != "OPEN" ]; then
-            go=no
-            echo "::notice::skipped: pull request $PR_NUMBER is $state."
-          elif [ "$draft" = "true" ]; then
-            go=no
-            echo "::notice::skipped: pull request $PR_NUMBER is a draft. The verifier runs when it is ready for review."
-          fi
-          printf 'go=%s\nnumber=%s\nsha=%s\nbase=%s\n' "$go" "$PR_NUMBER" "$sha" "$base" >> "$GITHUB_OUTPUT"
-
-      - name: Check out the pull request head
-        if: steps.target.outputs.go == 'yes'
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ steps.target.outputs.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Use Node.js 24.18.0
-        if: steps.target.outputs.go == 'yes'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 24.18.0
-
-      - name: Enable corepack pnpm
-        if: steps.target.outputs.go == 'yes'
-        run: corepack enable && corepack prepare pnpm@11.3.0 --activate
-
-      - name: Install dependencies for the head
-        if: steps.target.outputs.go == 'yes'
-        run: pnpm install --frozen-lockfile
-
-      - name: Require a recorded repro on a bug fix
-        if: steps.target.outputs.go == 'yes'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ steps.target.outputs.number }}
-          BASE_SHA: ${{ steps.target.outputs.base }}
-          HEAD_SHA: ${{ steps.target.outputs.sha }}
-        run: |
-          set -euo pipefail
-          gh pr view "$PR_NUMBER" --repo "$REPO" --json title,body,labels > "$RUNNER_TEMP/bugfix-pr.json"
-          set +e
-          node verify/bugfix-repro.mjs \
-            --pr-json "$RUNNER_TEMP/bugfix-pr.json" \
-            --repo "$GITHUB_WORKSPACE" \
-            --base "$BASE_SHA" \
-            --head "$HEAD_SHA" \
-            > "$RUNNER_TEMP/bugfix-out.txt" \
-            2> "$RUNNER_TEMP/bugfix-err.txt"
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            cat "$RUNNER_TEMP/bugfix-err.txt" >&2
-            echo "::error::$(tr '\n' ' ' < "$RUNNER_TEMP/bugfix-err.txt")"
-            exit "$status"
-          fi
-          cat "$RUNNER_TEMP/bugfix-out.txt"
-          cat "$RUNNER_TEMP/bugfix-out.txt" >> "$GITHUB_STEP_SUMMARY"
-
   pstack-verifier:
     name: pstack-verifier
-    needs: [engine, bugfix-repro]
-    if: always() && needs.engine.result != 'cancelled' && needs.bugfix-repro.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -168,12 +39,15 @@ jobs:
         with:
           node-version: 24.18.0
 
-      - name: Fail when no verifier setting exists
+      - name: Fail when no Codex plan login exists
         env:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
-          CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: node verify/pick-engine.mjs --require
+        run: |
+          set -euo pipefail
+          if [ -z "${CODEX_AUTH_JSON:-}" ]; then
+            echo "::error::No verifier setting. A missing CODEX_AUTH_JSON would leave pstack-verifier unable to run. Fix: add the repository secret CODEX_AUTH_JSON."
+            exit 1
+          fi
 
       - name: Resolve the pull request, its head and its base
         id: target
@@ -234,7 +108,7 @@ jobs:
 
       - name: Check the diff reader on a fixture
         if: steps.target.outputs.go == 'yes'
-        run: node --test verify/pick-engine.test.mjs verify/diff.test.mjs
+        run: node --test verify/diff.test.mjs
 
       - name: Enable corepack pnpm
         if: steps.target.outputs.go == 'yes'
@@ -688,20 +562,32 @@ jobs:
 
       - name: Verify with Codex
         id: codex
-        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.codex == 'yes'
-        continue-on-error: true
+        if: steps.target.outputs.go == 'yes'
         env:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
-          CODEX_VERIFIER_KEY: ${{ secrets.CODEX_VERIFIER_KEY }}
           SHA: ${{ steps.target.outputs.sha }}
         run: |
           set -euo pipefail
           npm install --global --no-fund --no-audit @openai/codex@0.169.0
           agent_path="$(dirname "$(command -v codex)"):$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
+          codex_home="$(mktemp -d "$RUNNER_TEMP/codex-home.XXXXXX")"
+          chmod 700 "$codex_home"
+          (
+            umask 077
+            printf '%s' "$CODEX_AUTH_JSON" > "$codex_home/auth.json"
+          )
+          chmod 600 "$codex_home/auth.json"
+          printf 'CODEX_HOME=%s\n' "$codex_home" >> "$GITHUB_ENV"
+          auth_mode="$(jq -r '.auth_mode // "absent"' "$codex_home/auth.json" 2>/dev/null)" || auth_mode="unreadable"
+          if [ "$auth_mode" != "chatgpt" ]; then
+            echo "::error::CODEX_AUTH_JSON is not a Codex plan login file: its auth_mode is $auth_mode, not chatgpt."
+            exit 1
+          fi
           codex_env=(
             "HOME=$HOME"
             "PATH=$agent_path"
             "TERM=dumb"
+            "CODEX_HOME=$codex_home"
             "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
             "RUNNER_TEMP=$RUNNER_TEMP"
             "SCREENS_DIR=$SCREENS_DIR"
@@ -713,25 +599,6 @@ jobs:
             "SERVE_MODE_BASE=$SERVE_MODE_BASE"
             "LIVE_URL=$LIVE_URL"
           )
-          if [ -n "${CODEX_AUTH_JSON:-}" ]; then
-            codex_home="$(mktemp -d "$RUNNER_TEMP/codex-home.XXXXXX")"
-            chmod 700 "$codex_home"
-            (
-              umask 077
-              printf '%s' "$CODEX_AUTH_JSON" > "$codex_home/auth.json"
-            )
-            chmod 600 "$codex_home/auth.json"
-            printf 'CODEX_HOME=%s\n' "$codex_home" >> "$GITHUB_ENV"
-            auth_mode="$(jq -r '.auth_mode // "absent"' "$codex_home/auth.json" 2>/dev/null)" || auth_mode="unreadable"
-            if [ "$auth_mode" != "chatgpt" ]; then
-              echo "::error::CODEX_AUTH_JSON is not a Codex plan login file: its auth_mode is $auth_mode, not chatgpt. Nothing was printed from it, and the file is removed."
-              exit 1
-            fi
-            codex_env+=("CODEX_HOME=$codex_home")
-          else
-            engine_token="$CODEX_VERIFIER_KEY"
-            codex_env+=("CODEX_API_KEY=$engine_token" "OPENAI_API_KEY=$engine_token")
-          fi
           env -i "${codex_env[@]}" \
             codex exec \
               --skip-git-repo-check \
@@ -744,13 +611,13 @@ jobs:
           case "$first" in
             "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
             *)
-              echo "::error::Codex produced no verdict line, so Claude stands in."
+              echo "::error::Codex produced no verdict line."
               sed -n '1,40p' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true
               exit 1
               ;;
           esac
           if ! grep -qi "$SHA" "$RUNNER_TEMP/verdict.md"; then
-            echo "::error::The Codex verdict does not name the head commit $SHA, so Claude stands in."
+            echo "::error::The Codex verdict does not name the head commit $SHA."
             exit 1
           fi
 
@@ -765,47 +632,6 @@ jobs:
               ;;
           esac
 
-      - name: Verify with Claude when Codex is absent or refused
-        id: claude
-        if: steps.target.outputs.go == 'yes' && needs.engine.outputs.claude == 'yes' && (needs.engine.outputs.codex == 'no' || steps.codex.outcome == 'failure')
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          SHA: ${{ steps.target.outputs.sha }}
-        run: |
-          set -euo pipefail
-          npm install --global --no-fund --no-audit @anthropic-ai/claude-code@2.1.325
-          engine_token="$CLAUDE_CODE_OAUTH_TOKEN"
-          agent_path="$(dirname "$(command -v claude)"):$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
-          env -i \
-            HOME="$HOME" \
-            PATH="$agent_path" \
-            TERM=dumb \
-            CLAUDE_CODE_OAUTH_TOKEN="$engine_token" \
-            GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
-            RUNNER_TEMP="$RUNNER_TEMP" \
-            SCREENS_DIR="$SCREENS_DIR" \
-            SITE_URL="$SITE_URL" \
-            BASE_URL="${BASE_URL:-}" \
-            SITE_WORKER_URL="${SITE_WORKER_URL:-}" \
-            BASE_WORKER_URL="${BASE_WORKER_URL:-}" \
-            SERVE_MODE_HEAD="$SERVE_MODE_HEAD" \
-            SERVE_MODE_BASE="$SERVE_MODE_BASE" \
-            LIVE_URL="$LIVE_URL" \
-            claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md"
-          first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
-          case "$first" in
-            "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
-            *)
-              echo "::error::Claude produced no verdict line."
-              sed -n '1,40p' "$RUNNER_TEMP/verdict.md"
-              exit 1
-              ;;
-          esac
-          if ! grep -qi "$SHA" "$RUNNER_TEMP/verdict.md"; then
-            echo "::error::The Claude verdict does not name the head commit $SHA."
-            exit 1
-          fi
-
       - name: Post the verdict on the pull request
         id: verdict
         if: steps.target.outputs.go == 'yes'
@@ -814,12 +640,10 @@ jobs:
           SHA: ${{ steps.target.outputs.sha }}
           PR: ${{ steps.target.outputs.number }}
           CODEX_OUTCOME: ${{ steps.codex.outcome }}
-          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
-          CODEX_CONFIGURED: ${{ needs.engine.outputs.codex }}
         run: |
           set -euo pipefail
           if [ ! -s "$RUNNER_TEMP/verdict.md" ]; then
-            echo "::error::The verifier produced no verdict. Codex: ${CODEX_OUTCOME:-not run}. Claude: ${CLAUDE_OUTCOME:-not run}."
+            echo "::error::The verifier produced no verdict. Codex: ${CODEX_OUTCOME:-not run}."
             exit 1
           fi
           first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
@@ -842,18 +666,9 @@ jobs:
             echo "::notice::The pull request head moved from $SHA to $head_now while this run was verifying. A newer run posts the verdict."
             exit 0
           fi
-          if [ "${CODEX_OUTCOME:-}" = "success" ]; then
-            engine_note="codex"
-          elif [ "${CLAUDE_OUTCOME:-}" = "success" ] && [ "${CODEX_CONFIGURED:-no}" = "no" ]; then
-            engine_note="claude, because no Codex setting exists"
-          elif [ "${CLAUDE_OUTCOME:-}" = "success" ]; then
-            engine_note="claude, after Codex was refused"
-          else
-            engine_note="unknown"
-          fi
           {
             printf 'pstack-verifier: %s @ %s\n' "$verdict" "$SHA"
-            printf 'engine: %s\n' "$engine_note"
+            printf 'engine: codex\n'
             printf 'run: %s/%s/actions/runs/%s\n' "$SERVER_URL" "$REPO" "$RUN_ID"
             printf 'head: %s from %s\n' "${SITE_URL:-unset}" "${SITE_ROOT:-unset}"
             printf 'base: %s from %s\n' "${BASE_URL:-none}" "${BASE_ROOT:-none}"
