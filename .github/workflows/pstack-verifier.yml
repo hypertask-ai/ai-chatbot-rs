@@ -28,6 +28,7 @@ jobs:
       SERVER_URL: ${{ github.server_url }}
       RUN_ID: ${{ github.run_id }}
       LIVE_URL: https://help.hypertask.ai
+      PREVIEW_URL: https://help.hypertask.ai/ratstack
     steps:
       - name: Check out the verifier gate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -38,16 +39,6 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 24.18.0
-
-      - name: Fail when no Codex plan login exists
-        env:
-          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
-        run: |
-          set -euo pipefail
-          if [ -z "${CODEX_AUTH_JSON:-}" ]; then
-            echo "::error::No verifier setting. A missing CODEX_AUTH_JSON would leave pstack-verifier unable to run. Fix: add the repository secret CODEX_AUTH_JSON."
-            exit 1
-          fi
 
       - name: Resolve the pull request, its head and its base
         id: target
@@ -506,20 +497,21 @@ jobs:
           - The built base site, when the base builds, is running at ${BASE_URL:-none}, from the built files in ${BASE_ROOT:-none}. Serve mode for the base: ${SERVE_MODE_BASE}.
           $worker_note
           - The built files are what a deploy uploads, so a page, an asset, a font and a stylesheet can all be fetched there.
-          - The live old site is at $LIVE_URL. Read it for look and content, and compare it with the head. Fetch it with GET only, never post to it, and never send it a chat message.
+          - The live old site is at $LIVE_URL. The published preview is at $PREVIEW_URL. Read both for look and content. Fetch them with GET only, never post to them, and never send them a chat message.
+          - Follow `.claude/skills/verify-ai-chatbot-rs/SKILL.md` and the recipes in `verify/`, especially `node verify/site-doctor.mjs` and `node verify/parity-evidence.mjs` for the feature this pull request touches.
           - The feature map for the help site is verify/feature-map.md. It lists every user-visible feature, the address to try, and what to look for.
-          - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the head with the base, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright 1.65.1 with Chromium is installed outside the repository and linked at verify/node_modules, so the driver resolves it. SCREENS_DIR points at ${SCREENS_DIR}.
-            - node verify/driver.mjs page --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help --path /help/<slug>
-            - node verify/driver.mjs compare --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
-            - node verify/driver.mjs widget --head "${SITE_URL}" --base "${BASE_URL:-}" --path /help
-            - node verify/driver.mjs api --head "${SITE_URL}" --base "${BASE_URL:-}" --path /health --path /api/articles
+          - verify/driver.mjs is the driver. It reads pages, takes screenshots at 1440 and 390, lists links, headings, console errors and failed requests, compares the preview with the old site, probes addresses, and opens the chat widget and reads its visible state without sending a message. It blocks every POST to /api/chat/**, so no chat can reach a live AI through it. Playwright 1.65.1 with Chromium is installed outside the repository and linked at verify/node_modules, so the driver resolves it. SCREENS_DIR points at ${SCREENS_DIR}.
+            - node verify/driver.mjs page --head "$PREVIEW_URL" --base "$LIVE_URL" --path /help --path /help/<slug>
+            - node verify/driver.mjs compare --head "$PREVIEW_URL" --base "$LIVE_URL" --path /help
+            - node verify/driver.mjs widget --head "$PREVIEW_URL" --base "$LIVE_URL" --path /help
+            - node verify/parity-evidence.mjs --feature <feature> --path /help/<path>
           - Save every screenshot and report in ${SCREENS_DIR}.
           - The change under review, its title, its body, the files it touches and its diff, is at the end of this prompt.
 
           ## What to do
           1. Read the pull request's title and body, and name what it claims. Read the diff, then name what a reader would notice.
-          2. Drive the base site and the head site like a user, the same way for both. Run the driver for the pages in the feature map, and curl the addresses that answer JSON or redirects. The verify seed is at ${VERIFY_SEED_URL:-unset}. GET /api/articles there returns the 97 recorded articles, and GET /widget/chat?conversation=seed-past-chat opens the seeded past chat. Quote both in the verdict. Do not post a chat message to the seed.
-          3. Do the same to the base site when it is running, then compare head against base with diff and with the screenshots. The live old site is the reference for look and content, so fetch it when the base build and the live site disagree.
+          2. Run `node verify/site-doctor.mjs`, then drive the published preview at $PREVIEW_URL against the live old site at $LIVE_URL like a user. Run the driver and parity-evidence for the pages in the feature map, and curl the addresses that answer JSON or redirects on the preview. The verify seed is at ${VERIFY_SEED_URL:-unset}. GET /api/articles there returns the 97 recorded articles, and GET /widget/chat?conversation=seed-past-chat opens the seeded past chat. Quote both in the verdict. Do not post a chat message to the seed.
+          3. When the built head or base sites are running, compare them too; otherwise judge the preview against the live old site and name any gap in what you could drive.
           4. Try to break it. Unknown paths, a trailing slash, a missing asset, text that differs from the live page, a font or colour or size or corner that differs, a link that goes nowhere, a JavaScript error, a layout that breaks at 390 pixels, a control you cannot reach with the keyboard.
           5. Keep what you used as evidence: the addresses you fetched, the text you compared, the screenshots you took, the driver reports.
           6. Do not log in to the admin pages and do not send a chat message to the live old site. Read them, and use the widget helper for the chat widget.
@@ -560,77 +552,52 @@ jobs:
             printf '~~~\n'
           } > "$RUNNER_TEMP/prompt.md"
 
-      - name: Verify with Codex
-        id: codex
+      - name: Install the Claude Code CLI
+        if: steps.target.outputs.go == 'yes'
+        run: |
+          set -euo pipefail
+          npm install --global --no-fund --no-audit --allow-scripts=@anthropic-ai/claude-code @anthropic-ai/claude-code@2.1.325
+          claude --version
+
+      - name: Verify with Claude
+        id: claude
         if: steps.target.outputs.go == 'yes'
         env:
-          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           SHA: ${{ steps.target.outputs.sha }}
         run: |
           set -euo pipefail
-          npm install --global --no-fund --no-audit @openai/codex@0.169.0
-          agent_path="$(dirname "$(command -v codex)"):$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
-          codex_home="$(mktemp -d "$RUNNER_TEMP/codex-home.XXXXXX")"
-          chmod 700 "$codex_home"
-          (
-            umask 077
-            printf '%s' "$CODEX_AUTH_JSON" > "$codex_home/auth.json"
-          )
-          chmod 600 "$codex_home/auth.json"
-          printf 'CODEX_HOME=%s\n' "$codex_home" >> "$GITHUB_ENV"
-          auth_mode="$(jq -r '.auth_mode // "absent"' "$codex_home/auth.json" 2>/dev/null)" || auth_mode="unreadable"
-          if [ "$auth_mode" != "chatgpt" ]; then
-            echo "::error::CODEX_AUTH_JSON is not a Codex plan login file: its auth_mode is $auth_mode, not chatgpt."
-            exit 1
-          fi
-          codex_env=(
-            "HOME=$HOME"
-            "PATH=$agent_path"
-            "TERM=dumb"
-            "CODEX_HOME=$codex_home"
-            "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-            "RUNNER_TEMP=$RUNNER_TEMP"
-            "SCREENS_DIR=$SCREENS_DIR"
-            "SITE_URL=$SITE_URL"
-            "BASE_URL=${BASE_URL:-}"
-            "SITE_WORKER_URL=${SITE_WORKER_URL:-}"
-            "BASE_WORKER_URL=${BASE_WORKER_URL:-}"
-            "SERVE_MODE_HEAD=$SERVE_MODE_HEAD"
-            "SERVE_MODE_BASE=$SERVE_MODE_BASE"
-            "LIVE_URL=$LIVE_URL"
-          )
-          env -i "${codex_env[@]}" \
-            codex exec \
-              --skip-git-repo-check \
-              --ephemeral \
-              --sandbox danger-full-access \
-              --cd "$GITHUB_WORKSPACE" \
-              --output-last-message "$RUNNER_TEMP/verdict.md" \
-              - < "$RUNNER_TEMP/prompt.md"
-          first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true)"
+          agent_path="$(dirname "$(command -v claude)"):$(dirname "$(command -v node)"):/usr/local/bin:/usr/bin:/bin"
+          env -i \
+            HOME="$HOME" \
+            PATH="$agent_path" \
+            TERM=dumb \
+            CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN" \
+            GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+            RUNNER_TEMP="$RUNNER_TEMP" \
+            SCREENS_DIR="$SCREENS_DIR" \
+            SITE_URL="$SITE_URL" \
+            BASE_URL="${BASE_URL:-}" \
+            SITE_WORKER_URL="${SITE_WORKER_URL:-}" \
+            BASE_WORKER_URL="${BASE_WORKER_URL:-}" \
+            SERVE_MODE_HEAD="$SERVE_MODE_HEAD" \
+            SERVE_MODE_BASE="$SERVE_MODE_BASE" \
+            LIVE_URL="$LIVE_URL" \
+            PREVIEW_URL="$PREVIEW_URL" \
+            claude --print --dangerously-skip-permissions < "$RUNNER_TEMP/prompt.md" > "$RUNNER_TEMP/verdict.md"
+          first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
           case "$first" in
             "VERDICT: PASS+NOTES"*|"VERDICT: PASS"*|"VERDICT: FAIL"*) ;;
             *)
-              echo "::error::Codex produced no verdict line."
-              sed -n '1,40p' "$RUNNER_TEMP/verdict.md" 2>/dev/null || true
+              echo "::error::Claude produced no verdict line."
+              sed -n '1,40p' "$RUNNER_TEMP/verdict.md"
               exit 1
               ;;
           esac
           if ! grep -qi "$SHA" "$RUNNER_TEMP/verdict.md"; then
-            echo "::error::The Codex verdict does not name the head commit $SHA."
+            echo "::error::The Claude verdict does not name the head commit $SHA."
             exit 1
           fi
-
-      - name: Remove the Codex login file
-        if: always()
-        run: |
-          set -euo pipefail
-          case "${CODEX_HOME:-}" in
-            "$RUNNER_TEMP"/codex-home.*)
-              rm -rf -- "$CODEX_HOME"
-              printf 'removed the temporary Codex login file\n'
-              ;;
-          esac
 
       - name: Post the verdict on the pull request
         id: verdict
@@ -639,11 +606,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ steps.target.outputs.sha }}
           PR: ${{ steps.target.outputs.number }}
-          CODEX_OUTCOME: ${{ steps.codex.outcome }}
+          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
         run: |
           set -euo pipefail
           if [ ! -s "$RUNNER_TEMP/verdict.md" ]; then
-            echo "::error::The verifier produced no verdict. Codex: ${CODEX_OUTCOME:-not run}."
+            echo "::error::The verifier produced no verdict. Claude: ${CLAUDE_OUTCOME:-not run}."
             exit 1
           fi
           first="$(sed -n '1{s/[[:space:]]*$//;p}' "$RUNNER_TEMP/verdict.md")"
@@ -668,7 +635,7 @@ jobs:
           fi
           {
             printf 'pstack-verifier: %s @ %s\n' "$verdict" "$SHA"
-            printf 'engine: codex\n'
+            printf 'engine: claude\n'
             printf 'run: %s/%s/actions/runs/%s\n' "$SERVER_URL" "$REPO" "$RUN_ID"
             printf 'head: %s from %s\n' "${SITE_URL:-unset}" "${SITE_ROOT:-unset}"
             printf 'base: %s from %s\n' "${BASE_URL:-none}" "${BASE_ROOT:-none}"
