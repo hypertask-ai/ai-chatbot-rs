@@ -19,6 +19,7 @@ import {
   helpVisitorQuery,
 } from "../../client/help/search.js";
 import { siteImagePath } from "../../site-base-path.js";
+import { widgetScriptAssetPath } from "../../widget/embed.js";
 import { classes, styleClass } from "./class-names.js";
 import {
   allArticlesLabel,
@@ -102,18 +103,18 @@ const suggestionButtons = (h: Builder): readonly Html[] =>
         h.Type("button"),
         h.DataAttribute("message", suggestion.message),
       ],
-      [
-        h.span(
-          [h.Class(styleClass(helpCenter.desktopLabel))],
-          [suggestion.desktop]
-        ),
-        suggestion.mobile === null
-          ? null
-          : h.span(
+      suggestion.mobile === null
+        ? [suggestion.desktop]
+        : [
+            h.span(
+              [h.Class(styleClass(helpCenter.desktopLabel))],
+              [suggestion.desktop]
+            ),
+            h.span(
               [h.Class(styleClass(helpCenter.mobileLabel))],
               [suggestion.mobile]
             ),
-      ]
+          ]
     )
   );
 
@@ -656,5 +657,6 @@ export const helpCenterView = (
         ]
       ),
       reader(h, page, phase),
+      h.script([h.Src(widgetScriptAssetPath)]),
     ]
   );
