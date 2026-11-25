@@ -3,7 +3,7 @@ import * as stylex from "@stylexjs/stylex";
 export const helpTheme = stylex.defineVars({
   articleBackground: "#000000",
   articleBorder: "rgba(255, 255, 255, 0.14)",
-  articleDivider: "rgba(244, 244, 247, 0.10)",
+  articleDivider: "rgba(255, 255, 255, 0.10)",
   articleMuted: "#a7a8ad",
   articleSurface: "#0b0b0d",
   articleSurfaceHover: "#191a1e",

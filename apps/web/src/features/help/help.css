@@ -333,7 +333,7 @@
   --btn-bg: #ffffff;
   --btn-fg: #000000;
   --code-font: "SF Mono", "Consolas", "Monaco", monospace;
-  --divider: rgba(244, 244, 247, 0.1);
+  --divider: rgba(255, 255, 255, 0.1);
   --font-display: "Newsreader", Georgia, serif;
   --ink: #f4f4f7;
   --muted: #a7a8ad;
@@ -551,15 +551,14 @@
   max-width: 100%;
 }
 
-.rat-help-article-body strong,
-.rat-help-article-body b {
+.rat-help-article-body strong {
   color: var(--ink);
   font-weight: 600;
 }
 
 .rat-help-article-body .table-scroll {
   display: block;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   margin-top: 24px;
   max-width: 100%;
   min-width: 0;
@@ -761,4 +760,14 @@
   border-top: 1px solid var(--divider);
   margin-bottom: 28px;
   margin-top: 28px;
+}
+
+@media (max-width: 640px) {
+  .rat-help-article-body h2 {
+    font-size: 22px;
+  }
+
+  .rat-help-article-body h3 {
+    font-size: 18px;
+  }
 }

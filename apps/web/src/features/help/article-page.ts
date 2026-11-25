@@ -4,6 +4,7 @@ import type { AppMessage } from "../../client/help/message.js";
 import { Message } from "../../client/help/message.js";
 import type { HelpPageValue } from "../../client/help/model.js";
 import { siteImagePath } from "../../site-base-path.js";
+import { widgetScriptAssetPath } from "../../widget/embed.js";
 import { classes, styleClass } from "./class-names.js";
 import {
   appOrigin,
@@ -81,11 +82,10 @@ const header = (h: Builder): Html =>
               h.a(
                 [
                   h.Class(
-                    classes(
-                      styleClass(helpArticle.navLink),
+                    styleClass(
                       index === articleHeaderNav.length - 1
-                        ? styleClass(helpArticle.navLinkActive)
-                        : null
+                        ? [helpArticle.navLink, helpArticle.navLinkActive]
+                        : helpArticle.navLink
                     )
                   ),
                   h.Href(link.href),
@@ -245,5 +245,6 @@ export const helpArticleView = (
           related(h, page),
         ]
       ),
+      h.script([h.Src(widgetScriptAssetPath)]),
     ]
   );
