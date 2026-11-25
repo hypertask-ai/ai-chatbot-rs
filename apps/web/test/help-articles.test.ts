@@ -2,7 +2,6 @@ import { describe, expect, it } from "@effect/vitest";
 import { toHttpApi } from "@rat-stack/capability/http-api";
 import {
   HelpArticle,
-  HelpArticleMatch,
   HelpArticlePane,
   HelpArticleSummary,
 } from "@rat-stack/core/contracts";
@@ -12,6 +11,7 @@ import { Effect, FileSystem, Layer, Path, Schema } from "effect";
 import { Etag, HttpPlatform, HttpRouter } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 
+import { recordedHelpArticleSearches } from "../src/server/recorded-help-articles.js";
 import recordedAnswers from "./fixtures/help-article-answers.json";
 
 const RecordedRow = Schema.Struct({
@@ -40,8 +40,6 @@ const articleRows = recorded.rows.filter(
     row.status === 200
 );
 
-const searchQueries = ["board", "voice", "zzzqx"];
-
 const rowOf = (id: string) => {
   const row = recorded.rows.find((candidate) => candidate.id === id);
 
@@ -60,10 +58,6 @@ const decodeArticle = Schema.decodeUnknownSync(
   Schema.fromJsonString(HelpArticle)
 );
 
-const decodeMatches = Schema.decodeUnknownSync(
-  Schema.fromJsonString(Schema.Array(HelpArticleMatch))
-);
-
 const decodePane = Schema.decodeUnknownSync(
   Schema.fromJsonString(HelpArticlePane)
 );
@@ -71,10 +65,7 @@ const decodePane = Schema.decodeUnknownSync(
 const memory = {
   articles: articleRows.map((row) => decodeArticle(row.body)),
   list: decodeSummaries(rowOf("articles-list").body),
-  searches: searchQueries.map((keywords) => ({
-    keywords,
-    matches: decodeMatches(rowOf(`search-${keywords}`).body),
-  })),
+  searches: recordedHelpArticleSearches,
 };
 
 const site = "https://help.hypertask.ai";
