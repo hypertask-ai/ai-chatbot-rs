@@ -100,8 +100,9 @@ const chatStores = Layer.mergeAll(
 );
 
 const siteServices = Layer.mergeAll(
-  recordedHelpArticles,
-  HelpArticleCorpus.layerFromStore,
+  HelpArticleCorpus.layerFromStore.pipe(
+    Layer.provideMerge(recordedHelpArticles)
+  ),
   chatStores
 );
 

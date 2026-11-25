@@ -36,10 +36,9 @@ const ArticleAnswers = Schema.Struct({
   rows: Schema.Array(ArticleRow),
 });
 
-const recordedApi = Schema.decodeUnknownSync(ApiAnswers)(apiAnswers);
+const recordedApi = Schema.decodeSync(ApiAnswers)(apiAnswers);
 
-const recordedArticles =
-  Schema.decodeUnknownSync(ArticleAnswers)(articleAnswers);
+const recordedArticles = Schema.decodeSync(ArticleAnswers)(articleAnswers);
 
 const articleRowIds = [
   "articles-list",
