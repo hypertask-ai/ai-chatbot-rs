@@ -6,9 +6,13 @@ import { parseArgs } from "node:util";
 
 import { Schema } from "effect";
 import { chromium } from "playwright";
-import type { BrowserContext, Page } from "playwright";
-import { PNG } from "pngjs";
+import type { BrowserContext, Frame, Page } from "playwright";
 
+import {
+  compareCaptures,
+  heightReasonOf,
+  noiseMaskOf,
+} from "./help-parity-compare.ts";
 import { parityUrl } from "./help-parity-url.ts";
 
 interface ArticleRow {
@@ -20,6 +24,8 @@ interface Capture {
   readonly buffer: Buffer;
   readonly fonts: string;
   readonly imagePath: string;
+  readonly mediaSettled: boolean;
+  readonly networkIdle: boolean;
   readonly status: number;
   readonly text: string;
   readonly title: string;
@@ -41,11 +47,6 @@ interface BehaviourResult {
   readonly reason: string;
 }
 
-interface DiffResult {
-  readonly diffImage: Buffer | null;
-  readonly percent: number;
-}
-
 interface PageJob {
   readonly pagePath: string;
   readonly viewport: Viewport;
@@ -55,10 +56,16 @@ interface PageResult {
   readonly diffImagePath: string | null;
   readonly failure: string | null;
   readonly fontsMatch: boolean | null;
+  readonly heightDelta: number | null;
   readonly newImagePath: string | null;
+  readonly newMediaSettled: boolean | null;
+  readonly newNetworkIdle: boolean | null;
   readonly newStatus: number | null;
   readonly newTitle: string | null;
+  readonly noisePercent: number | null;
   readonly oldImagePath: string | null;
+  readonly oldMediaSettled: boolean | null;
+  readonly oldNetworkIdle: boolean | null;
   readonly oldStatus: number | null;
   readonly oldTitle: string | null;
   readonly pagePath: string;
@@ -105,6 +112,10 @@ const DEFAULT_THRESHOLD = "0.1";
 
 const NAVIGATION_TIMEOUT_MS = 60_000;
 
+const NETWORK_IDLE_TIMEOUT_MS = 20_000;
+
+const MEDIA_TIMEOUT_MS = 20_000;
+
 const NOT_FOUND_SLUG = "parity-page-that-does-not-exist";
 
 const PARITY_QUESTION = "How do I invite a teammate?";
@@ -119,6 +130,37 @@ const STORED_REPLY_WAIT_MS = 3000;
 
 const FONT_SIGNATURE =
   "Array.from(document.fonts).filter((face) => face.status === 'loaded').map((face) => [face.family.replaceAll(/[\"']/gu, ''), face.weight, face.style].join(' ')).toSorted().join(', ')";
+
+const PRIME_LAZY_MEDIA = `(async () => {
+  const step = Math.max(window.innerHeight, 480);
+  for (let index = 0; index < 60; index += 1) {
+    const offset = index * step;
+    if (offset > document.documentElement.scrollHeight) {
+      break;
+    }
+    window.scrollTo(0, offset);
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 60)));
+  }
+  window.scrollTo(0, 0);
+  return true;
+})()`;
+
+const MEDIA_READY = `[...document.images].every((image) => image.complete) && [...document.querySelectorAll('video')].every((video) => video.readyState >= 1 || video.error !== null || video.networkState === 3)`;
+
+const FREEZE_MOTION = `(() => {
+  const style = document.createElement('style');
+  style.textContent = "*, *::before, *::after { animation: none !important; transition: none !important; }";
+  document.head.append(style);
+  for (const video of document.querySelectorAll('video')) {
+    video.pause();
+    if (video.readyState >= 1) {
+      video.currentTime = 0;
+    }
+  }
+  return true;
+})()`;
+
+const TWO_ANIMATION_FRAMES = `new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))`;
 
 const VIEWPORTS: readonly Viewport[] = [
   { height: 900, name: "desktop", width: 1440 },
@@ -313,6 +355,43 @@ const visibleText = async (page: Page): Promise<string> => {
 };
 
 // @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
+const settleNetwork = async (page: Page): Promise<boolean> => {
+  try {
+    await page.waitForLoadState("networkidle", {
+      timeout: NETWORK_IDLE_TIMEOUT_MS,
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
+const settleFrame = async (frame: Frame): Promise<boolean> => {
+  try {
+    await frame.waitForFunction(MEDIA_READY, null, {
+      timeout: MEDIA_TIMEOUT_MS,
+    });
+
+    await frame.evaluate(FREEZE_MOTION);
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
+const settleMedia = async (page: Page): Promise<boolean> => {
+  const settled = await Promise.all(
+    page.frames().map((frame) => settleFrame(frame))
+  );
+
+  return settled.every((value) => value);
+};
+
+// @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
 const capture = async (
   page: Page,
   url: string,
@@ -327,7 +406,15 @@ const capture = async (
     throw new Error(`No response from ${url}`);
   }
 
+  await page.evaluate(PRIME_LAZY_MEDIA);
+
+  const networkIdle = await settleNetwork(page);
+
   await page.evaluate("document.fonts.ready");
+
+  const mediaSettled = await settleMedia(page);
+
+  await page.evaluate(TWO_ANIMATION_FRAMES);
 
   const fonts = decodeString(await page.evaluate(FONT_SIGNATURE));
 
@@ -342,44 +429,15 @@ const capture = async (
 
   writeFileSync(imagePath, buffer);
 
-  return { buffer, fonts, imagePath, status: response.status(), text, title };
-};
-
-const comparePixels = (before: Buffer, after: Buffer): DiffResult => {
-  const first = PNG.sync.read(before);
-  const mask = PNG.sync.read(after);
-
-  if (first.width !== mask.width || first.height !== mask.height) {
-    return { diffImage: null, percent: 100 };
-  }
-
-  const pixels = first.width * first.height;
-
-  let changed = 0;
-
-  for (let index = 0; index < pixels; index += 1) {
-    const offset = index * 4;
-
-    const differs =
-      first.data[offset] !== mask.data[offset] ||
-      first.data[offset + 1] !== mask.data[offset + 1] ||
-      first.data[offset + 2] !== mask.data[offset + 2];
-
-    if (differs) {
-      changed += 1;
-
-      mask.data[offset] = 255;
-      mask.data[offset + 1] = 0;
-      mask.data[offset + 2] = 0;
-      mask.data[offset + 3] = 255;
-    } else {
-      mask.data[offset + 3] = 0;
-    }
-  }
-
   return {
-    diffImage: PNG.sync.write(mask),
-    percent: pixels === 0 ? 0 : (changed / pixels) * 100,
+    buffer,
+    fonts,
+    imagePath,
+    mediaSettled,
+    networkIdle,
+    status: response.status(),
+    text,
+    title,
   };
 };
 
@@ -387,10 +445,16 @@ const emptyPageResult = (job: PageJob): PageResult => ({
   diffImagePath: null,
   failure: null,
   fontsMatch: null,
+  heightDelta: null,
   newImagePath: null,
+  newMediaSettled: null,
+  newNetworkIdle: null,
   newStatus: null,
   newTitle: null,
+  noisePercent: null,
   oldImagePath: null,
+  oldMediaSettled: null,
+  oldNetworkIdle: null,
   oldStatus: null,
   oldTitle: null,
   pagePath: job.pagePath,
@@ -400,15 +464,8 @@ const emptyPageResult = (job: PageJob): PageResult => ({
   viewport: job.viewport.name,
 });
 
-const writeDiffImage = (
-  diff: DiffResult,
-  targetPath: string
-): string | null => {
-  if (diff.diffImage === null) {
-    return null;
-  }
-
-  writeFileSync(targetPath, diff.diffImage);
+const writeDiffImage = (diffImage: Buffer, targetPath: string): string => {
+  writeFileSync(targetPath, diffImage);
 
   return targetPath;
 };
@@ -457,10 +514,18 @@ const runPageJob = async (
       return {
         ...emptyPageResult(job),
         oldImagePath: oldCapture.imagePath,
+        oldMediaSettled: oldCapture.mediaSettled,
+        oldNetworkIdle: oldCapture.networkIdle,
         oldStatus: oldCapture.status,
         oldTitle: oldCapture.title,
       };
     }
+
+    const noiseCapture = await capture(
+      page,
+      oldUrl,
+      path.join(imagesDir, "noise", name, `${pageName}.png`)
+    );
 
     const newCapture = await capture(
       page,
@@ -468,20 +533,29 @@ const runPageJob = async (
       path.join(imagesDir, "new", name, `${pageName}.png`)
     );
 
-    const diff = comparePixels(oldCapture.buffer, newCapture.buffer);
+    const noise = noiseMaskOf(oldCapture.buffer, noiseCapture.buffer);
+
+    const diff = compareCaptures(oldCapture.buffer, newCapture.buffer, noise);
+
     const textMatches = oldCapture.text === newCapture.text;
 
     return {
       ...emptyPageResult(job),
       diffImagePath: writeDiffImage(
-        diff,
+        diff.diffImage,
         path.join(imagesDir, "diff", name, `${pageName}.png`)
       ),
       fontsMatch: oldCapture.fonts === newCapture.fonts,
+      heightDelta: diff.heightDelta,
       newImagePath: newCapture.imagePath,
+      newMediaSettled: newCapture.mediaSettled,
+      newNetworkIdle: newCapture.networkIdle,
       newStatus: newCapture.status,
       newTitle: newCapture.title,
+      noisePercent: diff.noisePercent,
       oldImagePath: oldCapture.imagePath,
+      oldMediaSettled: oldCapture.mediaSettled,
+      oldNetworkIdle: oldCapture.networkIdle,
       oldStatus: oldCapture.status,
       oldTitle: oldCapture.title,
       percent: diff.percent,
@@ -529,6 +603,10 @@ const pageViolations = (row: PageResult): readonly string[] => {
 
   if (row.fontsMatch === false) {
     reasons.push("loaded fonts differ");
+  }
+
+  if (row.heightDelta !== null && row.heightDelta !== 0) {
+    reasons.push(heightReasonOf(row.heightDelta));
   }
 
   if ((row.percent ?? 0) > threshold) {
@@ -891,6 +969,9 @@ const behaviourViolations = (result: BehaviourResult): readonly string[] => {
 const formatPercent = (percent: number | null): string =>
   percent === null ? "n/a" : `${percent.toFixed(2)}%`;
 
+const pixelCellOf = (row: PageResult): string =>
+  `${row.viewport} ${formatPercent(row.percent)} (noise ${formatPercent(row.noisePercent)})`;
+
 const fontsCell = (rows: readonly PageResult[]): string => {
   if (baselineMode) {
     return "baseline";
@@ -937,9 +1018,7 @@ const pageRow = (pagePath: string, rows: readonly PageResult[]): string => {
 
   const statuses = rows.map((row) => pageStatusCell(row)).join(", ");
 
-  const pixels = rows
-    .map((row) => `${row.viewport} ${formatPercent(row.percent)}`)
-    .join(", ");
+  const pixels = rows.map((row) => pixelCellOf(row)).join(", ");
 
   const verdict = reasons.length === 0 ? "pass" : reasons.join("; ");
   const target = parityUrl({ base: oldBase, path: pagePath });
@@ -1151,7 +1230,7 @@ for (const directory of [imagesDir, textsDir]) {
 }
 
 for (const viewport of VIEWPORTS) {
-  for (const side of ["old", "new", "diff"]) {
+  for (const side of ["old", "new", "diff", "noise"]) {
     mkdirSync(path.join(imagesDir, side, viewport.name), { recursive: true });
   }
 }
