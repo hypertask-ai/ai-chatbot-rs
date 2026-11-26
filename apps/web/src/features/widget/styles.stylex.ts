@@ -12,7 +12,7 @@ export const styles = stylex.create({
     gap: "8px",
   },
   answerButton: {
-    background: "transparent",
+    backgroundColor: "transparent",
     borderColor: widget.fieldBorder,
     borderRadius: "999px",
     borderStyle: "solid",
@@ -34,7 +34,7 @@ export const styles = stylex.create({
   },
   attachmentRemove: {
     alignItems: "center",
-    background: {
+    backgroundColor: {
       ":hover": widget.secondaryHover,
       default: widget.surfaceHover,
     },
@@ -84,7 +84,7 @@ export const styles = stylex.create({
     display: { "@media (max-width: 640px)": "inline", default: "none" },
   },
   emailCard: {
-    background: widget.fieldBg,
+    backgroundColor: widget.fieldBg,
     borderColor: widget.divider,
     borderRadius: widget.radiusCard,
     borderStyle: "solid",
@@ -99,7 +99,7 @@ export const styles = stylex.create({
     fontSize: "12px",
   },
   emailInput: {
-    background: "transparent",
+    backgroundColor: "transparent",
     borderColor: widget.fieldBorder,
     borderRadius: widget.radiusBtn,
     borderStyle: "solid",
@@ -117,7 +117,7 @@ export const styles = stylex.create({
     fontSize: "12px",
   },
   emailSubmit: {
-    background: widget.ink,
+    backgroundColor: widget.ink,
     borderRadius: "999px",
     borderStyle: "none",
     color: widget.btnFg,
@@ -129,7 +129,7 @@ export const styles = stylex.create({
   },
   field: {
     alignItems: "flex-end",
-    background: widget.fieldBg,
+    backgroundColor: widget.fieldBg,
     borderColor: {
       ":focus-within": widget.ink,
       default: widget.fieldBorder,
@@ -146,7 +146,7 @@ export const styles = stylex.create({
   fileInput: { display: "none" },
   header: {
     alignItems: "center",
-    background: widget.chatBg,
+    backgroundColor: widget.chatBg,
     borderBottomColor: widget.divider,
     borderBottomStyle: "solid",
     borderBottomWidth: "1px",
@@ -158,7 +158,7 @@ export const styles = stylex.create({
   },
   headerButton: {
     alignItems: "center",
-    background: "transparent",
+    backgroundColor: "transparent",
     borderStyle: "none",
     color: { ":hover": widget.ink, default: widget.muted },
     cursor: "pointer",
@@ -210,7 +210,7 @@ export const styles = stylex.create({
   },
   hidden: { display: "none" },
   inputArea: {
-    background: widget.chatBg,
+    backgroundColor: widget.chatBg,
     borderTopColor: widget.dividerSoft,
     borderTopStyle: "solid",
     borderTopWidth: "1px",
@@ -224,7 +224,7 @@ export const styles = stylex.create({
   },
   lightbox: {
     alignItems: "center",
-    background: widget.lightboxScrim,
+    backgroundColor: widget.lightboxScrim,
     bottom: 0,
     cursor: "pointer",
     display: "flex",
@@ -237,7 +237,7 @@ export const styles = stylex.create({
   },
   lightboxClose: {
     alignItems: "center",
-    background: {
+    backgroundColor: {
       ":hover": widget.lightboxCloseHover,
       default: widget.lightboxCloseBg,
     },
@@ -276,7 +276,10 @@ export const styles = stylex.create({
   },
   menuSessionItem: {
     alignItems: "center",
-    background: { ":hover": widget.surfaceHover, default: widget.surfaceBg },
+    backgroundColor: {
+      ":hover": widget.surfaceHover,
+      default: widget.surfaceBg,
+    },
     borderColor: widget.surfaceBorder,
     borderRadius: widget.radiusCard,
     borderStyle: "solid",
@@ -297,7 +300,10 @@ export const styles = stylex.create({
   },
   menuSessionItemCurrent: {
     alignItems: "center",
-    background: { ":hover": widget.surfaceHover, default: widget.surfaceBg },
+    backgroundColor: {
+      ":hover": widget.surfaceHover,
+      default: widget.surfaceBg,
+    },
     borderColor: widget.ink,
     borderRadius: widget.radiusCard,
     borderStyle: "solid",
@@ -354,7 +360,7 @@ export const styles = stylex.create({
   },
   newConversation: {
     alignItems: "center",
-    background: { ":hover": widget.btnHover, default: widget.newButtonBg },
+    backgroundColor: { ":hover": widget.btnHover, default: widget.newButtonBg },
     borderRadius: widget.radiusBtn,
     borderStyle: "none",
     color: widget.newButtonFg,
@@ -407,7 +413,7 @@ export const styles = stylex.create({
       top: "100%",
       transform: "translateX(-50%)",
     },
-    background: widget.surfaceBg,
+    backgroundColor: widget.surfaceBg,
     borderColor: widget.tooltipBorder,
     borderRadius: widget.radiusBtn,
     borderStyle: "solid",
@@ -431,14 +437,14 @@ export const styles = stylex.create({
     textDecoration: "underline",
   },
   readOnlyBanner: {
-    background: widget.surfaceBg,
+    backgroundColor: widget.surfaceBg,
     color: widget.muted,
     fontSize: "12px",
     padding: "10px 16px",
     textAlign: "center",
   },
   root: {
-    background: widget.chatBg,
+    backgroundColor: widget.chatBg,
     color: widget.ink,
     display: "flex",
     flex: 1,
@@ -449,7 +455,7 @@ export const styles = stylex.create({
   },
   sendButton: {
     alignItems: "center",
-    background: {
+    backgroundColor: {
       ":disabled": widget.sendDisabledBg,
       ":hover": widget.btnHover,
       default: widget.btnBg,
@@ -491,14 +497,17 @@ export const styles = stylex.create({
     textDecoration: "underline",
   },
   subtitleDot: {
-    background: "#4ade80",
+    backgroundColor: "#4ade80",
     borderRadius: "50%",
     height: "7px",
     width: "7px",
   },
   suggestionButton: {
     alignItems: "center",
-    background: { ":hover": widget.secondaryHover, default: "transparent" },
+    backgroundColor: {
+      ":hover": widget.secondaryHover,
+      default: "transparent",
+    },
     borderRadius: 0,
     borderStyle: "none",
     color: widget.ink,
@@ -528,7 +537,7 @@ export const styles = stylex.create({
   suggestions: {
     alignItems: "stretch",
     alignSelf: "stretch",
-    background: widget.chatBg,
+    backgroundColor: widget.chatBg,
     borderColor: widget.suggestionBorder,
     borderRadius: widget.radiusLg,
     borderStyle: "solid",
@@ -549,7 +558,7 @@ export const styles = stylex.create({
   },
   textarea: {
     "::placeholder": { color: widget.botLabel },
-    background: "transparent",
+    backgroundColor: "transparent",
     borderStyle: "none",
     color: widget.ink,
     flex: 1,
