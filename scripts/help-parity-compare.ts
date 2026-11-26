@@ -80,6 +80,34 @@ const ignoredByNoise = (
   row < noise.height &&
   noise.differing[row * noise.width + column] === 1;
 
+export const mergeNoise = (first: NoiseMask, second: NoiseMask): NoiseMask => {
+  const width = Math.min(first.width, second.width);
+  const height = Math.min(first.height, second.height);
+  const differing = new Uint8Array(width * height);
+  const total = width * height;
+
+  let changed = 0;
+
+  for (let row = 0; row < height; row += 1) {
+    for (let column = 0; column < width; column += 1) {
+      if (
+        ignoredByNoise(first, row, column) ||
+        ignoredByNoise(second, row, column)
+      ) {
+        differing[row * width + column] = 1;
+        changed += 1;
+      }
+    }
+  }
+
+  return {
+    differing,
+    height,
+    percent: total === 0 ? 0 : (changed / total) * 100,
+    width,
+  };
+};
+
 export const compareCaptures = (
   before: Buffer,
   after: Buffer,

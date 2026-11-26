@@ -4,6 +4,7 @@ import { PNG } from "pngjs";
 import {
   compareCaptures,
   heightReasonOf,
+  mergeNoise,
   noiseMaskOf,
 } from "../../../scripts/help-parity-compare.js";
 
@@ -104,5 +105,39 @@ describe("parity pixel comparison", () => {
     expect(mask.percent).toBe(0);
     expect(mask.width).toBe(3);
     expect(mask.height).toBe(4);
+  });
+
+  it("ignores a band that only moved in one of the two sites", () => {
+    const oldFirst = filled(2, 2);
+    const oldSecond = filled(2, 2);
+    const newFirst = captureOf(2, 2, [WHITE, WHITE, WHITE, BLACK]);
+    const newSecond = filled(2, 2);
+
+    const noise = mergeNoise(
+      noiseMaskOf(oldFirst, oldSecond),
+      noiseMaskOf(newFirst, newSecond)
+    );
+
+    const diff = compareCaptures(oldFirst, newFirst, noise);
+
+    expect(noise.percent).toBe(25);
+    expect(diff.percent).toBe(0);
+  });
+
+  it("keeps a difference that is stable on both sites", () => {
+    const oldFirst = captureOf(2, 2, [WHITE, WHITE, WHITE, BLACK]);
+    const oldSecond = oldFirst;
+    const newFirst = filled(2, 2);
+    const newSecond = newFirst;
+
+    const noise = mergeNoise(
+      noiseMaskOf(oldFirst, oldSecond),
+      noiseMaskOf(newFirst, newSecond)
+    );
+
+    const diff = compareCaptures(oldFirst, newFirst, noise);
+
+    expect(noise.percent).toBe(0);
+    expect(diff.percent).toBe(25);
   });
 });

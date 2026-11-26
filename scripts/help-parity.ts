@@ -11,6 +11,7 @@ import type { BrowserContext, Frame, Page } from "playwright";
 import {
   compareCaptures,
   heightReasonOf,
+  mergeNoise,
   noiseMaskOf,
 } from "./help-parity-compare.ts";
 import { parityUrl } from "./help-parity-url.ts";
@@ -521,10 +522,10 @@ const runPageJob = async (
       };
     }
 
-    const noiseCapture = await capture(
+    const oldNoiseCapture = await capture(
       page,
       oldUrl,
-      path.join(imagesDir, "noise", name, `${pageName}.png`)
+      path.join(imagesDir, "noise", "old", name, `${pageName}.png`)
     );
 
     const newCapture = await capture(
@@ -533,7 +534,16 @@ const runPageJob = async (
       path.join(imagesDir, "new", name, `${pageName}.png`)
     );
 
-    const noise = noiseMaskOf(oldCapture.buffer, noiseCapture.buffer);
+    const newNoiseCapture = await capture(
+      page,
+      newUrl,
+      path.join(imagesDir, "noise", "new", name, `${pageName}.png`)
+    );
+
+    const noise = mergeNoise(
+      noiseMaskOf(oldCapture.buffer, oldNoiseCapture.buffer),
+      noiseMaskOf(newCapture.buffer, newNoiseCapture.buffer)
+    );
 
     const diff = compareCaptures(oldCapture.buffer, newCapture.buffer, noise);
 
@@ -1230,8 +1240,14 @@ for (const directory of [imagesDir, textsDir]) {
 }
 
 for (const viewport of VIEWPORTS) {
-  for (const side of ["old", "new", "diff", "noise"]) {
+  for (const side of ["old", "new", "diff"]) {
     mkdirSync(path.join(imagesDir, side, viewport.name), { recursive: true });
+  }
+
+  for (const side of ["old", "new"]) {
+    mkdirSync(path.join(imagesDir, "noise", side, viewport.name), {
+      recursive: true,
+    });
   }
 }
 
