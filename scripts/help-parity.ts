@@ -117,6 +117,8 @@ const NETWORK_IDLE_TIMEOUT_MS = 20_000;
 
 const MEDIA_TIMEOUT_MS = 20_000;
 
+const SCREENSHOT_TIMEOUT_MS = 60_000;
+
 const NOT_FOUND_SLUG = "parity-page-that-does-not-exist";
 
 const PARITY_QUESTION = "How do I invite a teammate?";
@@ -393,6 +395,40 @@ const settleMedia = async (page: Page): Promise<boolean> => {
 };
 
 // @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
+const screenshot = async (page: Page, url: string): Promise<Buffer> => {
+  const attempt = async (): Promise<Buffer | null> => {
+    try {
+      const buffer = await page.screenshot({
+        animations: "disabled",
+        caret: "hide",
+        fullPage: true,
+        timeout: SCREENSHOT_TIMEOUT_MS,
+      });
+
+      return buffer;
+    } catch {
+      return null;
+    }
+  };
+
+  const first = await attempt();
+
+  if (first !== null) {
+    return first;
+  }
+
+  const second = await attempt();
+
+  if (second !== null) {
+    return second;
+  }
+
+  throw new Error(
+    `No screenshot of ${url} after two attempts of ${SCREENSHOT_TIMEOUT_MS} milliseconds. A capture that never returns leaves the page unscored. Fix: check the page for a script that blocks rendering.`
+  );
+};
+
+// @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
 const capture = async (
   page: Page,
   url: string,
@@ -419,11 +455,7 @@ const capture = async (
 
   const fonts = decodeString(await page.evaluate(FONT_SIGNATURE));
 
-  const buffer = await page.screenshot({
-    animations: "disabled",
-    caret: "hide",
-    fullPage: true,
-  });
+  const buffer = await screenshot(page, url);
 
   const title = await page.title();
   const text = await visibleText(page);
