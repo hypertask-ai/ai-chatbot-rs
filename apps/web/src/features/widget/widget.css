@@ -8,7 +8,9 @@ html:has([data-widget-document]) {
 body:has([data-widget-document]) {
   display: flex;
   flex-direction: column;
+  font-family: "IBM Plex Sans", sans-serif;
   height: 100%;
+  line-height: normal;
   margin: 0;
   overflow: hidden;
   width: 100%;
