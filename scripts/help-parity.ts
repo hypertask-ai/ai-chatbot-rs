@@ -396,6 +396,7 @@ const settleMedia = async (page: Page): Promise<boolean> => {
 
 // @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
 const screenshot = async (page: Page, url: string): Promise<Buffer> => {
+  // @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
   const attempt = async (): Promise<Buffer | null> => {
     try {
       const buffer = await page.screenshot({
