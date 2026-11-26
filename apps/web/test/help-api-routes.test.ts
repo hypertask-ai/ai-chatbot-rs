@@ -47,6 +47,7 @@ const articleRowIds = [
   "search-board",
   "search-invite",
   "search-zzzqx",
+  "search-zzzz-parity-zzzz",
 ];
 
 const articleRows = articleRowIds.map((id) => {

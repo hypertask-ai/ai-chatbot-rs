@@ -1035,6 +1035,16 @@
       "body": "[]"
     },
     {
+      "id": "search-zzzz-parity-zzzz",
+      "method": "GET",
+      "path": "/api/articles/search/zzzz-parity-zzzz",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": "[{\"id\":\"docs-mcp-overview\",\"title\":\"MCP Integration\",\"slug\":\"docs-mcp-overview\",\"excerpt\":\"Connect AI agents to Hypertask via the Model Context Protocol.\",\"category\":\"Agents\"}]"
+    },
+    {
       "id": "reader-docs-features-chat-board-filter",
       "method": "GET",
       "path": "/api/help-reader/docs-features-chat-board-filter",
