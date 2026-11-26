@@ -388,7 +388,7 @@ const settleMedia = async (page: Page): Promise<boolean> => {
     page.frames().map((frame) => settleFrame(frame))
   );
 
-  return settled.every((value) => value);
+  return settled.every(Boolean);
 };
 
 // @effect-diagnostics-next-line asyncFunction:off -- Playwright is Promise based and this Node CLI drives it outside an Effect runtime.
