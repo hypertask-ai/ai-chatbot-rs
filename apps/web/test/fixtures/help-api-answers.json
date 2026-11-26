@@ -1,0 +1,30 @@
+{
+  "recorded": "2026-11-25",
+  "source": "https://help.hypertask.ai",
+  "method": "curl, GET only, no chat message sent",
+  "comparedHeaders": ["content-type"],
+  "rows": [
+    {
+      "id": "debug-retrieval",
+      "method": "GET",
+      "path": "/api/chat/debug-rag?q=invite",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": "{\"query\":\"invite\",\"count\":8,\"articles\":[{\"id\":\"docs-features-boards\",\"title\":\"Boards & Sections\"},{\"id\":\"docs-features-collaboration\",\"title\":\"Collaboration\"},{\"id\":\"docs-features-inbox\",\"title\":\"Inbox & Notifications\"},{\"id\":\"10895353\",\"title\":\"Using the Hypertask Command Center (HTC)\"},{\"id\":\"docs-getting-started-introduction\",\"title\":\"What is Hypertask?\"},{\"id\":\"pricing-plans\",\"title\":\"Hypertask pricing, free trial and Free plan limits\"},{\"id\":\"docs-getting-started-quickstart\",\"title\":\"Quick Start\"},{\"id\":\"docs-connect-an-agent\",\"title\":\"Connect a new agent\"}]}"
+    },
+    {
+      "id": "chat-history-unauthorized",
+      "method": "GET",
+      "path": "/api/chat/history/parity-missing-conversation",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json",
+        "vary": "Origin"
+      },
+      "body": "{\"error\":\"Unauthorized\"}"
+    }
+  ]
+}

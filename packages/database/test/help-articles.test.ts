@@ -130,7 +130,11 @@ const seedArticles = decodeSummaries(rowOf("articles-list").body).map(
   }
 );
 
-const searchModelOnly = new Set(["search-board", "search-voice"]);
+const searchModelOnly = new Set([
+  "search-board",
+  "search-invite",
+  "search-voice",
+]);
 
 const byteComparedRows = recorded.rows.filter(
   (row) => !searchModelOnly.has(row.id)

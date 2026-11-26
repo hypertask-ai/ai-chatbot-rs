@@ -149,6 +149,31 @@
       "import": "./dist/health.js",
       "default": "./dist/health.js"
     },
+    "./chat-config": {
+      "types": "./src/chat-config.ts",
+      "import": "./dist/chat-config.js",
+      "default": "./dist/chat-config.js"
+    },
+    "./chat-conversation-store": {
+      "types": "./src/chat-conversation-store.ts",
+      "import": "./dist/chat-conversation-store.js",
+      "default": "./dist/chat-conversation-store.js"
+    },
+    "./chat-history": {
+      "types": "./src/chat-history.ts",
+      "import": "./dist/chat-history.js",
+      "default": "./dist/chat-history.js"
+    },
+    "./chat-message-store": {
+      "types": "./src/chat-message-store.ts",
+      "import": "./dist/chat-message-store.js",
+      "default": "./dist/chat-message-store.js"
+    },
+    "./chat-visitor-auth": {
+      "types": "./src/chat-visitor-auth.ts",
+      "import": "./dist/chat-visitor-auth.js",
+      "default": "./dist/chat-visitor-auth.js"
+    },
     "./intake": {
       "types": "./src/intake.ts",
       "import": "./dist/intake.js",

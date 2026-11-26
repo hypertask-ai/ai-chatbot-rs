@@ -1,27 +1,14 @@
-import { toHttpApi } from "@rat-stack/capability/http-api";
-import { health } from "@rat-stack/core/health";
-import * as AlchemyHttp from "alchemy/Http";
-import { Effect, Layer } from "effect";
-import { HttpRouter } from "effect/http";
-import { HttpApiBuilder } from "effect/http-api";
+import { Effect } from "effect";
 
 import { sitePath, stripBasePath } from "../site-base-path.js";
 import { withCors } from "./embed-cors.js";
-
-const healthApi = toHttpApi("help.hypertask.ai", [health]);
-
-const healthRoutes = HttpApiBuilder.layer(healthApi.api).pipe(
-  Layer.provide(healthApi.layer),
-  Layer.provide(AlchemyHttp.Platform)
-);
-
-const healthAnswers = HttpRouter.toWebHandler(healthRoutes, {
-  disableLogger: true,
-});
+import { answerHelpApi, isHelpApiRoute } from "./help-api.js";
 
 const helpCenter = "/help";
 
-const healthPath = "/health";
+const adminEntry = "/admin";
+
+const accessTeamDomain = "hypertask.cloudflareaccess.com";
 
 const routeOf = (pathname: string): string =>
   stripBasePath(pathname) ?? pathname;
@@ -29,18 +16,14 @@ const routeOf = (pathname: string): string =>
 const redirectsFrom = (route: string): boolean =>
   route === "/en" || route.startsWith("/en/");
 
-const answerHealth = Effect.fn("helpSite.health")(function* answerHealth(
-  request: Request
-) {
-  const routed = new URL(request.url);
-  routed.pathname = healthPath;
+const isAdminRoute = (route: string): boolean =>
+  route === adminEntry || route.startsWith(`${adminEntry}/`);
 
-  const answered = yield* Effect.promise(() =>
-    healthAnswers.handler(new Request(routed, { method: "GET" }))
-  );
+const accessLoginUrl = (request: Request, route: string): string => {
+  const { hostname } = new URL(request.url);
 
-  return withCors(request, answered);
-});
+  return `https://${accessTeamDomain}/cdn-cgi/access/login/${hostname}?redirect_url=${encodeURIComponent(route)}`;
+};
 
 const answerPreflight = (request: Request): Response =>
   withCors(request, new Response(null, { status: 204 }));
@@ -50,6 +33,15 @@ const answerRedirect = (request: Request): Response =>
     request,
     new Response(null, {
       headers: { location: sitePath(helpCenter) },
+      status: 302,
+    })
+  );
+
+const answerAdminLogin = (request: Request, route: string): Response =>
+  withCors(
+    request,
+    new Response(null, {
+      headers: { location: accessLoginUrl(request, route) },
       status: 302,
     })
   );
@@ -64,8 +56,12 @@ export const answerHelpSite = Effect.fn("helpSite.answer")(
       return answerPreflight(request);
     }
 
-    if (answersPage && route === healthPath) {
-      return yield* answerHealth(request);
+    if (answersPage && isHelpApiRoute(route)) {
+      return yield* answerHelpApi(request, route);
+    }
+
+    if (answersPage && isAdminRoute(route)) {
+      return answerAdminLogin(request, route);
     }
 
     if (answersPage && redirectsFrom(route)) {
